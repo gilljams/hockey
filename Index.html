@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hockey Scorekeeper</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const translations = {
+      en: {
+        homeTeam: 'HOME TEAM',
+        awayTeam: 'AWAY TEAM',
+        period: 'Period',
+        settings: 'Settings',
+        swapSides: 'Swap Sides',
+        darkMode: 'Dark Mode',
+        goals: 'Goals',
+        byPeriod: 'By period',
+        saves: 'Saves',
+        shotsFor: 'Shots For',
+        shotsAgainst: 'Shots Against',
+        savePercent: 'Save %',
+        resetAllStats: 'Reset All Stats',
+        soundboard: 'Soundboard',
+        periodStats: 'Period Stats',
+        refereeSignals: 'Referee Signals',
+        spotifyMode: 'Spotify Mode',
+        goal: 'Goal',
+        penalty: 'Penalty',
+        stopAllSounds: 'Stop All Sounds',
+        intro: 'Intro',
+        final: 'FINAL',
+        copyStats: 'Copy Stats',
+        share: 'Share',
+        gameInProgress: 'Game in Progress',
+        continueOrStart: 'Continue or start fresh?',
+        continue: 'Continue',
+        startFresh: 'Start Fresh',
+        resetConfirm: 'Reset all stats?',
+        statsCopied: 'Stats copied!',
+        copyFailed: 'Failed to copy',
+        gameReport: 'Game Report',
+        periodBreakdown: 'PERIOD BREAKDOWN',
+        goalieStats: 'GOALIE STATS',
+        shotsAgainstShort: 'shots against',
+        clear: 'Clear',
+        language: 'Language',
+        closeFocus: 'Close Focus Mode',
+        spotifyPlaylistUrl: 'Spotify Playlist URL'
+      },
+      sv: {
+        homeTeam: 'HEMMALAG',
+        awayTeam: 'BORTALAG',
+        period: 'Period',
+        settings: 'Inställningar',
+        swapSides: 'Byt Sidor',
+        darkMode: 'Mörkt Läge',
+        goals: 'Mål',
+        byPeriod: 'Per period',
+        saves: 'Räddningar',
+        shotsFor: 'Skott För',
+        shotsAgainst: 'Skott Mot',
+        savePercent: 'Räddnings %',
+        resetAllStats: 'Nollställ All Statistik',
+        soundboard: 'Ljudpanel',
+        periodStats: 'Periodstatistik',
+        refereeSignals: 'Domarsignaler',
+        spotifyMode: 'Spotify-läge',
+        goal: 'Mål',
+        penalty: 'Utvisning',
+        stopAllSounds: 'Stoppa Alla Ljud',
+        intro: 'Intro',
+        final: 'SLUTRESULTAT',
+        copyStats: 'Kopiera Statistik',
+        share: 'Dela',
+        gameInProgress: 'Match Pågår',
+        continueOrStart: 'Fortsätt eller börja om?',
+        continue: 'Fortsätt',
+        startFresh: 'Börja Om',
+        resetConfirm: 'Nollställ all statistik?',
+        statsCopied: 'Statistik kopierad!',
+        copyFailed: 'Misslyckades kopiera',
+        gameReport: 'Matchrapport',
+        periodBreakdown: 'PERIODSAMMANFATTNING',
+        goalieStats: 'MÅLVAKTSSTATISTIK',
+        shotsAgainstShort: 'skott mot',
+        clear: 'Rensa',
+        language: 'Språk',
+        closeFocus: 'Stäng Fokusläge',
+        spotifyPlaylistUrl: 'Spotify Spellista URL'
+      }
+    };
+
+    const JuniorLeagueApp = () => {
+      const [activeTab, setActiveTab] = useState('soundboard');
+      const [currentPeriod, setCurrentPeriod] = useState(1);
+      const [homeName, setHomeName] = useState('HOME TEAM');
+      const [awayName, setAwayName] = useState('AWAY TEAM');
+      const [sidesSwapped, setSidesSwapped] = useState(false);
+      const [showSettings, setShowSettings] = useState(false);
+      const [useSpotify, setUseSpotify] = useState(false);
+      const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+      const [darkMode, setDarkMode] = useState(false);
+      const [statsCollapsed, setStatsCollapsed] = useState(false);
+      const [focusMode, setFocusMode] = useState(null); // null, 'home', or 'away'
+      const [language, setLanguage] = useState('en');
+      const [spotifyLoaded, setSpotifyLoaded] = useState(false);
+      const [spotifyLoading, setSpotifyLoading] = useState(false);
+      const [spotifyPlaylist, setSpotifyPlaylist] = useState('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');
+      
+      const [periodStats, setPeriodStats] = useState({
+        1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
+        2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
+        3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
+      });
+      
+      const audioRefs = {
+        homeGoal: useRef(null),
+        awayGoal: useRef(null),
+        homePenalty: useRef(null),
+        awayPenalty: useRef(null),
+        intro: useRef(null)
+      };
+
+      const [introPlaying, setIntroPlaying] = useState(false);
+
+      const t = translations[language];
+
+      useEffect(() => {
+        const saved = localStorage.getItem('juniorLeagueGame');
+        if (saved) {
+          const gs = JSON.parse(saved);
+          setCurrentPeriod(gs.currentPeriod);
+          setHomeName(gs.homeName);
+          setAwayName(gs.awayName);
+          setSidesSwapped(gs.sidesSwapped);
+          setPeriodStats(gs.periodStats);
+        }
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
+        
+        const savedLanguage = localStorage.getItem('language');
+        if (savedLanguage) setLanguage(savedLanguage);
+        
+        const savedSpotifyPlaylist = localStorage.getItem('spotifyPlaylist');
+        if (savedSpotifyPlaylist) setSpotifyPlaylist(savedSpotifyPlaylist);
+        
+        const savedFocusMode = localStorage.getItem('focusMode');
+        if (savedFocusMode) setFocusMode(savedFocusMode === 'null' ? null : savedFocusMode);
+      }, []);
+
+      useEffect(() => {
+        localStorage.setItem('darkMode', JSON.stringify(darkMode));
+      }, [darkMode]);
+
+      useEffect(() => {
+        localStorage.setItem('language', language);
+      }, [language]);
+
+      useEffect(() => {
+        localStorage.setItem('spotifyPlaylist', spotifyPlaylist);
+      }, [spotifyPlaylist]);
+
+      useEffect(() => {
+        localStorage.setItem('focusMode', focusMode);
+      }, [focusMode]);
+
+      useEffect(() => {
+        const gameState = { currentPeriod, homeName, awayName, sidesSwapped, periodStats, timestamp: new Date().toISOString() };
+        localStorage.setItem('juniorLeagueGame', JSON.stringify(gameState));
+      }, [currentPeriod, homeName, awayName, sidesSwapped, periodStats]);
+
+      const restoreGame = () => {
+        setShowRestorePrompt(false);
+      };
+
+      const startFresh = () => {
+        setPeriodStats({ 1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }, 2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }, 3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 } });
+        setCurrentPeriod(1);
+        setHomeName(t.homeTeam);
+        setAwayName(t.awayTeam);
+        setSidesSwapped(false);
+        localStorage.removeItem('juniorLeagueGame');
+        setShowRestorePrompt(false);
+      };
+
+      const playSound = (soundType) => {
+        if (useSpotify) { alert('Spotify: Would play ' + soundType); return; }
+        const audio = audioRefs[soundType].current;
+        if (audio) { 
+          audio.currentTime = 0; 
+          audio.play().catch(e => console.log('Play failed:', e)); 
+        }
+      };
+
+      const toggleIntro = () => {
+        const audio = audioRefs.intro.current;
+        if (!audio) return;
+        
+        if (introPlaying) {
+          audio.pause();
+          audio.currentTime = 0;
+          setIntroPlaying(false);
+        } else {
+          audio.loop = true;
+          audio.play().catch(e => console.log('Play failed:', e));
+          setIntroPlaying(true);
+        }
+      };
+
+      const stopAllSounds = () => {
+        Object.values(audioRefs).forEach(ref => { if (ref.current) { ref.current.pause(); ref.current.currentTime = 0; } });
+        setIntroPlaying(false);
+      };
+
+      const resetCounters = () => {
+        if (window.confirm(t.resetConfirm)) {
+          setPeriodStats({ 1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }, 2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }, 3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 } });
+          setCurrentPeriod(1);
+          localStorage.removeItem('juniorLeagueGame');
+        }
+      };
+
+      const calculateTotals = () => {
+        let homeScore = 0, awayScore = 0, homeSaves = 0, awaySaves = 0;
+        [1, 2, 3].forEach(p => {
+          homeScore += periodStats[p].homeScore;
+          awayScore += periodStats[p].awayScore;
+          homeSaves += periodStats[p].homeSaves;
+          awaySaves += periodStats[p].awaySaves;
+        });
+        return { homeScore, awayScore, homeSaves, awaySaves };
+      };
+
+      const totals = calculateTotals();
+
+      const updateStat = (team, stat, delta) => {
+        setPeriodStats(prev => ({
+          ...prev,
+          [currentPeriod]: { ...prev[currentPeriod], [team + stat]: Math.max(0, prev[currentPeriod][team + stat] + delta) }
+        }));
+      };
+
+      const calcSP = (saves, goals) => {
+        const shots = saves + goals;
+        return shots === 0 ? '0.0' : ((saves / shots) * 100).toFixed(1);
+      };
+
+      const generateGameReport = () => {
+        const date = new Date().toLocaleDateString();
+        let r = `${t.gameReport} - ${date}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\n${t.periodBreakdown}:\n`;
+        [1, 2, 3].forEach(p => { const ps = periodStats[p]; r += `${t.period} ${p}: ${homeName} ${ps.homeScore}-${ps.awayScore} ${awayName}\n`; });
+        r += `\n${t.goalieStats}:\n${homeName}: ${totals.homeSaves} ${t.saves.toLowerCase()}, ${totals.homeSaves + totals.awayScore} ${t.shotsAgainstShort}, ${calcSP(totals.homeSaves, totals.awayScore)}%\n`;
+        r += `${awayName}: ${totals.awaySaves} ${t.saves.toLowerCase()}, ${totals.awaySaves + totals.homeScore} ${t.shotsAgainstShort}, ${calcSP(totals.awaySaves, totals.homeScore)}%\n`;
+        return r;
+      };
+
+      const copyStats = () => {
+        navigator.clipboard.writeText(generateGameReport()).then(() => alert(t.statsCopied)).catch(() => alert(t.copyFailed));
+      };
+
+      const shareStats = () => {
+        if (navigator.share) navigator.share({ title: t.gameReport, text: generateGameReport() }).catch(() => copyStats());
+        else copyStats();
+      };
+
+      const getSpotifyEmbedUrl = (url) => {
+        // Extract playlist ID from various Spotify URL formats
+        const match = url.match(/playlist\/([a-zA-Z0-9]+)/);
+        if (match && match[1]) {
+          return `https://open.spotify.com/embed/playlist/${match[1]}?utm_source=generator&theme=0`;
+        }
+        return null;
+      };
+
+      const handleLoadSpotify = () => {
+        setSpotifyLoading(true);
+        // Small delay to show loading state
+        setTimeout(() => {
+          setSpotifyLoaded(true);
+          setSpotifyLoading(false);
+        }, 100);
+      };
+
+      const refSigs = [
+        { name: 'Offside', description: language === 'en' ? 'Arm raised straight up' : 'Arm rakt upp', color: 'bg-yellow-100' },
+        { name: 'Tripping', description: language === 'en' ? 'Strike leg with hand' : 'Slå benet med handen', color: 'bg-orange-100' },
+        { name: 'Holding', description: language === 'en' ? 'Clasping wrist' : 'Hålla handleden', color: 'bg-orange-100' },
+        { name: 'High Sticking', description: language === 'en' ? 'Two hands held high' : 'Två händer högt upp', color: 'bg-red-100' },
+        { name: 'Slashing', description: language === 'en' ? 'Chopping motion' : 'Huggande rörelse', color: 'bg-orange-100' },
+        { name: 'Icing', description: language === 'en' ? 'Arms crossed at chest' : 'Armar korsade vid bröstet', color: 'bg-blue-100' },
+        { name: language === 'en' ? 'Goal' : 'Mål', description: language === 'en' ? 'Both arms pointed at goal' : 'Båda armarna mot målet', color: 'bg-green-100' },
+        { name: language === 'en' ? 'No Goal' : 'Inget Mål', description: language === 'en' ? 'Arms crossed overhead' : 'Armar korsade över huvudet', color: 'bg-red-100' },
+        { name: 'Time Out', description: language === 'en' ? 'Hands forming T' : 'Händer formar T', color: 'bg-gray-100' },
+        { name: language === 'en' ? 'Penalty Shot' : 'Straff', description: language === 'en' ? 'Arms crossed then pointed' : 'Armar korsade sedan pekande', color: 'bg-purple-100' }
+      ];
+
+      // Focus mode rendering
+      if (focusMode) {
+        const focusTeam = focusMode === 'home' ? 
+          { 
+            name: sidesSwapped ? awayName : homeName, 
+            score: sidesSwapped ? totals.awayScore : totals.homeScore, 
+            saves: sidesSwapped ? totals.awaySaves : totals.homeSaves, 
+            team: sidesSwapped ? 'away' : 'home',
+            oppScore: sidesSwapped ? totals.homeScore : totals.awayScore,
+            oppShots: sidesSwapped ? (totals.homeSaves + totals.awayScore) : (totals.awaySaves + totals.homeScore)
+          } : 
+          { 
+            name: sidesSwapped ? homeName : awayName, 
+            score: sidesSwapped ? totals.homeScore : totals.awayScore, 
+            saves: sidesSwapped ? totals.homeSaves : totals.awaySaves, 
+            team: sidesSwapped ? 'home' : 'away',
+            oppScore: sidesSwapped ? totals.awayScore : totals.homeScore,
+            oppShots: sidesSwapped ? (totals.awaySaves + totals.homeScore) : (totals.homeSaves + totals.awayScore)
+          };
+
+        const oppTeam = focusMode === 'home' ? 'away' : 'home';
+        const oppName = focusMode === 'home' ? 
+          (sidesSwapped ? homeName : awayName) : 
+          (sidesSwapped ? awayName : homeName);
+        const oppScore = focusMode === 'home' ? 
+          (sidesSwapped ? totals.homeScore : totals.awayScore) : 
+          (sidesSwapped ? totals.awayScore : totals.homeScore);
+
+        return (
+          <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+            <audio ref={audioRefs.homeGoal} src="homeGoal.mp3" />
+            <audio ref={audioRefs.awayGoal} src="awayGoal.mp3" />
+            <audio ref={audioRefs.homePenalty} src="homePenalty.mp3" />
+            <audio ref={audioRefs.awayPenalty} src="awayPenalty.mp3" />
+            <audio ref={audioRefs.intro} src="intro.mp3" />
+
+            {/* Header */}
+            <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-6 shadow-lg`}>
+              <div className="max-w-4xl mx-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <button onClick={() => setFocusMode(null)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'} px-6 py-3 rounded-lg text-xl font-semibold`}>
+                    ✕ {t.closeFocus}
+                  </button>
+                  <div className="text-3xl font-bold">{t.period} {currentPeriod}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Stats Box */}
+            <div className="max-w-4xl mx-auto p-6">
+              <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
+                <div className="text-center mb-8">
+                  <div className="text-4xl font-bold mb-8">{focusTeam.name}</div>
+                  
+                  {/* Goals Section - Both teams side by side */}
+                  <div className="mb-8">
+                    <div className="text-2xl opacity-75 mb-4">{t.goals}</div>
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                      {/* Focus Team Goals */}
+                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} rounded-xl p-6`}>
+                        <div className="text-xl mb-2 font-semibold">{focusTeam.name}</div>
+                        <div className="text-7xl font-bold mb-4">{focusTeam.score}</div>
+                        <div className="flex flex-col gap-3">
+                          <button onClick={() => updateStat(focusTeam.team, 'Score', 1)} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">+</button>
+                          <button onClick={() => updateStat(focusTeam.team, 'Score', -1)} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">−</button>
+                        </div>
+                      </div>
+                      
+                      {/* Opponent Goals */}
+                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-red-50'} rounded-xl p-6`}>
+                        <div className="text-xl mb-2 font-semibold">{oppName}</div>
+                        <div className="text-7xl font-bold mb-4">{oppScore}</div>
+                        <div className="flex flex-col gap-3">
+                          <button onClick={() => updateStat(oppTeam, 'Score', 1)} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">+</button>
+                          <button onClick={() => updateStat(oppTeam, 'Score', -1)} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">−</button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-xl opacity-75">
+                      {t.byPeriod}: {[1, 2, 3].map((p, i) => (
+                        <span key={p} className={p === currentPeriod ? 'font-bold underline' : ''}>
+                          {periodStats[p][focusTeam.team + 'Score']}-{periodStats[p][oppTeam + 'Score']}{i < 2 ? ' · ' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Saves Section */}
+                  <div className={`pt-8 border-t-4 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                    <div className="text-2xl opacity-75 mb-3">{t.saves}</div>
+                    <div className="text-7xl font-bold mb-6">{focusTeam.saves}</div>
+                    <div className="flex gap-6 justify-center mb-6">
+                      <button onClick={() => updateStat(focusTeam.team, 'Saves', -1)} className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-300 hover:bg-gray-400'} px-12 py-6 rounded-xl text-4xl font-bold shadow-lg`}>−</button>
+                      <button onClick={() => updateStat(focusTeam.team, 'Saves', 1)} className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-300 hover:bg-gray-400'} px-12 py-6 rounded-xl text-4xl font-bold shadow-lg`}>+</button>
+                    </div>
+                    
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-xl p-6 text-xl space-y-2`}>
+                      <div className="flex justify-between"><span>{t.shotsFor}:</span><span className="font-bold">{focusTeam.oppShots}</span></div>
+                      <div className="flex justify-between"><span>{t.shotsAgainst}:</span><span className="font-bold">{focusTeam.saves + focusTeam.oppScore}</span></div>
+                      <div className="flex justify-between border-t pt-2"><span>{t.savePercent}:</span><span className="font-bold text-2xl">{calcSP(focusTeam.saves, focusTeam.oppScore)}%</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Normal mode rendering
+      return (
+        <div className={`min-h-screen pb-20 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+          <audio ref={audioRefs.homeGoal} src="homeGoal.mp3" />
+          <audio ref={audioRefs.awayGoal} src="awayGoal.mp3" />
+          <audio ref={audioRefs.homePenalty} src="homePenalty.mp3" />
+          <audio ref={audioRefs.awayPenalty} src="awayPenalty.mp3" />
+          <audio ref={audioRefs.intro} src="intro.mp3" />
+
+          {showRestorePrompt && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-xl p-6 max-w-md w-full`}>
+                <h3 className="text-xl font-bold mb-3">{t.gameInProgress}</h3>
+                <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>{t.continueOrStart}</p>
+                <div className="flex gap-3">
+                  <button onClick={restoreGame} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">{t.continue}</button>
+                  <button onClick={startFresh} className={`flex-1 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}>{t.startFresh}</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg sticky top-0 z-50`}>
+            <div className="max-w-6xl mx-auto">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex gap-2 items-center">
+                  <span className="text-sm font-medium">{t.period}:</span>
+                  {[1, 2, 3].map(p => (
+                    <button key={p} onClick={() => setCurrentPeriod(p)} className={`px-3 py-1 rounded font-bold ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>{p}</button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setStatsCollapsed(!statsCollapsed)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>
+                    {statsCollapsed ? '▼' : '▲'}
+                  </button>
+                  <button onClick={() => setShowSettings(!showSettings)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>⚙️ {t.settings}</button>
+                </div>
+              </div>
+
+              {showSettings && (
+                <div className={`${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800'} rounded-lg p-4 mb-4`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-bold">{t.settings}</h3>
+                    <button onClick={() => setShowSettings(false)} className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-2xl`}>×</button>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm mb-1">{t.homeTeam}</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={homeName} onChange={(e) => setHomeName(e.target.value)} className={`flex-1 px-3 py-2 border rounded ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : ''}`} />
+                        <button onClick={() => setHomeName('')} className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>{t.clear}</button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-1">{t.awayTeam}</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={awayName} onChange={(e) => setAwayName(e.target.value)} className={`flex-1 px-3 py-2 border rounded ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : ''}`} />
+                        <button onClick={() => setAwayName('')} className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>{t.clear}</button>
+                      </div>
+                    </div>
+                    <label className="flex items-center justify-between">
+                      <span>{t.swapSides}</span>
+                      <input type="checkbox" checked={sidesSwapped} onChange={(e) => setSidesSwapped(e.target.checked)} className="w-5 h-5" />
+                    </label>
+                    <label className="flex items-center justify-between pt-2 border-t">
+                      <span>{t.darkMode}</span>
+                      <input type="checkbox" checked={darkMode} onChange={(e) => setDarkMode(e.target.checked)} className="w-5 h-5" />
+                    </label>
+                    <label className="flex items-center justify-between pt-2 border-t">
+                      <span>{t.language}</span>
+                      <select value={language} onChange={(e) => setLanguage(e.target.value)} className={`px-3 py-2 rounded ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border'}`}>
+                        <option value="en">English</option>
+                        <option value="sv">Svenska</option>
+                      </select>
+                    </label>
+                    <div className="pt-2 border-t">
+                      <label className="block text-sm mb-1">{t.spotifyPlaylistUrl}</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={spotifyPlaylist} 
+                          onChange={(e) => {
+                            setSpotifyPlaylist(e.target.value);
+                            setSpotifyLoaded(false); // Reset to reload with new URL
+                          }} 
+                          placeholder="https://open.spotify.com/playlist/..." 
+                          className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : ''}`} 
+                        />
+                        <button 
+                          onClick={() => {
+                            setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');
+                            setSpotifyLoaded(false);
+                          }} 
+                          className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}
+                        >
+                          {t.clear}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 mb-3">
+                {[
+                  { name: sidesSwapped ? awayName : homeName, score: sidesSwapped ? totals.awayScore : totals.homeScore, saves: sidesSwapped ? totals.awaySaves : totals.homeSaves, team: sidesSwapped ? 'away' : 'home', oppScore: sidesSwapped ? totals.homeScore : totals.awayScore, oppShots: sidesSwapped ? (totals.homeSaves + totals.awayScore) : (totals.awaySaves + totals.homeScore), focusKey: 'home' },
+                  { name: sidesSwapped ? homeName : awayName, score: sidesSwapped ? totals.homeScore : totals.awayScore, saves: sidesSwapped ? totals.homeSaves : totals.awaySaves, team: sidesSwapped ? 'home' : 'away', oppScore: sidesSwapped ? totals.awayScore : totals.homeScore, oppShots: sidesSwapped ? (totals.awaySaves + totals.homeScore) : (totals.homeSaves + totals.awayScore), focusKey: 'away' }
+                ].map((tm, idx) => (
+                  <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 relative`}>
+                    <button 
+                      onClick={() => setFocusMode(tm.focusKey)}
+                      className={`absolute top-2 right-2 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-white bg-opacity-30 hover:bg-opacity-50'} w-8 h-8 rounded flex items-center justify-center text-lg`}
+                      title="Focus Mode"
+                    >
+                      ↗
+                    </button>
+                    <div className="text-sm font-semibold mb-2 pr-10">{tm.name}</div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <div className="text-xs opacity-75">{t.goals}</div>
+                        <div className="text-3xl font-bold">{tm.score}</div>
+                        {!statsCollapsed && (
+                          <div className="text-xs opacity-75 mt-1">
+                            {t.byPeriod}: (
+                            {[1, 2, 3].map((p, i) => (
+                              <span key={p} className={p === currentPeriod ? 'font-bold underline' : ''}>
+                                {periodStats[p][tm.team + 'Score']}{i < 2 ? '-' : ''}
+                              </span>
+                            ))}
+                            )
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => updateStat(tm.team, 'Score', -1)} className="bg-red-500 bg-opacity-50 p-2 rounded">−</button>
+                        <button onClick={() => updateStat(tm.team, 'Score', 1)} className="bg-green-500 bg-opacity-50 p-2 rounded">+</button>
+                      </div>
+                    </div>
+                    <div className={`pt-2 border-t ${darkMode ? 'border-gray-600' : 'border-white border-opacity-20'}`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs">{t.saves}</span>
+                        <div className="flex gap-2 items-center">
+                          <button onClick={() => updateStat(tm.team, 'Saves', -1)} className="bg-white bg-opacity-20 p-1 rounded text-sm">−</button>
+                          <span className="text-lg font-bold w-8 text-center">{tm.saves}</span>
+                          <button onClick={() => updateStat(tm.team, 'Saves', 1)} className="bg-white bg-opacity-20 p-1 rounded text-sm">+</button>
+                        </div>
+                      </div>
+                      {!statsCollapsed && (
+                        <div className={`${darkMode ? 'bg-gray-600' : 'bg-white bg-opacity-10'} rounded p-2 text-xs text-center`}>
+                          <div>{t.shotsFor}: {tm.oppShots} ({(periodStats[1][(tm.team === 'home' ? 'away' : 'home') + 'Saves'] + periodStats[1][tm.team + 'Score'])}-{(periodStats[2][(tm.team === 'home' ? 'away' : 'home') + 'Saves'] + periodStats[2][tm.team + 'Score'])}-{(periodStats[3][(tm.team === 'home' ? 'away' : 'home') + 'Saves'] + periodStats[3][tm.team + 'Score'])})</div>
+                          <div>{t.shotsAgainst}: {tm.saves + tm.oppScore} ({(periodStats[1][tm.team + 'Saves'] + periodStats[1][(tm.team === 'home' ? 'away' : 'home') + 'Score'])}-{(periodStats[2][tm.team + 'Saves'] + periodStats[2][(tm.team === 'home' ? 'away' : 'home') + 'Score'])}-{(periodStats[3][tm.team + 'Saves'] + periodStats[3][(tm.team === 'home' ? 'away' : 'home') + 'Score'])})</div>
+                          <div>{t.savePercent}: {calcSP(tm.saves, tm.oppScore)}% ({calcSP(periodStats[1][tm.team + 'Saves'], periodStats[1][(tm.team === 'home' ? 'away' : 'home') + 'Score'])}-{calcSP(periodStats[2][tm.team + 'Saves'], periodStats[2][(tm.team === 'home' ? 'away' : 'home') + 'Score'])}-{calcSP(periodStats[3][tm.team + 'Saves'], periodStats[3][(tm.team === 'home' ? 'away' : 'home') + 'Score'])})</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={resetCounters} className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-10'} py-2 rounded text-sm`}>{t.resetAllStats}</button>
+            </div>
+          </div>
+
+          <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white'} shadow-md sticky top-48 z-40`}>
+            <div className="max-w-6xl mx-auto flex">
+              {['soundboard', 'periods', 'referee'].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold ${activeTab === tab ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')}`}>
+                  {tab === 'soundboard' ? t.soundboard : tab === 'periods' ? t.periodStats : t.refereeSignals}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="max-w-6xl mx-auto p-4">
+            {activeTab === 'soundboard' && (
+              <div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <button onClick={toggleIntro} className={`${introPlaying ? 'bg-green-600' : (darkMode ? 'bg-gray-800' : 'bg-white')} ${darkMode ? 'border-gray-600 text-white' : 'border-gray-200'} border-2 p-4 rounded-lg shadow col-span-2`}>
+                    <div className="text-2xl mb-1">{introPlaying ? '⏸️' : '🎵'}</div>
+                    <div className="font-semibold text-sm">{t.intro} {introPlaying ? '(Playing)' : ''}</div>
+                  </button>
+                  {[
+                    { sound: 'homeGoal', label: homeName + ' ' + t.goal, icon: '🚨' },
+                    { sound: 'awayGoal', label: awayName + ' ' + t.goal, icon: '🚨' },
+                    { sound: 'homePenalty', label: homeName + ' ' + t.penalty, icon: '👮' },
+                    { sound: 'awayPenalty', label: awayName + ' ' + t.penalty, icon: '👮' }
+                  ].map(btn => (
+                    <button key={btn.sound} onClick={() => playSound(btn.sound)} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 p-4 rounded-lg shadow`}>
+                      <div className="text-2xl mb-1">{btn.icon}</div>
+                      <div className="font-semibold text-sm">{btn.label}</div>
+                    </button>
+                  ))}
+                </div>
+                <button onClick={stopAllSounds} className="w-full bg-red-500 text-white py-3 rounded-lg font-semibold">{t.stopAllSounds}</button>
+                
+                {/* Spotify Playlist */}
+                <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow p-4 mt-4`}>
+                  <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : ''}`}>Spotify Playlist</h3>
+                  {!spotifyLoaded && !spotifyLoading ? (
+                    <button 
+                      onClick={handleLoadSpotify}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white py-8 rounded-lg font-semibold text-lg transition-colors"
+                    >
+                      {language === 'en' ? 'Load Spotify Player' : 'Ladda Spotify-spelaren'}
+                    </button>
+                  ) : spotifyLoading ? (
+                    <div className={`py-8 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div>
+                      <div>{language === 'en' ? 'Loading...' : 'Laddar...'}</div>
+                    </div>
+                  ) : (
+                    <div style={{opacity: 0, animation: 'fadeIn 0.5s ease-in forwards'}}>
+                      {getSpotifyEmbedUrl(spotifyPlaylist) ? (
+                        <iframe 
+                          style={{borderRadius: '12px'}} 
+                          src={getSpotifyEmbedUrl(spotifyPlaylist)} 
+                          width="100%" 
+                          height="352" 
+                          frameBorder="0" 
+                          allowFullScreen="" 
+                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                          loading="lazy">
+                        </iframe>
+                      ) : (
+                        <div className={`text-center py-8 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {language === 'en' ? 'Invalid Spotify URL. Please check Settings.' : 'Ogiltig Spotify-URL. Kontrollera inställningarna.'}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'periods' && (
+              <div>
+                <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : ''}`}>{t.periodStats}</h2>
+                {[1, 2, 3].map(p => {
+                  const ps = periodStats[p];
+                  return (
+                    <div key={p} className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow p-4 mb-4`}>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : ''}`}>{t.period} {p}</h3>
+                        {currentPeriod === p && <span className="bg-yellow-400 text-blue-900 px-3 py-1 rounded text-sm font-bold">Current</span>}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {[
+                          { name: homeName, score: ps.homeScore, saves: ps.homeSaves, shotsFor: ps.awaySaves + ps.homeScore, shotsAgainst: ps.homeSaves + ps.awayScore, oppScore: ps.awayScore, color: darkMode ? 'bg-blue-900 bg-opacity-30 border-blue-700' : 'bg-blue-50' },
+                          { name: awayName, score: ps.awayScore, saves: ps.awaySaves, shotsFor: ps.homeSaves + ps.awayScore, shotsAgainst: ps.awaySaves + ps.homeScore, oppScore: ps.homeScore, color: darkMode ? 'bg-red-900 bg-opacity-30 border-red-700' : 'bg-red-50' }
+                        ].map((tm, i) => (
+                          <div key={i} className={`${tm.color} ${darkMode ? 'border' : ''} rounded p-3`}>
+                            <div className={`font-semibold mb-2 ${darkMode ? 'text-white' : ''}`}>{tm.name}</div>
+                            <div className={`text-sm space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                              <div className="flex justify-between"><span>{t.goals}:</span><span className="font-bold">{tm.score}</span></div>
+                              <div className="flex justify-between"><span>{t.shotsFor}:</span><span className="font-bold">{tm.shotsFor}</span></div>
+                              <div className="flex justify-between"><span>{t.saves}:</span><span className="font-bold">{tm.saves}</span></div>
+                              <div className="flex justify-between"><span>{t.shotsAgainst}:</span><span className="font-bold">{tm.shotsAgainst}</span></div>
+                              <div className="flex justify-between border-t pt-1"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(tm.saves, tm.oppScore)}%</span></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className={`${darkMode ? 'bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white rounded-lg shadow-lg p-6`}>
+                  <h3 className="text-2xl font-bold text-center mb-4">{t.final}</h3>
+                  <div className="flex justify-center gap-8 text-center">
+                    <div><div className="text-sm mb-1">{homeName}</div><div className="text-5xl font-bold">{totals.homeScore}</div></div>
+                    <div className="text-3xl">-</div>
+                    <div><div className="text-sm mb-1">{awayName}</div><div className="text-5xl font-bold">{totals.awayScore}</div></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <button onClick={copyStats} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>📋 {t.copyStats}</button>
+                  <button onClick={shareStats} className="bg-blue-600 text-white py-3 rounded-lg font-semibold">📤 {t.share}</button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'referee' && (
+              <div>
+                <h2 className={`text-2xl font-bold mb-4 ${darkMode ? 'text-white' : ''}`}>{t.refereeSignals}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {refSigs.map((sig, i) => (
+                    <div key={i} className={`${sig.color} border-2 rounded-lg p-6 shadow`}>
+                      <h3 className="text-xl font-bold mb-2">{sig.name}</h3>
+                      <p className="text-gray-700">{sig.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<JuniorLeagueApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
