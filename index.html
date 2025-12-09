@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hockey Scorekeeper</title>
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-39HWBJQ5Z1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-39HWBJQ5Z1'); // Replace G-XXXXXXXXXX with your Measurement ID
+  </script>
+  
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -63,7 +73,8 @@
         closeFocus: 'Close Focus Mode',
         spotifyPlaylistUrl: 'Spotify Playlist URL',
         restore: 'Restore',
-        focusMode: 'Focus Mode'
+        focusMode: 'Focus Mode',
+        keepScreenOn: 'Keep Screen On'
       },
       sv: {
         homeTeam: 'HEMMALAG',
@@ -106,7 +117,8 @@
         closeFocus: 'Stäng Fokusläge',
         spotifyPlaylistUrl: 'Spotify Spellista URL',
         restore: 'Återställ',
-        focusMode: 'Fokusläge'
+        focusMode: 'Fokusläge',
+        keepScreenOn: 'Håll Skärmen På'
       }
     };
 
@@ -126,6 +138,8 @@
       const [spotifyLoaded, setSpotifyLoaded] = useState(false);
       const [spotifyLoading, setSpotifyLoading] = useState(false);
       const [spotifyPlaylist, setSpotifyPlaylist] = useState('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');
+      const [keepScreenOn, setKeepScreenOn] = useState(false);
+      const [wakeLock, setWakeLock] = useState(null);
       
       const [periodStats, setPeriodStats] = useState({
         1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
@@ -167,6 +181,9 @@
         const savedStatsCollapsed = localStorage.getItem('statsCollapsed');
         if (savedStatsCollapsed) setStatsCollapsed(JSON.parse(savedStatsCollapsed));
         
+        const savedKeepScreenOn = localStorage.getItem('keepScreenOn');
+        if (savedKeepScreenOn) setKeepScreenOn(JSON.parse(savedKeepScreenOn));
+        
         const savedFocusMode = localStorage.getItem('focusMode');
         if (savedFocusMode) setFocusMode(savedFocusMode === 'null' ? null : savedFocusMode);
       }, []);
@@ -188,6 +205,10 @@
       }, [statsCollapsed]);
 
       useEffect(() => {
+        localStorage.setItem('keepScreenOn', JSON.stringify(keepScreenOn));
+      }, [keepScreenOn]);
+
+      useEffect(() => {
         localStorage.setItem('focusMode', focusMode);
       }, [focusMode]);
 
@@ -195,6 +216,53 @@
         const gameState = { currentPeriod, homeName, awayName, sidesSwapped, periodStats, timestamp: new Date().toISOString() };
         localStorage.setItem('juniorLeagueGame', JSON.stringify(gameState));
       }, [currentPeriod, homeName, awayName, sidesSwapped, periodStats]);
+
+      // Wake Lock effect
+      useEffect(() => {
+        const requestWakeLock = async () => {
+          try {
+            if ('wakeLock' in navigator && keepScreenOn) {
+              const lock = await navigator.wakeLock.request('screen');
+              setWakeLock(lock);
+              console.log('Wake Lock activated');
+            }
+          } catch (err) {
+            console.log('Wake Lock error:', err);
+          }
+        };
+
+        const releaseWakeLock = async () => {
+          if (wakeLock) {
+            try {
+              await wakeLock.release();
+              setWakeLock(null);
+              console.log('Wake Lock released');
+            } catch (err) {
+              console.log('Wake Lock release error:', err);
+            }
+          }
+        };
+
+        if (keepScreenOn) {
+          requestWakeLock();
+        } else {
+          releaseWakeLock();
+        }
+
+        // Re-acquire wake lock when page becomes visible again
+        const handleVisibilityChange = () => {
+          if (keepScreenOn && document.visibilityState === 'visible') {
+            requestWakeLock();
+          }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+          releaseWakeLock();
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+      }, [keepScreenOn]);
 
       const restoreGame = () => {
         setShowRestorePrompt(false);
@@ -361,12 +429,16 @@
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg`}>
               <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-center">
-                  <div className="text-2xl font-bold">{focusTeam.name}</div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-medium">{t.period}:</span>
+                    {[1, 2, 3].map(p => (
+                      <button key={p} onClick={() => setCurrentPeriod(p)} className={`px-3 py-1 rounded font-bold ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>{p}</button>
+                    ))}
+                  </div>
                   <button onClick={() => setFocusMode(null)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'} w-10 h-10 rounded-lg text-2xl font-bold flex items-center justify-center`}>
                     ✕
                   </button>
                 </div>
-                <div className="text-center mt-2 text-lg">{t.period} {currentPeriod}</div>
               </div>
             </div>
 
@@ -520,6 +592,10 @@
                     <label className="flex items-center justify-between pt-2 border-t">
                       <span>{t.darkMode}</span>
                       <input type="checkbox" checked={darkMode} onChange={(e) => setDarkMode(e.target.checked)} className="w-5 h-5" />
+                    </label>
+                    <label className="flex items-center justify-between pt-2 border-t">
+                      <span>{t.keepScreenOn}</span>
+                      <input type="checkbox" checked={keepScreenOn} onChange={(e) => setKeepScreenOn(e.target.checked)} className="w-5 h-5" />
                     </label>
                     <label className="flex items-center justify-between pt-2 border-t">
                       <span>{t.language}</span>
