@@ -61,7 +61,9 @@
         clear: 'Clear',
         language: 'Language',
         closeFocus: 'Close Focus Mode',
-        spotifyPlaylistUrl: 'Spotify Playlist URL'
+        spotifyPlaylistUrl: 'Spotify Playlist URL',
+        restore: 'Restore',
+        focusMode: 'Focus Mode'
       },
       sv: {
         homeTeam: 'HEMMALAG',
@@ -102,7 +104,9 @@
         clear: 'Rensa',
         language: 'Språk',
         closeFocus: 'Stäng Fokusläge',
-        spotifyPlaylistUrl: 'Spotify Spellista URL'
+        spotifyPlaylistUrl: 'Spotify Spellista URL',
+        restore: 'Återställ',
+        focusMode: 'Fokusläge'
       }
     };
 
@@ -160,6 +164,9 @@
         const savedSpotifyPlaylist = localStorage.getItem('spotifyPlaylist');
         if (savedSpotifyPlaylist) setSpotifyPlaylist(savedSpotifyPlaylist);
         
+        const savedStatsCollapsed = localStorage.getItem('statsCollapsed');
+        if (savedStatsCollapsed) setStatsCollapsed(JSON.parse(savedStatsCollapsed));
+        
         const savedFocusMode = localStorage.getItem('focusMode');
         if (savedFocusMode) setFocusMode(savedFocusMode === 'null' ? null : savedFocusMode);
       }, []);
@@ -175,6 +182,10 @@
       useEffect(() => {
         localStorage.setItem('spotifyPlaylist', spotifyPlaylist);
       }, [spotifyPlaylist]);
+
+      useEffect(() => {
+        localStorage.setItem('statsCollapsed', JSON.stringify(statsCollapsed));
+      }, [statsCollapsed]);
 
       useEffect(() => {
         localStorage.setItem('focusMode', focusMode);
@@ -347,70 +358,92 @@
             <audio ref={audioRefs.intro} src="intro.mp3" />
 
             {/* Header */}
-            <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-6 shadow-lg`}>
+            <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg`}>
               <div className="max-w-4xl mx-auto">
-                <div className="flex justify-between items-center mb-4">
-                  <button onClick={() => setFocusMode(null)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'} px-6 py-3 rounded-lg text-xl font-semibold`}>
-                    ✕ {t.closeFocus}
+                <div className="flex justify-between items-center">
+                  <div className="text-2xl font-bold">{focusTeam.name}</div>
+                  <button onClick={() => setFocusMode(null)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'} w-10 h-10 rounded-lg text-2xl font-bold flex items-center justify-center`}>
+                    ✕
                   </button>
-                  <div className="text-3xl font-bold">{t.period} {currentPeriod}</div>
                 </div>
+                <div className="text-center mt-2 text-lg">{t.period} {currentPeriod}</div>
               </div>
             </div>
 
             {/* Main Stats Box */}
-            <div className="max-w-4xl mx-auto p-6">
-              <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
-                <div className="text-center mb-8">
-                  <div className="text-4xl font-bold mb-8">{focusTeam.name}</div>
-                  
-                  {/* Goals Section - Both teams side by side */}
-                  <div className="mb-8">
-                    <div className="text-2xl opacity-75 mb-4">{t.goals}</div>
-                    <div className="grid grid-cols-2 gap-6 mb-6">
-                      {/* Focus Team Goals */}
-                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} rounded-xl p-6`}>
-                        <div className="text-xl mb-2 font-semibold">{focusTeam.name}</div>
-                        <div className="text-7xl font-bold mb-4">{focusTeam.score}</div>
-                        <div className="flex flex-col gap-3">
-                          <button onClick={() => updateStat(focusTeam.team, 'Score', 1)} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">+</button>
-                          <button onClick={() => updateStat(focusTeam.team, 'Score', -1)} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">−</button>
-                        </div>
-                      </div>
-                      
-                      {/* Opponent Goals */}
-                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-red-50'} rounded-xl p-6`}>
-                        <div className="text-xl mb-2 font-semibold">{oppName}</div>
-                        <div className="text-7xl font-bold mb-4">{oppScore}</div>
-                        <div className="flex flex-col gap-3">
-                          <button onClick={() => updateStat(oppTeam, 'Score', 1)} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">+</button>
-                          <button onClick={() => updateStat(oppTeam, 'Score', -1)} className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-xl text-3xl font-bold shadow-lg">−</button>
-                        </div>
+            <div className="max-w-4xl mx-auto p-4">
+              <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-2xl shadow-2xl p-6`}>
+                
+                {/* Goals Section - Both teams side by side */}
+                <div className="mb-6">
+                  <div className="text-xl opacity-75 mb-3 text-center">{t.goals}</div>
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    {/* Focus Team Goals */}
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} rounded-xl p-4`}>
+                      <div className="text-lg mb-2 font-semibold text-center">{focusTeam.name}</div>
+                      <div className="text-6xl font-bold mb-3 text-center">{focusTeam.score}</div>
+                      <div className="flex flex-col gap-2">
+                        <button onClick={() => updateStat(focusTeam.team, 'Score', 1)} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg">+</button>
+                        <button onClick={() => updateStat(focusTeam.team, 'Score', -1)} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg">−</button>
                       </div>
                     </div>
                     
-                    <div className="text-xl opacity-75">
-                      {t.byPeriod}: {[1, 2, 3].map((p, i) => (
-                        <span key={p} className={p === currentPeriod ? 'font-bold underline' : ''}>
-                          {periodStats[p][focusTeam.team + 'Score']}-{periodStats[p][oppTeam + 'Score']}{i < 2 ? ' · ' : ''}
-                        </span>
-                      ))}
+                    {/* Opponent Goals */}
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-red-50'} rounded-xl p-4`}>
+                      <div className="text-lg mb-2 font-semibold text-center">{oppName}</div>
+                      <div className="text-6xl font-bold mb-3 text-center">{oppScore}</div>
+                      <div className="flex flex-col gap-2">
+                        <button onClick={() => updateStat(oppTeam, 'Score', 1)} className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg">+</button>
+                        <button onClick={() => updateStat(oppTeam, 'Score', -1)} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg">−</button>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="text-base opacity-75 text-center">
+                    {t.byPeriod}: {[1, 2, 3].map((p, i) => (
+                      <span key={p} className={p === currentPeriod ? 'font-bold underline' : ''}>
+                        {periodStats[p][focusTeam.team + 'Score']}-{periodStats[p][oppTeam + 'Score']}{i < 2 ? ' · ' : ''}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
-                  {/* Saves Section */}
-                  <div className={`pt-8 border-t-4 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                    <div className="text-2xl opacity-75 mb-3">{t.saves}</div>
-                    <div className="text-7xl font-bold mb-6">{focusTeam.saves}</div>
-                    <div className="flex gap-6 justify-center mb-6">
-                      <button onClick={() => updateStat(focusTeam.team, 'Saves', -1)} className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-300 hover:bg-gray-400'} px-12 py-6 rounded-xl text-4xl font-bold shadow-lg`}>−</button>
-                      <button onClick={() => updateStat(focusTeam.team, 'Saves', 1)} className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-300 hover:bg-gray-400'} px-12 py-6 rounded-xl text-4xl font-bold shadow-lg`}>+</button>
+                {/* Saves Section */}
+                <div className={`pt-6 border-t-4 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                  <div className="text-xl opacity-75 mb-3 text-center">{t.saves}</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Focus Team Saves */}
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-blue-50'} rounded-xl p-4`}>
+                      <div className="text-lg mb-2 font-semibold text-center">{focusTeam.name}</div>
+                      <div className="text-5xl font-bold mb-3 text-center">{focusTeam.saves}</div>
+                      <div className="flex flex-col gap-2 mb-3">
+                        <button onClick={() => updateStat(focusTeam.team, 'Saves', 1)} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'} text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg`}>+</button>
+                        <button onClick={() => updateStat(focusTeam.team, 'Saves', -1)} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'} text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg`}>−</button>
+                      </div>
+                      <div className="text-sm opacity-75 text-center">
+                        {t.byPeriod}: {[1, 2, 3].map((p, i) => (
+                          <span key={p} className={p === currentPeriod ? 'font-bold underline' : ''}>
+                            {periodStats[p][focusTeam.team + 'Saves']}{i < 2 ? '-' : ''}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     
-                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-xl p-6 text-xl space-y-2`}>
-                      <div className="flex justify-between"><span>{t.shotsFor}:</span><span className="font-bold">{focusTeam.oppShots}</span></div>
-                      <div className="flex justify-between"><span>{t.shotsAgainst}:</span><span className="font-bold">{focusTeam.saves + focusTeam.oppScore}</span></div>
-                      <div className="flex justify-between border-t pt-2"><span>{t.savePercent}:</span><span className="font-bold text-2xl">{calcSP(focusTeam.saves, focusTeam.oppScore)}%</span></div>
+                    {/* Opponent Saves */}
+                    <div className={`${darkMode ? 'bg-gray-700' : 'bg-red-50'} rounded-xl p-4`}>
+                      <div className="text-lg mb-2 font-semibold text-center">{oppName}</div>
+                      <div className="text-5xl font-bold mb-3 text-center">{oppTeam === 'home' ? totals.homeSaves : totals.awaySaves}</div>
+                      <div className="flex flex-col gap-2 mb-3">
+                        <button onClick={() => updateStat(oppTeam, 'Saves', 1)} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'} text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg`}>+</button>
+                        <button onClick={() => updateStat(oppTeam, 'Saves', -1)} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'} text-white px-6 py-3 rounded-xl text-2xl font-bold shadow-lg`}>−</button>
+                      </div>
+                      <div className="text-sm opacity-75 text-center">
+                        {t.byPeriod}: {[1, 2, 3].map((p, i) => (
+                          <span key={p} className={p === currentPeriod ? 'font-bold underline' : ''}>
+                            {periodStats[p][oppTeam + 'Saves']}{i < 2 ? '-' : ''}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -513,9 +546,9 @@
                             setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');
                             setSpotifyLoaded(false);
                           }} 
-                          className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}
+                          className={`px-3 py-2 rounded text-sm whitespace-nowrap ${darkMode ? 'bg-gray-600' : 'bg-gray-200'}`}
                         >
-                          {t.clear}
+                          {t.restore}
                         </button>
                       </div>
                     </div>
@@ -525,18 +558,11 @@
 
               <div className="grid grid-cols-2 gap-4 mb-3">
                 {[
-                  { name: sidesSwapped ? awayName : homeName, score: sidesSwapped ? totals.awayScore : totals.homeScore, saves: sidesSwapped ? totals.awaySaves : totals.homeSaves, team: sidesSwapped ? 'away' : 'home', oppScore: sidesSwapped ? totals.homeScore : totals.awayScore, oppShots: sidesSwapped ? (totals.homeSaves + totals.awayScore) : (totals.awaySaves + totals.homeScore), focusKey: 'home' },
-                  { name: sidesSwapped ? homeName : awayName, score: sidesSwapped ? totals.homeScore : totals.awayScore, saves: sidesSwapped ? totals.homeSaves : totals.awaySaves, team: sidesSwapped ? 'home' : 'away', oppScore: sidesSwapped ? totals.awayScore : totals.homeScore, oppShots: sidesSwapped ? (totals.awaySaves + totals.homeScore) : (totals.homeSaves + totals.awayScore), focusKey: 'away' }
+                  { name: sidesSwapped ? awayName : homeName, score: sidesSwapped ? totals.awayScore : totals.homeScore, saves: sidesSwapped ? totals.awaySaves : totals.homeSaves, team: sidesSwapped ? 'away' : 'home', oppScore: sidesSwapped ? totals.homeScore : totals.awayScore, oppShots: sidesSwapped ? (totals.homeSaves + totals.awayScore) : (totals.awaySaves + totals.homeScore) },
+                  { name: sidesSwapped ? homeName : awayName, score: sidesSwapped ? totals.homeScore : totals.awayScore, saves: sidesSwapped ? totals.homeSaves : totals.awaySaves, team: sidesSwapped ? 'home' : 'away', oppScore: sidesSwapped ? totals.awayScore : totals.homeScore, oppShots: sidesSwapped ? (totals.awaySaves + totals.homeScore) : (totals.homeSaves + totals.awayScore) }
                 ].map((tm, idx) => (
-                  <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 relative`}>
-                    <button 
-                      onClick={() => setFocusMode(tm.focusKey)}
-                      className={`absolute top-2 right-2 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-white bg-opacity-30 hover:bg-opacity-50'} w-8 h-8 rounded flex items-center justify-center text-lg`}
-                      title="Focus Mode"
-                    >
-                      ↗
-                    </button>
-                    <div className="text-sm font-semibold mb-2 pr-10">{tm.name}</div>
+                  <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3`}>
+                    <div className="text-sm font-semibold mb-2">{tm.name}</div>
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <div className="text-xs opacity-75">{t.goals}</div>
@@ -579,7 +605,10 @@
                 ))}
               </div>
 
-              <button onClick={resetCounters} className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-10'} py-2 rounded text-sm`}>{t.resetAllStats}</button>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={resetCounters} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-10'} py-2 rounded text-sm`}>{t.resetAllStats}</button>
+                <button onClick={() => setFocusMode('home')} className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ {t.focusMode}</button>
+              </div>
             </div>
           </div>
 
@@ -617,13 +646,13 @@
                 
                 {/* Spotify Playlist */}
                 <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow p-4 mt-4`}>
-                  <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : ''}`}>Spotify Playlist</h3>
+                  <h3 className={`text-lg font-semibold mb-3 ${darkMode ? 'text-white' : ''}`}>🎵 Spotify Playlist</h3>
                   {!spotifyLoaded && !spotifyLoading ? (
                     <button 
                       onClick={handleLoadSpotify}
                       className="w-full bg-green-600 hover:bg-green-700 text-white py-8 rounded-lg font-semibold text-lg transition-colors"
                     >
-                      {language === 'en' ? 'Load Spotify Player' : 'Ladda Spotify-spelaren'}
+                      ▶ {language === 'en' ? 'Load Spotify Player' : 'Ladda Spotify-spelaren'}
                     </button>
                   ) : spotifyLoading ? (
                     <div className={`py-8 text-center ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -721,5 +750,4 @@
     ReactDOM.render(<JuniorLeagueApp />, document.getElementById('root'));
   </script>
 </body>
-
 </html>
