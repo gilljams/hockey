@@ -418,6 +418,7 @@
           </div>
         </div>
       );
+
       // FOCUS MODE - Improved compact design
       if(focusMode&&screen==='game'){
         const ft=focusMode==='home'?
@@ -427,12 +428,6 @@
         const on=focusMode==='home'?(sidesSwapped?homeName:awayName):(sidesSwapped?awayName:homeName);
         const os=focusMode==='home'?(sidesSwapped?totals.homeScore:totals.awayScore):(sidesSwapped?totals.awayScore:totals.homeScore);
         const otsv=ot==='home'?totals.homeSaves:totals.awaySaves;
-        
-        // Calculate shots
-        const ftShotsFor=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][(ft.team==='home'?'away':'home')+'Saves']+periodStats[p][ft.team+'Score']),0);
-        const ftShotsAgainst=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][ft.team+'Saves']+periodStats[p][(ft.team==='home'?'away':'home')+'Score']),0);
-        const otShotsFor=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][(ot==='home'?'away':'home')+'Saves']+periodStats[p][ot+'Score']),0);
-        const otShotsAgainst=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][ot+'Saves']+periodStats[p][(ot==='home'?'away':'home')+'Score']),0);
 
         return(
           <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -494,10 +489,22 @@
                       </div>
                       <div className="text-xs opacity-75 text-center mb-2">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Saves']}{i<2?'-':''}</span>)}</div>
                       <div className={`${darkMode?'bg-gray-600':'bg-white'} rounded p-2 text-xs`}>
-                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{ftShotsFor}</span></div>
-                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][(ft.team==='home'?'away':'home')+'Saves']+periodStats[p][ft.team+'Score']).join('-')})</div>
-                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{ftShotsAgainst}</span></div>
-                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][ft.team+'Saves']+periodStats[p][(ft.team==='home'?'away':'home')+'Score']).join('-')})</div>
+                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{(() => {
+                          const oppTeam = ft.team === 'home' ? 'away' : 'home';
+                          return [1,2,3].reduce((sum,p)=>sum+(periodStats[p][oppTeam+'Saves']+periodStats[p][ft.team+'Score']),0);
+                        })()}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>{
+                          const oppTeam = ft.team === 'home' ? 'away' : 'home';
+                          return periodStats[p][oppTeam+'Saves']+periodStats[p][ft.team+'Score'];
+                        }).join('-')})</div>
+                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{(() => {
+                          const oppTeam = ft.team === 'home' ? 'away' : 'home';
+                          return [1,2,3].reduce((sum,p)=>sum+(periodStats[p][ft.team+'Saves']+periodStats[p][oppTeam+'Score']),0);
+                        })()}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>{
+                          const oppTeam = ft.team === 'home' ? 'away' : 'home';
+                          return periodStats[p][ft.team+'Saves']+periodStats[p][oppTeam+'Score'];
+                        }).join('-')})</div>
                         <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(ft.saves,ft.oppScore)}%</span></div>
                       </div>
                     </div>
@@ -512,10 +519,22 @@
                       </div>
                       <div className="text-xs opacity-75 text-center mb-2">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Saves']}{i<2?'-':''}</span>)}</div>
                       <div className={`${darkMode?'bg-gray-600':'bg-white'} rounded p-2 text-xs`}>
-                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{otShotsFor}</span></div>
-                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][(ot==='home'?'away':'home')+'Saves']+periodStats[p][ot+'Score']).join('-')})</div>
-                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{otShotsAgainst}</span></div>
-                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][ot+'Saves']+periodStats[p][(ot==='home'?'away':'home')+'Score']).join('-')})</div>
+                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{(() => {
+                          const oppTeam = ot === 'home' ? 'away' : 'home';
+                          return [1,2,3].reduce((sum,p)=>sum+(periodStats[p][oppTeam+'Saves']+periodStats[p][ot+'Score']),0);
+                        })()}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>{
+                          const oppTeam = ot === 'home' ? 'away' : 'home';
+                          return periodStats[p][oppTeam+'Saves']+periodStats[p][ot+'Score'];
+                        }).join('-')})</div>
+                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{(() => {
+                          const oppTeam = ot === 'home' ? 'away' : 'home';
+                          return [1,2,3].reduce((sum,p)=>sum+(periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score']),0);
+                        })()}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>{
+                          const oppTeam = ot === 'home' ? 'away' : 'home';
+                          return periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score'];
+                        }).join('-')})</div>
                         <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,os)}%</span></div>
                       </div>
                     </div>
@@ -526,7 +545,7 @@
           </div>
         );
       }
-      
+            
       // GAME SCREEN - Normal mode
       return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -767,4 +786,5 @@
   </script>
 </body>
 </html>
+
 
