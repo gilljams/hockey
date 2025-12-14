@@ -418,7 +418,6 @@
           </div>
         </div>
       );
-
       // FOCUS MODE - Improved compact design
       if(focusMode&&screen==='game'){
         const ft=focusMode==='home'?
@@ -428,6 +427,12 @@
         const on=focusMode==='home'?(sidesSwapped?homeName:awayName):(sidesSwapped?awayName:homeName);
         const os=focusMode==='home'?(sidesSwapped?totals.homeScore:totals.awayScore):(sidesSwapped?totals.awayScore:totals.homeScore);
         const otsv=ot==='home'?totals.homeSaves:totals.awaySaves;
+        
+        // Calculate shots
+        const ftShotsFor=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][(ft.team==='home'?'away':'home')+'Saves']+periodStats[p][ft.team+'Score']),0);
+        const ftShotsAgainst=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][ft.team+'Saves']+periodStats[p][(ft.team==='home'?'away':'home')+'Score']),0);
+        const otShotsFor=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][(ot==='home'?'away':'home')+'Saves']+periodStats[p][ot+'Score']),0);
+        const otShotsAgainst=[1,2,3].reduce((sum,p)=>sum+(periodStats[p][ot+'Saves']+periodStats[p][(ot==='home'?'away':'home')+'Score']),0);
 
         return(
           <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -449,49 +454,70 @@
 
             <div className="max-w-4xl mx-auto p-3">
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-xl shadow-xl p-4`}>
+                {/* GOALS SECTION */}
                 <div className="text-lg font-semibold mb-3 text-center opacity-75">{t.goals}</div>
                 <div className="grid grid-cols-2 gap-3 mb-4">
+                  {/* Focus Team Goals */}
                   <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-lg p-3`}>
                     <div className="text-sm font-semibold text-center mb-2">{ft.name}</div>
-                    <div className={`text-5xl font-bold text-center mb-2 ${sparkleStats[`${ft.team}Score${currentPeriod}`]?'sparkle':''}`}>{ft.score}</div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={()=>updateStat(ft.team,'Score',1)} disabled={matchEnded} className="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-xl font-bold">+</button>
-                      <button onClick={()=>updateStat(ft.team,'Score',-1)} disabled={matchEnded} className="bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-xl font-bold">−</button>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <button onClick={()=>updateStat(ft.team,'Score',-1)} disabled={matchEnded} className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">−</button>
+                      <div className={`text-5xl font-bold text-center min-w-[80px] ${sparkleStats[`${ft.team}Score${currentPeriod}`]?'sparkle':''}`}>{ft.score}</div>
+                      <button onClick={()=>updateStat(ft.team,'Score',1)} disabled={matchEnded} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
                     </div>
+                    <div className="text-xs opacity-75 text-center">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Score']}{i<2?'-':''}</span>)}</div>
                   </div>
+                  
+                  {/* Opponent Goals */}
                   <div className={`${darkMode?'bg-gray-700':'bg-red-50'} rounded-lg p-3`}>
                     <div className="text-sm font-semibold text-center mb-2">{on}</div>
-                    <div className={`text-5xl font-bold text-center mb-2 ${sparkleStats[`${ot}Score${currentPeriod}`]?'sparkle':''}`}>{os}</div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={()=>updateStat(ot,'Score',1)} disabled={matchEnded} className="bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg text-xl font-bold">+</button>
-                      <button onClick={()=>updateStat(ot,'Score',-1)} disabled={matchEnded} className="bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg text-xl font-bold">−</button>
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <button onClick={()=>updateStat(ot,'Score',-1)} disabled={matchEnded} className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">−</button>
+                      <div className={`text-5xl font-bold text-center min-w-[80px] ${sparkleStats[`${ot}Score${currentPeriod}`]?'sparkle':''}`}>{os}</div>
+                      <button onClick={()=>updateStat(ot,'Score',1)} disabled={matchEnded} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
                     </div>
+                    <div className="text-xs opacity-75 text-center">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Score']}{i<2?'-':''}</span>)}</div>
                   </div>
                 </div>
-                <div className="text-xs opacity-75 text-center mb-4">
-                  {t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Score']}-{periodStats[p][ot+'Score']}{i<2?' · ':''}</span>)}
-                </div>
 
+                {/* SAVES SECTION */}
                 <div className={`pt-4 border-t-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
                   <div className="text-lg font-semibold mb-3 text-center opacity-75">{t.saves}</div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Focus Team Saves */}
                     <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-lg p-3`}>
                       <div className="text-sm font-semibold text-center mb-2">{ft.name}</div>
-                      <div className={`text-4xl font-bold text-center mb-2 ${sparkleStats[`${ft.team}Saves${currentPeriod}`]?'sparkle':''}`}>{ft.saves}</div>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        <button onClick={()=>updateStat(ft.team,'Saves',1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white py-2 rounded-lg text-xl font-bold`}>+</button>
-                        <button onClick={()=>updateStat(ft.team,'Saves',-1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white py-2 rounded-lg text-xl font-bold`}>−</button>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <button onClick={()=>updateStat(ft.team,'Saves',-1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>−</button>
+                        <div className={`text-4xl font-bold text-center min-w-[80px] ${sparkleStats[`${ft.team}Saves${currentPeriod}`]?'sparkle':''}`}>{ft.saves}</div>
+                        <button onClick={()=>updateStat(ft.team,'Saves',1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
                       </div>
-                      <div className="text-xs opacity-75 text-center">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Saves']}{i<2?'-':''}</span>)}</div>
+                      <div className="text-xs opacity-75 text-center mb-2">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Saves']}{i<2?'-':''}</span>)}</div>
+                      <div className={`${darkMode?'bg-gray-600':'bg-white'} rounded p-2 text-xs`}>
+                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{ftShotsFor}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][(ft.team==='home'?'away':'home')+'Saves']+periodStats[p][ft.team+'Score']).join('-')})</div>
+                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{ftShotsAgainst}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][ft.team+'Saves']+periodStats[p][(ft.team==='home'?'away':'home')+'Score']).join('-')})</div>
+                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(ft.saves,ft.oppScore)}%</span></div>
+                      </div>
                     </div>
+                    
+                    {/* Opponent Saves */}
                     <div className={`${darkMode?'bg-gray-700':'bg-red-50'} rounded-lg p-3`}>
                       <div className="text-sm font-semibold text-center mb-2">{on}</div>
-                      <div className={`text-4xl font-bold text-center mb-2 ${sparkleStats[`${ot}Saves${currentPeriod}`]?'sparkle':''}`}>{otsv}</div>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        <button onClick={()=>updateStat(ot,'Saves',1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white py-2 rounded-lg text-xl font-bold`}>+</button>
-                        <button onClick={()=>updateStat(ot,'Saves',-1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white py-2 rounded-lg text-xl font-bold`}>−</button>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <button onClick={()=>updateStat(ot,'Saves',-1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>−</button>
+                        <div className={`text-4xl font-bold text-center min-w-[80px] ${sparkleStats[`${ot}Saves${currentPeriod}`]?'sparkle':''}`}>{otsv}</div>
+                        <button onClick={()=>updateStat(ot,'Saves',1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
                       </div>
-                      <div className="text-xs opacity-75 text-center">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Saves']}{i<2?'-':''}</span>)}</div>
+                      <div className="text-xs opacity-75 text-center mb-2">{t.byPeriod}: {[1,2,3].map((p,i)=><span key={p} className={p===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Saves']}{i<2?'-':''}</span>)}</div>
+                      <div className={`${darkMode?'bg-gray-600':'bg-white'} rounded p-2 text-xs`}>
+                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{otShotsFor}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][(ot==='home'?'away':'home')+'Saves']+periodStats[p][ot+'Score']).join('-')})</div>
+                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{otShotsAgainst}</span></div>
+                        <div className="text-center opacity-75">({[1,2,3].map(p=>periodStats[p][ot+'Saves']+periodStats[p][(ot==='home'?'away':'home')+'Score']).join('-')})</div>
+                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,os)}%</span></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -500,6 +526,7 @@
           </div>
         );
       }
+      
       // GAME SCREEN - Normal mode
       return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
