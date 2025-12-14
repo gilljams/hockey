@@ -505,13 +505,7 @@
                           const oppTeam = ft.team === 'home' ? 'away' : 'home';
                           return periodStats[p][ft.team+'Saves']+periodStats[p][oppTeam+'Score'];
                         }).join('-')})</div>
-                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{(() => {
-  const oppTeam = ot === 'home' ? 'away' : 'home';
-  const oppSaves = otsv;
-  const oppGoalsAgainst = ft.score;
-  return calcSP(oppSaves, oppGoalsAgainst);
-})()}%</span></div>
-
+                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(ft.saves,ft.oppScore)}%</span></div>
                       </div>
                     </div>
                     
@@ -541,15 +535,16 @@
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score'];
                         }).join('-')})</div>
-                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{(() => {
-                          const oppTeam = ot === 'home' ? 'away' : 'home';
-                          const totalSaves = [1,2,3].reduce((sum,p)=>sum+periodStats[p][ot+'Saves'],0);
-                          const totalGoalsAgainst = [1,2,3].reduce((sum,p)=>sum+periodStats[p][oppTeam+'Score'],0);
-                          return calcSP(totalSaves, totalGoalsAgainst);
-                        })()}%</span></div>
+                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,os)}%</span></div>
                       </div>
                     </div>
-
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
             
       // GAME SCREEN - Normal mode
       return(
