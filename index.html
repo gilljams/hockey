@@ -541,16 +541,15 @@
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score'];
                         }).join('-')})</div>
-                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,os)}%</span></div>
+                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{(() => {
+                          const oppTeam = ot === 'home' ? 'away' : 'home';
+                          const totalSaves = [1,2,3].reduce((sum,p)=>sum+periodStats[p][ot+'Saves'],0);
+                          const totalGoalsAgainst = [1,2,3].reduce((sum,p)=>sum+periodStats[p][oppTeam+'Score'],0);
+                          return calcSP(totalSaves, totalGoalsAgainst);
+                        })()}%</span></div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
+
             
       // GAME SCREEN - Normal mode
       return(
@@ -792,6 +791,7 @@
   </script>
 </body>
 </html>
+
 
 
 
