@@ -535,7 +535,7 @@
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score'];
                         }).join('-')})</div>
-                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,os)}%</span></div>
+                        <div className="flex justify-between mt-2 pt-2 border-t"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,ft.score)}%</span></div>
                       </div>
                     </div>
                   </div>
@@ -786,3 +786,4 @@
   </script>
 </body>
 </html>
+
