@@ -708,7 +708,7 @@
           </div>
 
           <div className="max-w-6xl mx-auto p-4">
-                        {activeTab==='audio'&&<div>
+                                   {activeTab==='audio'&&<div>
               {/* Intro Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>🎵 {t.intro}</h3>
@@ -726,7 +726,7 @@
                     {sound:'awayGoal',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-40':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-60':'hover:bg-red-100',text:darkMode?'text-red-200':'text-red-800',border:darkMode?'border-red-700':'border-red-200'}
                   ].map(btn=>(
                     <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-2 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
-                      {btn.label}
+                      🚨 {btn.label}
                     </button>
                   ))}
                 </div>
@@ -734,14 +734,14 @@
 
               {/* Penalty Sounds Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
-                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}{t.penalty} Sounds</h3>
+                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>⚠️ {t.penalty} Sounds</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     {sound:'homePenalty',label:homeName,bg:darkMode?'bg-yellow-900 bg-opacity-30':'bg-yellow-50',hover:darkMode?'hover:bg-yellow-900 hover:bg-opacity-50':'hover:bg-yellow-100',text:darkMode?'text-yellow-200':'text-yellow-900',border:darkMode?'border-yellow-700':'border-yellow-300'},
                     {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-orange-900 bg-opacity-30':'bg-orange-50',hover:darkMode?'hover:bg-orange-900 hover:bg-opacity-50':'hover:bg-orange-100',text:darkMode?'text-orange-200':'text-orange-900',border:darkMode?'border-orange-700':'border-orange-300'}
                   ].map(btn=>(
                     <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-2 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
-                      {btn.label}
+                      ⚠️ {btn.label}
                     </button>
                   ))}
                 </div>
@@ -749,15 +749,16 @@
 
               {/* Stop All Button */}
               <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-red-900'} py-3 rounded-lg font-semibold mb-4 transition-colors`}>
-                {t.stopAllSounds}
+                🛑 {t.stopAllSounds}
               </button>
               
               {/* Spotify Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4`}>
-                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>Spotify Playlist</h3>
+                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>🎵 Spotify Playlist</h3>
                 {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>▶ {language==='en'?'Load Spotify Player':'Ladda Spotify-spelaren'}</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>{language==='en'?'Loading...':'Laddar...'}</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>{language==='en'?'Invalid Spotify URL. Please check Settings.':'Ogiltig Spotify-URL. Kontrollera inställningarna.'}</div>}</div>}
               </div>
             </div>}
+
 
 
             {activeTab==='stats'&&<div>
@@ -831,6 +832,7 @@
   </script>
 </body>
 </html>
+
 
 
 
