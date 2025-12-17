@@ -723,7 +723,7 @@
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     {sound:'homeGoal',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-800',border:darkMode?'border-blue-700':'border-blue-200'},
-                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-40':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-60':'hover:bg-red-100',text:darkMode?'text-red-200':'text-red-800',border:darkMode?'border-red-700':'border-red-200'}
+                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-800',border:darkMode?'border-blue-700':'border-blue-200'}
                   ].map(btn=>(
                     <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-2 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
                       {btn.label}
@@ -737,8 +737,8 @@
                 <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>⚠️ {t.penalty} Sounds</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    {sound:'homePenalty',label:homeName,bg:darkMode?'bg-yellow-900 bg-opacity-30':'bg-yellow-50',hover:darkMode?'hover:bg-yellow-900 hover:bg-opacity-50':'hover:bg-yellow-100',text:darkMode?'text-yellow-200':'text-yellow-900',border:darkMode?'border-yellow-700':'border-yellow-300'},
-                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-orange-900 bg-opacity-30':'bg-orange-50',hover:darkMode?'hover:bg-orange-900 hover:bg-opacity-50':'hover:bg-orange-100',text:darkMode?'text-orange-200':'text-orange-900',border:darkMode?'border-orange-700':'border-orange-300'}
+                    {sound:'homePenalty',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-900',border:darkMode?'border-blue-700':'border-blue-300'},
+                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-900',border:darkMode?'border-blue-700':'border-blue-300'}
                   ].map(btn=>(
                     <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-2 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
                       {btn.label}
@@ -833,6 +833,7 @@
   </script>
 </body>
 </html>
+
 
 
 
