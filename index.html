@@ -711,21 +711,20 @@
                                    {activeTab==='audio'&&<div>
                             {/* Intro Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
-                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>🎵 {t.intro}</h3>
                 <button onClick={toggleIntro} className={`w-full ${introPlaying?(darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'):(darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-100 hover:bg-gray-200')} ${darkMode&&!introPlaying?'text-gray-200':'text-white'} ${!darkMode&&!introPlaying?'text-gray-800':''} p-4 rounded-lg font-semibold transition-colors`}>
-                  {introPlaying?'⏸️ Pause':'▶️ Play'}{introPlaying?' (Playing)':''}
+                  {introPlaying?'⏸️ Pause':'▶️ Play intro'}{introPlaying?' (Playing)':''}
                 </button>
               </div>
 
               {/* Goal Sounds Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
-                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>🚨 {t.goal} Sounds</h3>
+                <h3 className={`text-sm font-semibold mb-1 ${darkMode?'text-white':''}`}>🚨 {t.goal} </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    {sound:'homeGoal',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-800',border:darkMode?'border-blue-700':'border-blue-200'},
-                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-800',border:darkMode?'border-blue-700':'border-blue-200'}
+                    {sound:'homeGoal',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-grey-800',border:darkMode?'border-blue-700':'border-blue-200'},
+                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-40':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-60':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-800',border:darkMode?'border-blue-700':'border-blue-200'}
                   ].map(btn=>(
-                    <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-2 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
+                    <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-1 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
                       {btn.label}
                     </button>
                   ))}
@@ -734,13 +733,13 @@
 
               {/* Penalty Sounds Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
-                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>⚠️ {t.penalty} Sounds</h3>
+                <h3 className={`text-sm font-semibold mb-1 ${darkMode?'text-white':''}`}> {t.penalty} </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    {sound:'homePenalty',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-900',border:darkMode?'border-blue-700':'border-blue-300'},
-                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-blue-900',border:darkMode?'border-blue-700':'border-blue-300'}
+                    {sound:'homePenalty',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-grey-900',border:darkMode?'border-blue-700':'border-blue-300'},
+                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-30':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-50':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-900',border:darkMode?'border-blue-700':'border-blue-300'}
                   ].map(btn=>(
-                    <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-2 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
+                    <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border-1 ${btn.border} p-4 rounded-lg font-semibold transition-colors`}>
                       {btn.label}
                     </button>
                   ))}
@@ -748,23 +747,21 @@
               </div>
 
               {/* Stop All Button */}
-              <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-red-900'} py-3 rounded-lg font-semibold mb-4 transition-colors`}>
+              <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-grey-900'} py-3 rounded-sm font-semibold mb-4 transition-colors`}>
                 {t.stopAllSounds}
               </button>
 
               
               {/* Spotify Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4`}>
-                <h3 className={`text-lg font-semibold mb-3 ${darkMode?'text-white':''}`}>🎵 Spotify Playlist</h3>
-                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>▶ {language==='en'?'Load Spotify Player':'Ladda Spotify-spelaren'}</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>{language==='en'?'Loading...':'Laddar...'}</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>{language==='en'?'Invalid Spotify URL. Please check Settings.':'Ogiltig Spotify-URL. Kontrollera inställningarna.'}</div>}</div>}
+                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>▶ {language==='en'?'Load Spotify':'Ladda Spotify'}</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>{language==='en'?'Loading...':'Laddar...'}</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>{language==='en'?'Invalid Spotify URL. Please check Settings.':'Ogiltig Spotify-URL. Kontrollera inställningarna.'}</div>}</div>}
               </div>
             </div>}
 
 
 
             {activeTab==='stats'&&<div>
-              <h2 className={`text-2xl font-bold mb-4 ${darkMode?'text-white':''}`}>{t.stats}</h2>
-              {[1,2,3].map(p=>{
+                {[1,2,3].map(p=>{
                 const ps=periodStats[p];
                 return(
                   <div key={p} className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
@@ -802,16 +799,15 @@
               </div>
               <div className="grid grid-cols-2 gap-3 mt-4">
                 <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>📋 {t.copyStats}</button>
-                <button onClick={shareStats} className="bg-blue-600 text-white py-3 rounded-lg font-semibold">📤 {t.share}</button>
+                <button onClick={shareStats} className="bg-blue-600 text-white py-3 rounded-lg font-semibold">✉️ {t.share}</button>
               </div>
             </div>}
 
             {activeTab==='referee'&&<div>
-              <h2 className={`text-2xl font-bold mb-4 ${darkMode?'text-white':''}`}>{t.referee}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {refSigs.map((sig,i)=>(
-                  <div key={i} className={`${darkMode?'bg-gray-800 border border-gray-600':'bg-white border-2 border-gray-200'} rounded-lg p-6 shadow`}>
-                    <h3 className={`text-xl font-bold mb-2 ${darkMode?'text-white':''}`}>{sig.name}</h3>
+                  <div key={i} className={`${darkMode?'bg-gray-800 border border-gray-600':'bg-gray-100 border-1 border-gray-200'} rounded-sm p-4 shadow`}>
+                    <h3 className={`text-lg font-bold mb-2 ${darkMode?'text-white':''}`}>{sig.name}</h3>
                     <p className={`${darkMode?'text-gray-300':'text-gray-700'}`}>{sig.description}</p>
                   </div>
                 ))}
@@ -819,8 +815,7 @@
             </div>}
 
             {activeTab==='external'&&externalLinkUrl&&<div>
-              <h2 className={`text-2xl font-bold mb-4 ${darkMode?'text-white':''}`}>{externalLinkTitle||t.externalLink}</h2>
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow overflow-hidden`}>
+                <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow overflow-hidden`}>
                 <iframe src={externalLinkUrl} className="w-full" style={{height:'70vh',border:'none'}} title={externalLinkTitle||t.externalLink}></iframe>
               </div>
             </div>}
@@ -833,11 +828,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
