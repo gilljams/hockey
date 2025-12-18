@@ -316,7 +316,7 @@
       const genReport=()=>{
         const d=new Date().toLocaleDateString();
         let r=`${t.gameReport} - ${d}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\n${t.periodBreakdown}:\n`;
-        Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(p=>{const ps=periodStats[p];const pLabel=parseInt(p)<=3?`${t.period} ${p}`:`OT${parseInt(p)-3}`;r+=`${pLabel}: ${homeName} ${ps.homeScore}-${ps.awayScore} ${awayName}\n`});
+        Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(p=>{const ps=periodStats[p];const pLabel=parseInt(p)<=3?`${t.period} ${p}`:`OT'${parseInt(p)-3}`;r+=`${pLabel}: ${homeName} ${ps.homeScore}-${ps.awayScore} ${awayName}\n`});
         r+=`\n${t.goalieStats}:\n${homeName}: ${totals.homeSaves} ${t.saves.toLowerCase()}, ${totals.homeSaves+totals.awayScore} ${t.shotsAgainstShort}, ${calcSP(totals.homeSaves,totals.awayScore)}%\n`;
         r+=`${awayName}: ${totals.awaySaves} ${t.saves.toLowerCase()}, ${totals.awaySaves+totals.homeScore} ${t.shotsAgainstShort}, ${calcSP(totals.awaySaves,totals.homeScore)}%\n`;
         return r
@@ -476,7 +476,31 @@
                   <span className="text-xs font-medium">{t.period}:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
-                  {currentPeriod>=3&&<button onClick={()=>{const newP=Math.max(...Object.keys(periodStats).map(p=>parseInt(p)))+1;setPeriodStats({...periodStats,[newP]:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}});setCurrentPeriod(newP);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:{...periodStats,[newP]:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}},currentPeriod:newP})}} disabled={matchEnded} className={`px-2 py-1 rounded text-xs font-bold ${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-white bg-opacity-30 hover:bg-opacity-40'}`}>+OT</button>}
+                  {!periodStats[4] && currentPeriod >= 3 && (
+  <button
+    onClick={() => {
+      const newP = 4; // 🔒 alltid bara en OT
+      const updated = {
+        ...periodStats,
+        [newP]: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
+      };
+
+      setPeriodStats(updated);
+      setCurrentPeriod(newP);
+
+      if (isMultiplayer && matchRef.current && !matchEnded) {
+        matchRef.current.update({
+          periodStats: updated,
+          currentPeriod: newP
+        });
+      }
+    }}
+    disabled={matchEnded}
+  >
+    +OT
+  </button>
+)}
+
                 </div>
                 <button onClick={()=>setFocusMode(null)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} w-8 h-8 rounded-lg text-xl font-bold`}>✕</button>
               </div>
@@ -610,7 +634,31 @@
                   <span className="text-sm font-medium">{t.period}:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
-                  {currentPeriod>=3&&<button onClick={()=>{const newP=Math.max(...Object.keys(periodStats).map(p=>parseInt(p)))+1;setPeriodStats({...periodStats,[newP]:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}});setCurrentPeriod(newP);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:{...periodStats,[newP]:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}},currentPeriod:newP})}} disabled={matchEnded} className={`px-2 py-1 rounded font-bold text-xs ${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-white bg-opacity-30 hover:bg-opacity-40'}`}>+OT</button>}
+                  {!periodStats[4] && currentPeriod >= 3 && (
+  <button
+    onClick={() => {
+      const newP = 4; // 🔒 alltid bara en OT
+      const updated = {
+        ...periodStats,
+        [newP]: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
+      };
+
+      setPeriodStats(updated);
+      setCurrentPeriod(newP);
+
+      if (isMultiplayer && matchRef.current && !matchEnded) {
+        matchRef.current.update({
+          periodStats: updated,
+          currentPeriod: newP
+        });
+      }
+    }}
+    disabled={matchEnded}
+  >
+    +OT
+  </button>
+)}
+
                 </div>
                 <div className="flex gap-2">
                   <button onClick={()=>setStatsCollapsed(!statsCollapsed)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>{statsCollapsed?'▼':'▲'}</button>
@@ -756,7 +804,7 @@
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     {sound:'homeGoal',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-grey-800',border:darkMode?'border-blue-700':'border-blue-200'},
-                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-40':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-60':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-800',border:darkMode?'border-blue-700':'border-blue-200'}
+                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-40':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-60':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-800',border:darkMode?'border-red-700':'border-red-200'}
                   ].map(btn=>(
                     <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors`}>
                       {btn.label}
@@ -771,7 +819,7 @@
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     {sound:'homePenalty',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-grey-900',border:darkMode?'border-blue-700':'border-blue-300'},
-                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-30':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-50':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-900',border:darkMode?'border-blue-700':'border-blue-300'}
+                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-30':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-50':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-900',border:darkMode?'border-red-700':'border-red-200'}
                   ].map(btn=>(
                     <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors`}>
                       {btn.label}
@@ -861,4 +909,3 @@
   </script>
 </body>
 </html>
-
