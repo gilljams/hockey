@@ -147,7 +147,26 @@
       const t=translations[language];
 
       useEffect(()=>{
-        ['darkMode','language','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle'].forEach(k=>{
+  // 🔒 SAFETY CLEANUP (prevents reconnect loop / white screen)
+  try {
+    const raw = localStorage.getItem('multiplayerMatch');
+    if (raw) {
+      const data = JSON.parse(raw);
+
+      if (
+        !data.code ||
+        !data.timestamp ||
+        Date.now() - data.timestamp > 6 * 60 * 60 * 1000
+      ) {
+        localStorage.removeItem('multiplayerMatch');
+      }
+    }
+  } catch (e) {
+    localStorage.removeItem('multiplayerMatch');
+  }
+
+
+  	['darkMode','language','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle'].forEach(k=>{
           const v=localStorage.getItem(k);
           if(v){
             if(['darkMode','statsCollapsed','keepScreenOn'].includes(k)){
@@ -253,7 +272,20 @@
         }).catch(e=>setError('Failed: '+e.message))
       };
       const continueAlone=()=>{setIsMultiplayer(false);setScreen('game');localStorage.removeItem('multiplayerMatch')};
-      const endMatch=()=>{if(window.confirm(t.endMatchConfirm)){if(matchRef.current)matchRef.current.update({ended:true});setMatchEnded(true)}};
+      const endMatch = () => {
+  	if (window.confirm(t.endMatchConfirm)) {
+    	  if (matchRef.current) {
+      	    matchRef.current.update({ ended: true });
+    	}
+
+    	setMatchEnded(true);
+
+    	    // 🔥 IMPORTANT: clear multiplayer state so reconnect cannot trigger
+    	    localStorage.removeItem('multiplayerMatch');
+    	    setShowReconnectPrompt(false);
+  	  }
+	};
+
       const leaveMatch=()=>{if(window.confirm('Leave multiplayer match?')){localStorage.removeItem('multiplayerMatch');setIsMultiplayer(false);setMatchCode('');setScreen('start')}};
       const updateStat=(team,stat,delta)=>{
         const ns={...periodStats,[currentPeriod]:{...periodStats[currentPeriod],[team+stat]:Math.max(0,periodStats[currentPeriod][team+stat]+delta)}};
