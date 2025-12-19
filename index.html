@@ -418,14 +418,15 @@
                 <h2 className="text-2xl font-bold mb-2">{t.matchCreated}</h2>
               </div>
               <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
-                <p className={`text-sm mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>{t.shareCode}</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg py-4 px-6 text-center">
-                    <div className="text-3xl font-bold tracking-widest">{matchCode}</div>
-                  </div>
-                  <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold">{t.copy}</button>
-                </div>
-              </div>
+  <p className={`text-sm mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>{t.shareCode}</p>
+  <div className="flex flex-col sm:flex-row items-stretch gap-3">
+    <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
+      <div className={`text-3xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
+    </div>
+    <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">{t.copy}</button>
+  </div>
+</div>
+
               {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
               <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.continueToMatch}</button>
               <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>{t.goBack}</button>
@@ -928,5 +929,6 @@
   </script>
 </body>
 </html>
+
 
 
