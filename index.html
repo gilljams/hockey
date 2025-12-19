@@ -870,14 +870,29 @@
                   </div>
                 );
               })}
-              <div className={`${darkMode?'bg-gradient-to-r from-gray-800 to-gray-700 border border-gray-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white rounded-lg shadow-lg p-6`}>
-                <h3 className="text-2xl font-bold text-center mb-4">{t.final}</h3>
-                <div className="flex justify-center gap-8 text-center">
-                  <div><div className="text-sm mb-1">{homeName}</div><div className="text-5xl font-bold">{totals.homeScore}</div></div>
-                  <div className="text-3xl">-</div>
-                  <div><div className="text-sm mb-1">{awayName}</div><div className="text-5xl font-bold">{totals.awayScore}</div></div>
-                </div>
-              </div>
+              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
+  <div className="flex justify-between items-center mb-3">
+    <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>{t.final}</h3>
+  </div>
+  <div className="grid grid-cols-2 gap-4">
+    {[
+      {name:homeName,score:totals.homeScore,saves:totals.homeSaves,shotsFor:totals.awaySaves+totals.homeScore,shotsAgainst:totals.homeSaves+totals.awayScore,oppScore:totals.awayScore,color:darkMode?'bg-blue-900 bg-opacity-30 border-blue-700':'bg-blue-50'},
+      {name:awayName,score:totals.awayScore,saves:totals.awaySaves,shotsFor:totals.homeSaves+totals.awayScore,shotsAgainst:totals.awaySaves+totals.homeScore,oppScore:totals.homeScore,color:darkMode?'bg-red-900 bg-opacity-30 border-red-700':'bg-red-50'}
+    ].map((tm,i)=>(
+      <div key={i} className={`${tm.color} ${darkMode?'border':''} rounded p-3`}>
+        <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{tm.name}</div>
+        <div className={`text-sm space-y-1 ${darkMode?'text-gray-300':'text-gray-700'}`}>
+          <div className="flex justify-between"><span>{t.goals}:</span><span className="font-bold text-lg">{tm.score}</span></div>
+          <div className="flex justify-between"><span>{t.shotsFor}:</span><span className="font-bold">{tm.shotsFor}</span></div>
+          <div className="flex justify-between"><span>{t.saves}:</span><span className="font-bold">{tm.saves}</span></div>
+          <div className="flex justify-between"><span>{t.shotsAgainst}:</span><span className="font-bold">{tm.shotsAgainst}</span></div>
+          <div className="flex justify-between border-t pt-1"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(tm.saves,tm.oppScore)}%</span></div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
               <div className="grid grid-cols-2 gap-3 mt-4">
                 <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>📋 {t.copyStats}</button>
                 <button onClick={shareStats} className="bg-blue-600 text-white py-3 rounded-lg font-semibold">✉️ {t.share}</button>
@@ -909,3 +924,4 @@
   </script>
 </body>
 </html>
+
