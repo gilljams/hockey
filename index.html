@@ -534,10 +534,16 @@ if(savedMatch){
               <h2 className="text-2xl font-bold mb-6">{t.joinMatch}</h2>
               <div className="mb-6">
                 <label className="block text-sm mb-2">{t.enterCode}</label>
-                <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={6} placeholder="ABC123" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
+                <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={8} placeholder="ABC123" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
               </div>
               {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
-              <button onClick={joinMatch} disabled={inputCode.length!==6} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.connect}</button>
+              <button onClick={joinMatch} disabled={
+  !(
+    inputCode.length === 6 ||
+    (inputCode.length === 8 && inputCode.endsWith('-V'))
+  )
+}
+ className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.connect}</button>
             </div>
           </div>
         </div>
