@@ -113,6 +113,14 @@
 
     const genCode=()=>Array(6).fill(0).map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*33)]).join('');
 
+    const SoundEQ = () => (
+      <div className="flex items-end gap-0.5 h-4 ml-2">
+        <div className="eq-bar w-1 bg-white rounded-full"></div>
+        <div className="eq-bar w-1 bg-white rounded-full"></div>
+        <div className="eq-bar w-1 bg-white rounded-full"></div>
+      </div>
+    );
+
     const JuniorLeagueApp=()=>{
       const [activeTab,setActiveTab]=useState('audio');
       const [currentPeriod,setCurrentPeriod]=useState(1);
@@ -153,6 +161,7 @@
       const t=translations[language];
       const [isViewer,setIsViewer]=useState(false);
       const [viewerCount,setViewerCount]=useState(0);
+      const [playingSound, setPlayingSound] = useState(null);
 
       useEffect(() => {
   if (isViewer && screen === 'game') {
@@ -381,7 +390,18 @@ if(savedMatch){
         setTimeout(()=>setSparkleStats(p=>({...p,[k]:false})),600);
         if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns})
       };
-      const playSound=st=>{const a=audioRefs[st].current;if(a){a.currentTime=0;a.play().catch(e=>console.log('Play failed:',e))}};
+      const playSound = st => {
+  const a = audioRefs[st].current;
+  if (!a) return;
+
+  setPlayingSound(st);
+  a.currentTime = 0;
+  a.play().catch(e => console.log('Play failed:', e));
+
+  a.onended = () => {
+    setPlayingSound(null);
+  };
+};
       const toggleIntro=()=>{const a=audioRefs.intro.current;if(!a)return;if(introPlaying){a.pause();a.currentTime=0;setIntroPlaying(false)}else{a.loop=true;a.play().catch(e=>console.log('Play failed:',e));setIntroPlaying(true)}};
       const stopAllSounds=()=>{Object.values(audioRefs).forEach(r=>{if(r.current){r.current.pause();r.current.currentTime=0}});setIntroPlaying(false)};
       const resetCounters=()=>{
@@ -936,34 +956,73 @@ if(savedMatch){
               </div>
 
               {/* Goal Sounds Section */}
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>🚨 {t.goal}</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    {sound:'homeGoal',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-40':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-60':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-grey-800',border:darkMode?'border-blue-700':'border-blue-200'},
-                    {sound:'awayGoal',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-40':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-60':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-800',border:darkMode?'border-red-700':'border-red-200'}
-                  ].map(btn=>(
-                    <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors`}>
-                      {btn.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+<div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
+  <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>🚨 {t.goal}</h3>
+  <div className="grid grid-cols-2 gap-2">
+    {[
+      {
+        sound: 'homeGoal',
+        label: homeName,
+        bg: darkMode ? 'bg-blue-900 bg-opacity-40' : 'bg-blue-50',
+        hover: darkMode ? 'hover:bg-blue-900 hover:bg-opacity-60' : 'hover:bg-blue-100',
+        text: darkMode ? 'text-blue-200' : 'text-grey-800',
+        border: darkMode ? 'border-blue-700' : 'border-blue-200'
+      },
+      {
+        sound: 'awayGoal',
+        label: awayName,
+        bg: darkMode ? 'bg-red-900 bg-opacity-40' : 'bg-red-50',
+        hover: darkMode ? 'hover:bg-red-900 hover:bg-opacity-60' : 'hover:bg-red-100',
+        text: darkMode ? 'text-red-200' : 'text-grey-800',
+        border: darkMode ? 'border-red-700' : 'border-red-200'
+      }
+    ].map(btn => (
+      <button
+        key={btn.sound}
+        onClick={() => playSound(btn.sound)}
+        className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2`}
+      >
+        {btn.label}
+        {playingSound === btn.sound && <SoundEQ />}
+      </button>
+    ))}
+  </div>
+</div>
 
-              {/* Penalty Sounds Section */}
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>{t.penalty}</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    {sound:'homePenalty',label:homeName,bg:darkMode?'bg-blue-900 bg-opacity-30':'bg-blue-50',hover:darkMode?'hover:bg-blue-900 hover:bg-opacity-50':'hover:bg-blue-100',text:darkMode?'text-blue-200':'text-grey-900',border:darkMode?'border-blue-700':'border-blue-300'},
-                    {sound:'awayPenalty',label:awayName,bg:darkMode?'bg-red-900 bg-opacity-30':'bg-red-50',hover:darkMode?'hover:bg-red-900 hover:bg-opacity-50':'hover:bg-red-100',text:darkMode?'text-red-200':'text-grey-900',border:darkMode?'border-red-700':'border-red-200'}
-                  ].map(btn=>(
-                    <button key={btn.sound} onClick={()=>playSound(btn.sound)} className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors`}>
-                      {btn.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+{/* Penalty Sounds Section */}
+<div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
+  <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>{t.penalty}</h3>
+  <div className="grid grid-cols-2 gap-2">
+    {[
+      {
+        sound: 'homePenalty',
+        label: homeName,
+        bg: darkMode ? 'bg-blue-900 bg-opacity-30' : 'bg-blue-50',
+        hover: darkMode ? 'hover:bg-blue-900 hover:bg-opacity-50' : 'hover:bg-blue-100',
+        text: darkMode ? 'text-blue-200' : 'text-grey-900',
+        border: darkMode ? 'border-blue-700' : 'border-blue-300'
+      },
+      {
+        sound: 'awayPenalty',
+        label: awayName,
+        bg: darkMode ? 'bg-red-900 bg-opacity-30' : 'bg-red-50',
+        hover: darkMode ? 'hover:bg-red-900 hover:bg-opacity-50' : 'hover:bg-red-100',
+        text: darkMode ? 'text-red-200' : 'text-grey-900',
+        border: darkMode ? 'border-red-700' : 'border-red-200'
+      }
+    ].map(btn => (
+      <button
+        key={btn.sound}
+        onClick={() => playSound(btn.sound)}
+        className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2`}
+      >
+        {btn.label}
+        {playingSound === btn.sound && <SoundEQ />}
+      </button>
+    ))}
+  </div>
+</div>
+
 
               {/* Stop All Button */}
               <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-grey-900'} py-2 rounded-lg font-semibold mb-3 transition-colors`}>
