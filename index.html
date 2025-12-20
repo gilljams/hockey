@@ -151,6 +151,10 @@
       const matchRef=useRef(null);
       const userId=useRef(Math.random().toString(36).substr(2,9));
       const t=translations[language];
+      const [isViewer,setIsViewer]=useState(false);
+      const [viewerCount,setViewerCount]=useState(0);
+
+      useEffect(()=>{if(isViewer)setActiveTab('stats')},[isViewer]);
 
       useEffect(()=>{
   // 🔒 SAFETY CLEANUP (prevents reconnect loop / white screen)
@@ -189,11 +193,19 @@
           }
         });
         const savedMatch=localStorage.getItem('multiplayerMatch');
-        if(savedMatch){
-          const md=JSON.parse(savedMatch);
-          setSavedMatchCode(md.code);
-          setShowReconnectPrompt(true);
-        }
+if(savedMatch){
+  try{
+    const md=JSON.parse(savedMatch);
+    if(md.code){
+      setSavedMatchCode(md.code);
+      setShowReconnectPrompt(true);
+    }else{
+      localStorage.removeItem('multiplayerMatch');
+    }
+  }catch(e){
+    localStorage.removeItem('multiplayerMatch');
+  }
+}
         if(!savedMatch){
           const saved=localStorage.getItem('juniorLeagueGame');
           if(saved){
@@ -245,39 +257,93 @@
             setSidesSwapped(d.sidesSwapped);
             setMatchEnded(d.ended||false);
             if(d.users)setConnectedUsers(Object.keys(d.users).length);
+            if(d.viewers)setViewerCount(Object.keys(d.viewers).length);
           }
         });
-        const ur=matchRef.current.child(`users/${userId.current}`);
+        const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
+        const ur=matchRef.current.child(path);
         ur.set(true);
         ur.onDisconnect().remove();
-        localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now()}));
+        localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer}));
         return()=>{if(matchRef.current){matchRef.current.off();ur.remove()}}
-      },[isMultiplayer,matchCode]);
+      },[isMultiplayer,matchCode,isViewer]);
 
-      const reconnectToMatch=()=>{setMatchCode(savedMatchCode);setIsMultiplayer(true);setScreen('game');setShowReconnectPrompt(false)};
-      const startNewSession=()=>{localStorage.removeItem('multiplayerMatch');setShowReconnectPrompt(false)};
-      const createMatch=()=>{setMatchCode(genCode());setScreen('created')};
+      const reconnectToMatch=()=>{
+        try{
+          const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
+          setMatchCode(savedMatchCode);
+          setIsViewer(saved?.isViewer||false);
+          setIsMultiplayer(true);
+          setScreen('game');
+          setShowReconnectPrompt(false);
+        }catch(e){
+          setMatchCode(savedMatchCode);
+          setIsMultiplayer(true);
+          setScreen('game');
+          setShowReconnectPrompt(false);
+        }
+      };
+      const startNewSession=()=>{
+  localStorage.removeItem('multiplayerMatch');
+  setShowReconnectPrompt(false);
+  setIsViewer(false);
+  setMatchEnded(false);
+};
+      const createMatch=()=>{
+  const code=genCode();
+  setMatchCode(code);
+  setMatchEnded(false);
+  setIsViewer(false);
+  setScreen('created');
+};
       const startMatch=()=>{
         if(!db){setError('Firebase not configured');return}
+        const viewerCode=matchCode+'-V';
         db.ref(`matches/${matchCode}`).set({
           homeName,awayName,currentPeriod:1,sidesSwapped:false,
           periodStats:{1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}},
-          ended:false,createdAt:Date.now(),users:{[userId.current]:true}
-        }).then(()=>{setIsMultiplayer(true);setScreen('game');localStorage.removeItem('juniorLeagueGame')}).catch(e=>setError('Failed: '+e.message))
+          ended:false,createdAt:Date.now(),users:{[userId.current]:true},
+          viewerCode:viewerCode,viewers:{}
+        }).then(()=>{
+          setIsMultiplayer(true);
+          setScreen('game');
+          localStorage.removeItem('juniorLeagueGame');
+          if(window.gtag)gtag('event','match_created',{match_code:matchCode});
+        }).catch(e=>setError('Failed: '+e.message))
       };
       const joinMatch=()=>{
         if(!db){setError('Firebase not configured');return}
         const c=inputCode.toUpperCase().trim();
-        if(c.length!==6){setError('Invalid code');return}
-        db.ref(`matches/${c}`).once('value').then(s=>{
+        const isViewerCode=c.endsWith('-V');
+        const baseCode=isViewerCode?c.slice(0,-2):c;
+  
+        if((!isViewerCode&&c.length!==6)||(isViewerCode&&baseCode.length!==6)){
+          setError('Invalid code');
+          return;
+        }
+  
+        db.ref(`matches/${baseCode}`).once('value').then(s=>{
           if(s.exists()){
             const d=s.val();
             if(d.ended)setError(t.matchAlreadyEnded);
-            else{setMatchCode(c);setIsMultiplayer(true);setScreen('game');localStorage.removeItem('juniorLeagueGame')}
+            else{
+              setMatchCode(baseCode);
+              setIsViewer(isViewerCode);
+              setIsMultiplayer(true);
+              setScreen('game');
+              localStorage.removeItem('juniorLeagueGame');
+              if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
+            }
           }else setError(t.matchNotFound)
         }).catch(e=>setError('Failed: '+e.message))
       };
-      const continueAlone=()=>{setIsMultiplayer(false);setScreen('game');localStorage.removeItem('multiplayerMatch')};
+      const continueAlone=()=>{
+  setIsMultiplayer(false);
+  setIsViewer(false);
+  setMatchEnded(false);
+  setScreen('game');
+  localStorage.removeItem('multiplayerMatch');
+};
       const endMatch = () => {
   	if (window.confirm(t.endMatchConfirm)) {
     	  if (matchRef.current) {
@@ -292,8 +358,18 @@
   	  }
 	};
 
-      const leaveMatch=()=>{if(window.confirm('Leave multiplayer match?')){localStorage.removeItem('multiplayerMatch');setIsMultiplayer(false);setMatchCode('');setScreen('start')}};
+      const leaveMatch=()=>{
+  if(window.confirm('Leave multiplayer match?')){
+    localStorage.removeItem('multiplayerMatch');
+    setIsMultiplayer(false);
+    setIsViewer(false);
+    setMatchEnded(false);
+    setMatchCode('');
+    setScreen('start');
+  }
+};
       const updateStat=(team,stat,delta)=>{
+        if(isViewer)return; // 🔒 Block viewer mutations
         const ns={...periodStats,[currentPeriod]:{...periodStats[currentPeriod],[team+stat]:Math.max(0,periodStats[currentPeriod][team+stat]+delta)}};
         setPeriodStats(ns);
         const k=`${team}${stat}${currentPeriod}`;
@@ -424,12 +500,20 @@
                 <h2 className="text-2xl font-bold mb-2">{t.matchCreated}</h2>
               </div>
               <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
-  <p className={`text-sm mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>{t.shareCode}</p>
-  <div className="flex flex-col sm:flex-row items-stretch gap-3">
+  <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>📝 Editor Code (max 3 users)</p>
+  <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-4">
     <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
       <div className={`text-3xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
     </div>
     <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">{t.copy}</button>
+  </div>
+  
+  <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>👁️ Viewer Code (read-only, unlimited)</p>
+  <div className="flex flex-col sm:flex-row items-stretch gap-3">
+    <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
+      <div className={`text-2xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}-V</div>
+    </div>
+    <button onClick={()=>navigator.clipboard.writeText(matchCode+'-V').then(()=>alert(t.statsCopied)).catch(()=>alert(t.copyFailed))} className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">{t.copy}</button>
   </div>
 </div>
 
@@ -481,8 +565,8 @@
               <div className="max-w-4xl mx-auto flex justify-between items-center">
                 <div className="flex gap-2 items-center">
                   <span className="text-xs font-medium">{t.period}:</span>
-                  {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
-                  {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
+                  {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
+                  {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
                   {!periodStats[4] && currentPeriod >= 3 && (
   <button
     onClick={() => {
@@ -502,7 +586,7 @@
         });
       }
     }}
-    disabled={matchEnded}
+    disabled={matchEnded||isViewer}
   >
     +OT
   </button>
@@ -526,9 +610,9 @@
                   <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-lg p-3`}>
                     <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{ft.name}</div>
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <button onClick={()=>updateStat(ft.team,'Score',-1)} disabled={matchEnded} className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">−</button>
+                      <button onClick={()=>updateStat(ft.team,'Score',-1)} disabled={matchEnded||isViewer} className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">−</button>
                       <div className={`text-5xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ft.team}Score${currentPeriod}`]?'sparkle':''}`}>{ft.score}</div>
-                      <button onClick={()=>updateStat(ft.team,'Score',1)} disabled={matchEnded} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
+                      <button onClick={()=>updateStat(ft.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
                     </div>
                     <div className={`text-xs text-center ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Score']}{i<arr.length-1?'-':''}</span>)}</div>
                   </div>
@@ -537,9 +621,9 @@
                   <div className={`${darkMode?'bg-gray-700':'bg-red-50'} rounded-lg p-3`}>
                     <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{on}</div>
                     <div className="flex items-center justify-center gap-2 mb-2">
-                      <button onClick={()=>updateStat(ot,'Score',-1)} disabled={matchEnded} className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">−</button>
+                      <button onClick={()=>updateStat(ot,'Score',-1)} disabled={matchEnded||isViewer} className="bg-red-500 hover:bg-red-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">−</button>
                       <div className={`text-5xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ot}Score${currentPeriod}`]?'sparkle':''}`}>{os}</div>
-                      <button onClick={()=>updateStat(ot,'Score',1)} disabled={matchEnded} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
+                      <button onClick={()=>updateStat(ot,'Score',1)} disabled={matchEnded||isViewer} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
                     </div>
                     <div className={`text-xs text-center ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Score']}{i<arr.length-1?'-':''}</span>)}</div>
                   </div>
@@ -553,9 +637,9 @@
                     <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-lg p-3`}>
                       <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{ft.name}</div>
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <button onClick={()=>updateStat(ft.team,'Saves',-1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>−</button>
+                        <button onClick={()=>updateStat(ft.team,'Saves',-1)} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>−</button>
                         <div className={`text-4xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ft.team}Saves${currentPeriod}`]?'sparkle':''}`}>{ft.saves}</div>
-                        <button onClick={()=>updateStat(ft.team,'Saves',1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
+                        <button onClick={()=>updateStat(ft.team,'Saves',1)} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
                       </div>
                       <div className={`text-xs text-center mb-2 ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Saves']}{i<arr.length-1?'-':''}</span>)}</div>
                       <div className={`${darkMode?'bg-gray-600 text-gray-100':'bg-white'} rounded p-2 text-xs`}>
@@ -583,9 +667,9 @@
                     <div className={`${darkMode?'bg-gray-700':'bg-red-50'} rounded-lg p-3`}>
                       <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{on}</div>
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <button onClick={()=>updateStat(ot,'Saves',-1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>−</button>
+                        <button onClick={()=>updateStat(ot,'Saves',-1)} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>−</button>
                         <div className={`text-4xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ot}Saves${currentPeriod}`]?'sparkle':''}`}>{otsv}</div>
-                        <button onClick={()=>updateStat(ot,'Saves',1)} disabled={matchEnded} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
+                        <button onClick={()=>updateStat(ot,'Saves',1)} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
                       </div>
                       <div className={`text-xs text-center mb-2 ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Saves']}{i<arr.length-1?'-':''}</span>)}</div>
                       <div className={`${darkMode?'bg-gray-600 text-gray-100':'bg-white'} rounded p-2 text-xs`}>
@@ -620,6 +704,9 @@
 // GAME SCREEN - Normal mode
       return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+          {isViewer&&<div className="bg-yellow-500 text-gray-900 px-4 py-2 text-center font-semibold text-sm">
+            👁️ VIEWER MODE - You are viewing live stats (read-only)
+          </div>}
           <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
           <audio ref={audioRefs.awayGoal} src="awayGoal.mp3"/>
           <audio ref={audioRefs.homePenalty} src="homePenalty.mp3"/>
@@ -629,11 +716,12 @@
           <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg sticky top-0 z-50`}>
             <div className="max-w-6xl mx-auto">
               {isMultiplayer&&<div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded-full text-xs font-bold animate-pulse"><span className="w-1.5 h-1.5 bg-white rounded-full"></span>LIVE</span>}
-                  {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">{t.matchEnded}</span>}
-                  <span className="text-xs">👥 {connectedUsers}</span>
-                </div>
+  <div className="flex items-center gap-2">
+    {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded-full text-xs font-bold animate-pulse"><span className="w-1.5 h-1.5 bg-white rounded-full"></span>LIVE</span>}
+    {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">{t.matchEnded}</span>}
+    <span className="text-xs">👥 {connectedUsers}</span>
+    {!isViewer&&viewerCount>0&&<span className="text-xs">👁️ {viewerCount}</span>}
+  </div>
                 <div className="flex items-center gap-1">
                   <button onClick={copyCode} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-2 py-1 rounded font-mono font-bold text-xs`}>{matchCode}</button>
                   {!matchEnded&&<button onClick={endMatch} className="bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">End</button>}
@@ -643,8 +731,8 @@
               <div className="flex justify-between items-center mb-3">
                 <div className="flex gap-2 items-center">
                   <span className="text-sm font-medium">{t.period}:</span>
-                  {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
-                  {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
+                  {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
+                  {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
                   {!periodStats[4] && currentPeriod >= 3 && (
   <button
     onClick={() => {
@@ -664,7 +752,7 @@
         });
       }
     }}
-    disabled={matchEnded}
+    disabled={matchEnded||isViewer}
   >
     +OT
   </button>
@@ -692,20 +780,20 @@
                     <div>
                       <label className="block text-sm mb-1">{t.homeTeam}</label>
                       <div className="flex gap-2">
-                        <input type="text" value={homeName} onChange={e=>{setHomeName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({homeName:e.target.value})}} disabled={matchEnded} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                        <button onClick={()=>setHomeName('')} disabled={matchEnded} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.clear}</button>
+                        <input type="text" value={homeName} onChange={e=>{setHomeName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({homeName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
+                        <button onClick={()=>setHomeName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.clear}</button>
                       </div>
                     </div>
                     <div>
                       <label className="block text-sm mb-1">{t.awayTeam}</label>
                       <div className="flex gap-2">
-                        <input type="text" value={awayName} onChange={e=>{setAwayName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({awayName:e.target.value})}} disabled={matchEnded} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                        <button onClick={()=>setAwayName('')} disabled={matchEnded} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.clear}</button>
+                        <input type="text" value={awayName} onChange={e=>{setAwayName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({awayName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
+                        <button onClick={()=>setAwayName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.clear}</button>
                       </div>
                     </div>
                     <label className="flex items-center justify-between py-2">
                       <span className="text-sm">{t.swapSides}</span>
-                      <input type="checkbox" checked={sidesSwapped} onChange={e=>{setSidesSwapped(e.target.checked);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({sidesSwapped:e.target.checked})}} disabled={matchEnded} className="w-5 h-5"/>
+                      <input type="checkbox" checked={sidesSwapped} onChange={e=>{setSidesSwapped(e.target.checked);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({sidesSwapped:e.target.checked})}} disabled={matchEnded||isViewer} className="w-5 h-5"/>
                     </label>
                   </div>
                   
@@ -760,18 +848,18 @@
                     <div className="mb-3">
                       <div className="text-xs opacity-75 mb-1">{t.goals}</div>
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={()=>updateStat(tm.team,'Score',-1)} disabled={matchEnded} className="bg-red-500 bg-opacity-50 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
+                        <button onClick={()=>updateStat(tm.team,'Score',-1)} disabled={matchEnded||isViewer} className="bg-red-500 bg-opacity-50 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
                         <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`]?'sparkle':''}`}>{tm.score}</div>
-                        <button onClick={()=>updateStat(tm.team,'Score',1)} disabled={matchEnded} className="bg-green-500 bg-opacity-50 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
+                        <button onClick={()=>updateStat(tm.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-green-500 bg-opacity-50 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
                       </div>
                       {!statsCollapsed&&<div className="text-xs opacity-75 mt-1 text-center">{t.byPeriod}: ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Score']}{i<arr.length-1?'-':''}</span>)})</div>}
                     </div>
                     <div className={`pt-2 border-t ${darkMode?'border-gray-600':'border-white border-opacity-20'}`}>
                       <div className="text-xs opacity-75 mb-1">{t.saves}</div>
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={()=>updateStat(tm.team,'Saves',-1)} disabled={matchEnded} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
+                        <button onClick={()=>updateStat(tm.team,'Saves',-1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
                         <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`]?'sparkle':''}`}>{tm.saves}</div>
-                        <button onClick={()=>updateStat(tm.team,'Saves',1)} disabled={matchEnded} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
+                        <button onClick={()=>updateStat(tm.team,'Saves',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
                       </div>
                       {!statsCollapsed&&<div className={`${darkMode?'bg-gray-600':'bg-white bg-opacity-10'} rounded p-2 text-xs text-center mt-2`}>
                         <div>{t.shotsFor}: {tm.oppShots} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][(tm.team==='home'?'away':'home')+'Saves']+periodStats[p][tm.team+'Score'])).join('-')})</div>
@@ -784,15 +872,15 @@
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <button onClick={resetCounters} disabled={matchEnded} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-10'} py-2 rounded text-sm`}>{t.resetAllStats}</button>
+                <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-10'} py-2 rounded text-sm`}>{t.resetAllStats}</button>
                 <button onClick={()=>{setFocusMode('home');setActiveTab('audio')}} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ {t.focusMode}</button>
               </div>
             </div>
           </div>
 
           <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-white'} shadow-md sticky top-48 z-40`}>
-            <div className="max-w-6xl mx-auto flex">
-              {['audio','stats','referee',...(externalLinkUrl?['external']:[])].map(tab=>(
+  <div className="max-w-6xl mx-auto flex">
+    {(isViewer?['stats']:['audio','stats','referee',...(externalLinkUrl?['external']:[])]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab===tab?(darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white'):(darkMode?'bg-gray-700 text-gray-300':'bg-gray-100 text-gray-600')}`}>
                   {tab==='audio'?t.audio:tab==='stats'?t.stats:tab==='referee'?t.referee:externalLinkTitle||t.externalLinkTab}
                 </button>
@@ -943,7 +1031,3 @@
   </script>
 </body>
 </html>
-
-
-
-
