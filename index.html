@@ -603,7 +603,13 @@ if(savedMatch){
 )}
 
                 </div>
-                <button onClick={()=>setFocusMode(null)} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1`}>
+                <button
+  onClick={() => {
+    setFocusMode(null);
+    if (isViewer) {
+      setActiveTab('stats');
+    }
+  }} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1`}>
   <span className="text-lg">←</span>
   <span className="hidden sm:inline">Exit</span>
 </button>
