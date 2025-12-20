@@ -154,7 +154,11 @@
       const [isViewer,setIsViewer]=useState(false);
       const [viewerCount,setViewerCount]=useState(0);
 
-      useEffect(()=>{if(isViewer)setActiveTab('stats')},[isViewer]);
+      useEffect(() => {
+  if (isViewer && screen === 'game') {
+    setActiveTab('stats');
+  }
+}, [isViewer, screen]);
 
       useEffect(()=>{
   // 🔒 SAFETY CLEANUP (prevents reconnect loop / white screen)
@@ -730,7 +734,14 @@ if(savedMatch){
   </div>
                 <div className="flex items-center gap-1">
                   <button onClick={copyCode} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-2 py-1 rounded font-mono font-bold text-xs`}>{matchCode}</button>
-                  {!matchEnded&&<button onClick={endMatch} className="bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap">End</button>}
+                  {!matchEnded && !isViewer && (
+  <button onClick={endMatch}
+    className="bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
+  >
+    End
+  </button>
+)}
+
                 </div>
               </div>}
 
@@ -838,9 +849,16 @@ if(savedMatch){
                     <input type="text" value={externalLinkTitle} onChange={e=>setExternalLinkTitle(e.target.value)} placeholder="Club Rules" className={`w-full px-3 py-2 border rounded text-sm mb-2 ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                     <input type="text" value={externalLinkUrl} onChange={e=>setExternalLinkUrl(e.target.value)} placeholder="https://..." className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                   </div>
-                  {isMultiplayer&&<div className="pt-3 border-t">
-                    <button onClick={leaveMatch} className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded text-sm font-semibold">Leave Multiplayer Match</button>
-                  </div>}
+                  {isMultiplayer && !isViewer && (
+  <div className="pt-3 border-t">
+    <button
+      onClick={leaveMatch}
+      className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded text-sm font-semibold"
+    >
+      Leave Multiplayer Match
+    </button>
+  </div>
+)}
                 </div>
               </div>}
 
