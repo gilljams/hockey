@@ -339,47 +339,63 @@ const startMatch=()=>{
       };
 
 // Updated player stats functions with new structure
-      const updatePlayerStat=(team,playerNum,stat,delta)=>{
-        if(isViewer||matchEnded)return;
-        
-        const period=currentPeriod;
-        const newStats={...playerStats};
-        
-        // Ensure team structure exists
-        if(!newStats[team])newStats[team]={players:{}};
-        if(!newStats[team].players)newStats[team].players={};
-        
-        // Ensure player exists
-        if(!newStats[team].players[playerNum]){
-          newStats[team].players[playerNum]={
-            periods:{},
-            total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
-          };
-        }
-        
-        // Ensure period exists for this player
-        if(!newStats[team].players[playerNum].periods[period]){
-          newStats[team].players[playerNum].periods[period]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
-        }
-        
-        // Update period stat
-        const currentPeriodVal=newStats[team].players[playerNum].periods[period][stat]||0;
-        newStats[team].players[playerNum].periods[period][stat]=Math.max(0,currentPeriodVal+delta);
-        
-        // Recalculate total
-        newStats[team].players[playerNum].total[stat]=0;
-        Object.keys(newStats[team].players[playerNum].periods).forEach(p=>{
-          newStats[team].players[playerNum].total[stat]+=newStats[team].players[playerNum].periods[p][stat]||0;
-        });
-        
-        setPlayerStats(newStats);
-        
-        const k=`${team}${playerNum}${stat}${period}`;
-        setSparkleStats(p=>({...p,[k]:true}));
-        setTimeout(()=>setSparkleStats(p=>({...p,[k]:false})),600);
-        
-        if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
-      };
+const updatePlayerStat=(team,playerNum,stat,delta)=>{
+  if(isViewer||matchEnded)return;
+  
+  const period=currentPeriod;
+  const newStats={...playerStats};
+  
+  // Ensure team structure exists
+  if(!newStats[team])newStats[team]={players:{}};
+  if(!newStats[team].players)newStats[team].players={};
+  
+  // Ensure player exists
+  if(!newStats[team].players[playerNum]){
+    newStats[team].players[playerNum]={
+      periods:{},
+      total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
+    };
+  }
+  
+  // Ensure period exists for this player
+  if(!newStats[team].players[playerNum].periods[period]){
+    newStats[team].players[playerNum].periods[period]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+  }
+  
+  // Auto-increment SOG when G changes
+  if(stat==='G'){
+    const currentSOG=newStats[team].players[playerNum].periods[period]['SOG']||0;
+    newStats[team].players[playerNum].periods[period]['SOG']=Math.max(0,currentSOG+delta);
+  }
+  
+  // Update period stat
+  const currentPeriodVal=newStats[team].players[playerNum].periods[period][stat]||0;
+  newStats[team].players[playerNum].periods[period][stat]=Math.max(0,currentPeriodVal+delta);
+  
+  // Recalculate totals for both the stat and SOG if G was changed
+  const statsToRecalc=stat==='G'?[stat,'SOG']:[stat];
+  statsToRecalc.forEach(s=>{
+    newStats[team].players[playerNum].total[s]=0;
+    Object.keys(newStats[team].players[playerNum].periods).forEach(p=>{
+      newStats[team].players[playerNum].total[s]+=newStats[team].players[playerNum].periods[p][s]||0;
+    });
+  });
+  
+  setPlayerStats(newStats);
+  
+  // Sparkle both G and SOG when G is clicked
+  const sparkleKeys=stat==='G'?[`${team}${playerNum}G${period}`,`${team}${playerNum}SOG${period}`]:[`${team}${playerNum}${stat}${period}`];
+  sparkleKeys.forEach(k=>{
+    setSparkleStats(p=>({...p,[k]:true}));
+  });
+  setTimeout(()=>{
+    sparkleKeys.forEach(k=>{
+      setSparkleStats(p=>({...p,[k]:false}));
+    });
+  },600);
+  
+  if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
+};
       
       const removePlayer=(team,playerNum)=>{
         if(isViewer||matchEnded)return;
@@ -793,50 +809,62 @@ return(
               </div>
             </div>
             
-            {showAddPlayerModal&&(
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
-                  <h3 className="text-lg font-bold mb-3">Add Player(s)</h3>
-                  <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
-                    {addPlayerNumbers.map((num,idx)=>(
-                      <input
-                        key={idx}
-                        type="number"
-                        value={num}
-                        onChange={(e)=>{
-                          const newNums=[...addPlayerNumbers];
-                          newNums[idx]=e.target.value;
-                          setAddPlayerNumbers(newNums);
-                        }}
-                        placeholder={`#${idx+1}`}
-                        className={`w-full px-3 py-2 border rounded text-center font-bold ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
-                        autoFocus={idx===0}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={()=>setAddPlayerNumbers([...addPlayerNumbers,''])}
-                    className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold text-sm mb-3`}
-                  >
-                    + Add Another
-                  </button>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={()=>{setShowAddPlayerModal(false);setAddPlayerNumbers([''])}}
-                      className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold text-sm`}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={()=>addPlayers(addPlayerTeam,addPlayerNumbers)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold text-sm"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+{showAddPlayerModal&&(
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
+      <h3 className="text-lg font-bold mb-3">Add Player(s)</h3>
+      <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
+        {addPlayerNumbers.map((num,idx)=>(
+          <input
+            key={idx}
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={num}
+            onChange={(e)=>{
+              const newNums=[...addPlayerNumbers];
+              newNums[idx]=e.target.value;
+              setAddPlayerNumbers(newNums);
+            }}
+            onKeyDown={(e)=>{
+              if(e.key==='Enter'&&num.trim()!==''){
+                e.preventDefault();
+                if(idx===addPlayerNumbers.length-1){
+                  setAddPlayerNumbers([...addPlayerNumbers,'']);
+                  setTimeout(()=>{
+                    const inputs=document.querySelectorAll('input[type="number"]');
+                    inputs[inputs.length-1]?.focus();
+                  },50);
+                }else{
+                  const inputs=document.querySelectorAll('input[type="number"]');
+                  inputs[idx+1]?.focus();
+                }
+              }
+            }}
+            placeholder={`Player #${idx+1}`}
+            className={`w-full px-3 py-3 border rounded text-center font-bold text-xl ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
+            autoFocus={idx===addPlayerNumbers.length-1}
+          />
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <button
+          onClick={()=>{setShowAddPlayerModal(false);setAddPlayerNumbers([''])}}
+          className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold text-sm`}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={()=>addPlayers(addPlayerTeam,addPlayerNumbers)}
+          disabled={addPlayerNumbers.filter(n=>n&&n.trim()!=='').length===0}
+          className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-2 rounded font-semibold text-sm"
+        >
+          Add ({addPlayerNumbers.filter(n=>n&&n.trim()!=='').length})
+        </button>
+      </div>
+    </div>
+  </div>
+)}
           </div>
         );
       }
