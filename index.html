@@ -14,14 +14,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes sparkle{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.8}}
-.sparkle{animation:sparkle .6s ease-in-out}
-@keyframes eq-bar{0%,100%{height:30%}50%{height:80%}}
-.eq-bar{animation:eq-bar 0.6s ease-in-out infinite}
-.eq-bar:nth-child(1){animation-delay:0s}
-.eq-bar:nth-child(2){animation-delay:0.15s}
-.eq-bar:nth-child(3){animation-delay:0.3s}
-
+    @keyframes sparkle{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:.8}}
+    .sparkle{animation:sparkle .6s ease-in-out}
+    @keyframes eq-bar{0%,100%{height:30%}50%{height:80%}}
+    .eq-bar{animation:eq-bar 0.6s ease-in-out infinite}
+    .eq-bar:nth-child(1){animation-delay:0s}
+    .eq-bar:nth-child(2){animation-delay:0.15s}
+    .eq-bar:nth-child(3){animation-delay:0.3s}
   </style>
 </head>
 <body>
@@ -55,84 +54,6 @@
       </div>
     );
 
-    const translations={
-      en:{
-        homeTeam:'HOME TEAM',awayTeam:'AWAY TEAM',period:'Period',overtime:'OT',settings:'Settings',
-        swapSides:'Swap Sides',darkMode:'Dark Mode',goals:'Goals',byPeriod:'By period',
-        saves:'Saves',shotsFor:'Shots For',shotsAgainst:'Shots Against',savePercent:'Save %',
-        resetAllStats:'Reset All Stats',audio:'Audio',stats:'Stats',referee:'Referee',
-        goal:'Goal',penalty:'Penalty',stopAllSounds:'Stop All Sounds',intro:'Intro',
-        final:'FINAL',copyStats:'Copy Stats',share:'Share',resetConfirm:'Reset all stats?',
-        statsCopied:'Stats copied!',copyFailed:'Failed to copy',gameReport:'Game Report',
-        periodBreakdown:'PERIOD BREAKDOWN',goalieStats:'GOALIE STATS',
-        shotsAgainstShort:'shots against',clear:'Clear',language:'Language',
-        spotifyPlaylistUrl:'Spotify Playlist URL',restore:'Restore',focusMode:'Focus Mode',
-        keepScreenOn:'Keep Screen On',createMatch:'CREATE NEW MATCH',joinMatch:'JOIN MATCH',
-        continueAlone:'Or continue alone',newMatch:'New Match',startMatch:'START MATCH',
-        matchCreated:'Match Created!',shareCode:'Share this code:',copy:'Copy',
-        continueToMatch:'CONTINUE TO MATCH',enterCode:'Enter match code:',connect:'CONNECT',
-        matchCode:'Match Code',connected:'connected',liveMatch:'LIVE',endMatch:'End Match',
-        endMatchConfirm:'End match for all users?',matchEnded:'MATCH ENDED',
-        startNewMatch:'Start New Match',matchNotFound:'No match found with that code',
-        matchAlreadyEnded:'This match has already ended',goBack:'Go Back',
-        reconnectPrompt:'Reconnect to match',reconnect:'Reconnect',startNew:'Start New',
-        externalLink:'External Link',externalLinkUrl:'External Link URL',
-        externalLinkTitle:'External Link Title',externalLinkTab:'Link',
-        offside:'Offside',tripping:'Tripping',holding:'Holding',highSticking:'High Sticking',
-        slashing:'Slashing',icing:'Icing',noGoal:'No Goal',timeOut:'Time Out',
-        penaltyShot:'Penalty Shot',armRaised:'Arm raised straight up',
-        strikeLeg:'Strike leg with hand',claspWrist:'Clasping wrist',
-        twoHandsHigh:'Two hands held high',choppingMotion:'Chopping motion',
-        armsCrossedChest:'Arms crossed at chest',armsPointedGoal:'Both arms pointed at goal',
-        armsCrossedHead:'Arms crossed overhead',handsFormingT:'Hands forming T',
-        armsCrossedPointed:'Arms crossed then pointed',
-        playerStats:'Player Stats',editMode:'Edit Mode',viewMode:'View Mode',
-        sideBySide:'Side by Side',stacked:'Stacked',moment:'Moment',
-        faceoffs:'Tekning',all:'Alla',enterPlayerNumber:'Enter Player Number',
-        addPlayer:'Add Player',playerNumber:'Player #',cancel:'Cancel',add:'Add',
-        exportCSV:'Export CSV',playerStatistics:'PLAYER STATISTICS',
-        totalStats:'Total Stats'
-      },
-      sv:{
-        homeTeam:'HEMMALAG',awayTeam:'BORTALAG',period:'Period',overtime:'FÖ',settings:'Inställningar',
-        swapSides:'Byt Sidor',darkMode:'Mörkt Läge',goals:'Mål',byPeriod:'Per period',
-        saves:'Räddningar',shotsFor:'Skott För',shotsAgainst:'Skott Mot',
-        savePercent:'Räddnings %',resetAllStats:'Nollställ All Statistik',audio:'Ljud',
-        stats:'Statistik',referee:'Domare',goal:'Mål',penalty:'Utvisning',
-        stopAllSounds:'Stoppa Alla Ljud',intro:'Intro',final:'SLUTRESULTAT',
-        copyStats:'Kopiera Statistik',share:'Dela',resetConfirm:'Nollställ all statistik?',
-        statsCopied:'Statistik kopierad!',copyFailed:'Misslyckades kopiera',
-        gameReport:'Matchrapport',periodBreakdown:'PERIODSAMMANFATTNING',
-        goalieStats:'MÅLVAKTSSTATISTIK',shotsAgainstShort:'skott mot',clear:'Rensa',
-        language:'Språk',spotifyPlaylistUrl:'Spotify Spellista URL',restore:'Återställ',
-        focusMode:'Fokusläge',keepScreenOn:'Håll Skärmen På',createMatch:'SKAPA NY MATCH',
-        joinMatch:'GÅ MED I MATCH',continueAlone:'Eller fortsätt ensam',newMatch:'Ny Match',
-        startMatch:'STARTA MATCH',matchCreated:'Match Skapad!',shareCode:'Dela denna kod:',
-        copy:'Kopiera',continueToMatch:'FORTSÄTT TILL MATCH',enterCode:'Ange matchkod:',
-        connect:'ANSLUT',matchCode:'Matchkod',connected:'anslutna',liveMatch:'LIVE',
-        endMatch:'Avsluta Match',endMatchConfirm:'Avsluta matchen för alla användare?',
-        matchEnded:'MATCH AVSLUTAD',startNewMatch:'Starta Ny Match',
-        matchNotFound:'Ingen match hittades med den koden',
-        matchAlreadyEnded:'Denna match är redan avslutad',goBack:'Gå Tillbaka',
-        reconnectPrompt:'Återanslut till match',reconnect:'Återanslut',startNew:'Starta Ny',
-        externalLink:'Extern Länk',externalLinkUrl:'Extern Länk URL',
-        externalLinkTitle:'Extern Länk Titel',externalLinkTab:'Länk',
-        offside:'Offside',tripping:'Tripping',holding:'Holding',highSticking:'High Sticking',
-        slashing:'Slashing',icing:'Icing',noGoal:'Inget Mål',timeOut:'Time Out',
-        penaltyShot:'Straff',armRaised:'Arm rakt upp',strikeLeg:'Slå benet med handen',
-        claspWrist:'Hålla handleden',twoHandsHigh:'Två händer högt upp',
-        choppingMotion:'Huggande rörelse',armsCrossedChest:'Armar korsade vid bröstet',
-        armsPointedGoal:'Båda armarna mot målet',armsCrossedHead:'Armar korsade över huvudet',
-        handsFormingT:'Händer formar T',armsCrossedPointed:'Armar korsade sedan pekande',
-        playerStats:'Spelarstatistik',editMode:'Redigeringsläge',viewMode:'Visningsläge',
-        sideBySide:'Sida vid sida',stacked:'Staplad',moment:'Moment',
-        faceoffs:'Tekning',all:'Alla',enterPlayerNumber:'Ange Spelarnummer',
-        addPlayer:'Lägg till Spelare',playerNumber:'Spelare #',cancel:'Avbryt',add:'Lägg till',
-        exportCSV:'Exportera CSV',playerStatistics:'SPELARSTATISTIK',
-        totalStats:'Totala Stats'
-      }
-    };
-
 const JuniorLeagueApp=()=>{
       const [activeTab,setActiveTab]=useState('audio');
       const [currentPeriod,setCurrentPeriod]=useState(1);
@@ -143,7 +64,6 @@ const JuniorLeagueApp=()=>{
       const [darkMode,setDarkMode]=useState(false);
       const [statsCollapsed,setStatsCollapsed]=useState(false);
       const [focusMode,setFocusMode]=useState(null);
-      const [language,setLanguage]=useState('en');
       const [spotifyLoaded,setSpotifyLoaded]=useState(false);
       const [spotifyLoading,setSpotifyLoading]=useState(false);
       const [spotifyPlaylist,setSpotifyPlaylist]=useState('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');
@@ -167,7 +87,6 @@ const JuniorLeagueApp=()=>{
         3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
       });
       
-      // NEW: Player Stats State
       const [playerStats,setPlayerStats]=useState({});
       const [showPlayerStats,setShowPlayerStats]=useState(false);
       const [playerStatsEditMode,setPlayerStatsEditMode]=useState(false);
@@ -175,14 +94,13 @@ const JuniorLeagueApp=()=>{
       const [playerStatsMoment,setPlayerStatsMoment]=useState('all');
       const [showAddPlayerModal,setShowAddPlayerModal]=useState(false);
       const [addPlayerTeam,setAddPlayerTeam]=useState('');
-      const [addPlayerNumber,setAddPlayerNumber]=useState('');
+      const [addPlayerNumbers,setAddPlayerNumbers]=useState(['']);
       const [expandedPlayerStats,setExpandedPlayerStats]=useState({});
       
       const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
       const [introPlaying,setIntroPlaying]=useState(false);
       const matchRef=useRef(null);
       const userId=useRef(Math.random().toString(36).substr(2,9));
-      const t=translations[language];
       const [isViewer,setIsViewer]=useState(false);
       const [viewerCount,setViewerCount]=useState(0);
       const [playingSound, setPlayingSound] = useState(null);
@@ -193,7 +111,7 @@ const JuniorLeagueApp=()=>{
         }
       }, [isViewer, screen]);
 
-      useEffect(()=>{
+useEffect(()=>{
         try {
           const raw = localStorage.getItem('multiplayerMatch');
           if (raw) {
@@ -206,7 +124,7 @@ const JuniorLeagueApp=()=>{
           localStorage.removeItem('multiplayerMatch');
         }
 
-        ['darkMode','language','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle'].forEach(k=>{
+        ['darkMode','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle'].forEach(k=>{
           const v=localStorage.getItem(k);
           if(v){
             if(['darkMode','statsCollapsed','keepScreenOn'].includes(k)){
@@ -253,7 +171,6 @@ const JuniorLeagueApp=()=>{
       },[]);
 
       useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
-      useEffect(()=>{localStorage.setItem('language',language)},[language]);
       useEffect(()=>{localStorage.setItem('spotifyPlaylist',spotifyPlaylist)},[spotifyPlaylist]);
       useEffect(()=>{localStorage.setItem('statsCollapsed',JSON.stringify(statsCollapsed))},[statsCollapsed]);
       useEffect(()=>{localStorage.setItem('keepScreenOn',JSON.stringify(keepScreenOn))},[keepScreenOn]);
@@ -268,7 +185,7 @@ const JuniorLeagueApp=()=>{
         }
       },[currentPeriod,homeName,awayName,sidesSwapped,periodStats,playerStats,isMultiplayer,screen]);
 
-useEffect(()=>{
+      useEffect(()=>{
         const req=async()=>{try{if('wakeLock'in navigator&&keepScreenOn){const l=await navigator.wakeLock.request('screen');setWakeLock(l)}}catch(e){}};
         const rel=async()=>{if(wakeLock){try{await wakeLock.release();setWakeLock(null)}catch(e){}}};
         if(keepScreenOn)req();else rel();
@@ -302,7 +219,7 @@ useEffect(()=>{
         return()=>{if(matchRef.current){matchRef.current.off();ur.remove()}}
       },[isMultiplayer,matchCode,isViewer]);
 
-      const reconnectToMatch=()=>{
+const reconnectToMatch=()=>{
         try{
           const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
           setMatchCode(savedMatchCode);
@@ -364,7 +281,7 @@ useEffect(()=>{
         db.ref(`matches/${baseCode}`).once('value').then(s=>{
           if(s.exists()){
             const d=s.val();
-            if(d.ended)setError(t.matchAlreadyEnded);
+            if(d.ended)setError('This match has already ended');
             else{
               setMatchCode(baseCode);
               setIsViewer(isViewerCode);
@@ -373,11 +290,11 @@ useEffect(()=>{
               localStorage.removeItem('juniorLeagueGame');
               if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
             }
-          }else setError(t.matchNotFound)
+          }else setError('No match found with that code')
         }).catch(e=>setError('Failed: '+e.message))
       };
 
-const continueAlone=()=>{
+      const continueAlone=()=>{
         setIsMultiplayer(false);
         setIsViewer(false);
         setMatchEnded(false);
@@ -386,7 +303,7 @@ const continueAlone=()=>{
       };
       
       const endMatch = () => {
-        if (window.confirm(t.endMatchConfirm)) {
+        if (window.confirm('End match for all users?')) {
           if (matchRef.current) {
             matchRef.current.update({ ended: true });
           }
@@ -417,7 +334,6 @@ const continueAlone=()=>{
         if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns})
       };
       
-      // NEW: Player Stats Functions
       const updatePlayerStat=(team,playerNum,stat,delta)=>{
         if(isViewer||matchEnded)return;
         
@@ -429,7 +345,7 @@ const continueAlone=()=>{
         if(!newStats[period][team].players)newStats[period][team].players={};
         if(!newStats[period][team].players[playerNum]){
           newStats[period][team].players[playerNum]={
-            'Mål':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0
+            'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0
           };
         }
         
@@ -445,29 +361,23 @@ const continueAlone=()=>{
         if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
       };
       
-      const handlePlayerStatClick=(team,stat,delta)=>{
+      const removePlayer=(team,playerNum)=>{
         if(isViewer||matchEnded)return;
         
         const period=currentPeriod;
-        const existingPlayers=playerStats[period]?.[team]?.players||{};
+        const newStats={...playerStats};
         
-        if(Object.keys(existingPlayers).length===0){
-          setAddPlayerTeam(team);
-          setShowAddPlayerModal(true);
-          return;
+        if(newStats[period]&&newStats[period][team]&&newStats[period][team].players){
+          delete newStats[period][team].players[playerNum];
         }
         
-        const playerNums=Object.keys(existingPlayers).sort((a,b)=>parseInt(a)-parseInt(b));
-        if(playerNums.length===1){
-          updatePlayerStat(team,playerNums[0],stat,delta);
-        }else{
-          setAddPlayerTeam(team);
-          setShowAddPlayerModal(true);
-        }
+        setPlayerStats(newStats);
+        if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
       };
       
-      const addPlayer=(team,playerNum)=>{
-        if(!playerNum||playerNum.trim()==='')return;
+      const addPlayers=(team,numbers)=>{
+        const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
+        if(validNumbers.length===0)return;
         
         const period=currentPeriod;
         const newStats={...playerStats};
@@ -476,20 +386,22 @@ const continueAlone=()=>{
         if(!newStats[period][team])newStats[period][team]={players:{}};
         if(!newStats[period][team].players)newStats[period][team].players={};
         
-        if(!newStats[period][team].players[playerNum]){
-          newStats[period][team].players[playerNum]={
-            'Mål':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0
-          };
-        }
+        validNumbers.forEach(playerNum=>{
+          if(!newStats[period][team].players[playerNum]){
+            newStats[period][team].players[playerNum]={
+              'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0
+            };
+          }
+        });
         
         setPlayerStats(newStats);
         if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
         
         setShowAddPlayerModal(false);
-        setAddPlayerNumber('');
+        setAddPlayerNumbers(['']);
       };
-      
-      const playSound = st => {
+
+const playSound = st => {
         const a = audioRefs[st].current;
         if (!a) return;
         setPlayingSound(st);
@@ -526,7 +438,7 @@ const continueAlone=()=>{
       };
       
       const resetCounters=()=>{
-        if(window.confirm(t.resetConfirm)){
+        if(window.confirm('Reset all stats?')){
           const ns={1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
           setPeriodStats(ns);
           setCurrentPeriod(1);
@@ -536,7 +448,7 @@ const continueAlone=()=>{
         }
       };
 
-const calcTotals=()=>{
+      const calcTotals=()=>{
         let hs=0,as=0,hsv=0,asv=0;
         Object.keys(periodStats).forEach(p=>{
           hs+=periodStats[p].homeScore;
@@ -552,27 +464,24 @@ const calcTotals=()=>{
       
       const genReport=()=>{
         const d=new Date().toLocaleDateString();
-        let r=`${t.gameReport} - ${d}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\n${t.periodBreakdown}:\n`;
+        let r=`Game Report - ${d}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\nPERIOD BREAKDOWN:\n`;
         Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(p=>{
           const ps=periodStats[p];
-          const pLabel=parseInt(p)<=3?`${t.period} ${p}`:`OT'${parseInt(p)-3}`;
+          const pLabel=parseInt(p)<=3?`Period ${p}`:`OT${parseInt(p)-3}`;
           r+=`${pLabel}: ${homeName} ${ps.homeScore}-${ps.awayScore} ${awayName}\n`;
         });
-        r+=`\n${t.goalieStats}:\n${homeName}: ${totals.homeSaves} ${t.saves.toLowerCase()}, ${totals.homeSaves+totals.awayScore} ${t.shotsAgainstShort}, ${calcSP(totals.homeSaves,totals.awayScore)}%\n`;
-        r+=`${awayName}: ${totals.awaySaves} ${t.saves.toLowerCase()}, ${totals.awaySaves+totals.homeScore} ${t.shotsAgainstShort}, ${calcSP(totals.awaySaves,totals.homeScore)}%\n`;
+        r+=`\nGOALIE STATS:\n${homeName}: ${totals.homeSaves} saves, ${totals.homeSaves+totals.awayScore} shots against, ${calcSP(totals.homeSaves,totals.awayScore)}%\n`;
+        r+=`${awayName}: ${totals.awaySaves} saves, ${totals.awaySaves+totals.homeScore} shots against, ${calcSP(totals.awaySaves,totals.homeScore)}%\n`;
         return r;
       };
       
-      // NEW: CSV Export with Player Stats
       const generateCSV=()=>{
         let csv='';
         const d=new Date().toLocaleDateString();
         
-        // Match Header
         csv+=`Game Report,${d}\n`;
         csv+=`${homeName},${totals.homeScore},${awayName},${totals.awayScore}\n\n`;
         
-        // Period Breakdown
         csv+=`Period Breakdown\n`;
         csv+=`Period,${homeName},${awayName}\n`;
         Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(p=>{
@@ -581,20 +490,18 @@ const calcTotals=()=>{
           csv+=`${pLabel},${ps.homeScore},${ps.awayScore}\n`;
         });
         
-        // Goalie Stats
         csv+=`\nGoalie Statistics\n`;
         csv+=`Team,Saves,Shots Against,Save %\n`;
         csv+=`${homeName},${totals.homeSaves},${totals.homeSaves+totals.awayScore},${calcSP(totals.homeSaves,totals.awayScore)}%\n`;
         csv+=`${awayName},${totals.awaySaves},${totals.awaySaves+totals.homeScore},${calcSP(totals.awaySaves,totals.homeScore)}%\n`;
         
-        // Player Stats
         if(Object.keys(playerStats).length>0){
           csv+=`\nPlayer Statistics\n`;
           
           ['home','away'].forEach(team=>{
             const teamName=team==='home'?homeName:awayName;
             csv+=`\n${teamName}\n`;
-            csv+=`Period,Player #,Mål,OnIce+,OnIce-,FO+,FO-,SOG\n`;
+            csv+=`Period,Player #,Goals,OnIce+,OnIce-,FO+,FO-,SOG\n`;
             
             Object.keys(playerStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(period=>{
               const pLabel=parseInt(period)<=3?`P${period}`:`OT${parseInt(period)-3}`;
@@ -602,16 +509,15 @@ const calcTotals=()=>{
               
               Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(pNum=>{
                 const stats=players[pNum];
-                csv+=`${pLabel},${pNum},${stats['Mål']||0},${stats['OnIce+']||0},${stats['OnIce-']||0},${stats['FO+']||0},${stats['FO-']||0},${stats['SOG']||0}\n`;
+                csv+=`${pLabel},${pNum},${stats['Goals']||0},${stats['OnIce+']||0},${stats['OnIce-']||0},${stats['FO+']||0},${stats['FO-']||0},${stats['SOG']||0}\n`;
               });
             });
             
-            // Totals
             const allPlayers={};
             Object.keys(playerStats).forEach(period=>{
               const players=playerStats[period]?.[team]?.players||{};
               Object.keys(players).forEach(pNum=>{
-                if(!allPlayers[pNum])allPlayers[pNum]={'Mål':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+                if(!allPlayers[pNum])allPlayers[pNum]={'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
                 Object.keys(players[pNum]).forEach(stat=>{
                   allPlayers[pNum][stat]=(allPlayers[pNum][stat]||0)+(players[pNum][stat]||0);
                 });
@@ -622,7 +528,7 @@ const calcTotals=()=>{
               csv+=`TOTAL,,,,,,\n`;
               Object.keys(allPlayers).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(pNum=>{
                 const stats=allPlayers[pNum];
-                csv+=`Total,${pNum},${stats['Mål']},${stats['OnIce+']},${stats['OnIce-']},${stats['FO+']},${stats['FO-']},${stats['SOG']}\n`;
+                csv+=`Total,${pNum},${stats['Goals']},${stats['OnIce+']},${stats['OnIce-']},${stats['FO+']},${stats['FO-']},${stats['SOG']}\n`;
               });
             }
           });
@@ -644,10 +550,10 @@ const calcTotals=()=>{
         document.body.removeChild(link);
       };
       
-      const copyStats=()=>navigator.clipboard.writeText(genReport()).then(()=>alert(t.statsCopied)).catch(()=>alert(t.copyFailed));
-      const copyCode=()=>navigator.clipboard.writeText(matchCode).then(()=>alert(t.statsCopied)).catch(()=>alert(t.copyFailed));
+      const copyStats=()=>navigator.clipboard.writeText(genReport()).then(()=>alert('Stats copied!')).catch(()=>alert('Failed to copy'));
+      const copyCode=()=>navigator.clipboard.writeText(matchCode).then(()=>alert('Code copied!')).catch(()=>alert('Failed to copy'));
       const shareStats=()=>{
-        if(navigator.share)navigator.share({title:t.gameReport,text:genReport()}).catch(()=>copyStats());
+        if(navigator.share)navigator.share({title:'Game Report',text:genReport()}).catch(()=>copyStats());
         else copyStats();
       };
       
@@ -659,30 +565,29 @@ const calcTotals=()=>{
       const loadSpotify=()=>{
         setSpotifyLoading(true);
         setTimeout(()=>{
-          setSpotifyLoaded(true);
-          setSpotifyLoading(false);
+        setSpotifyLoaded(true);
+        setSpotifyLoading(false);
         },100);
-      };
-      
-      const refSigs=[
-        {name:t.offside,description:t.armRaised},
-        {name:t.tripping,description:t.strikeLeg},
-        {name:t.holding,description:t.claspWrist},
-        {name:t.highSticking,description:t.twoHandsHigh},
-        {name:t.slashing,description:t.choppingMotion},
-        {name:t.icing,description:t.armsCrossedChest},
-        {name:t.goal,description:t.armsPointedGoal},
-        {name:t.noGoal,description:t.armsCrossedHead},
-        {name:t.timeOut,description:t.handsFormingT},
-        {name:t.penaltyShot,description:t.armsCrossedPointed}
-      ];
+        };
 
-// PLAYER STATS SCREEN - Full screen mode
-      if(showPlayerStats&&screen==='game'){
+const refSigs=[
+    {name:'Offside',description:'Arm raised straight up'},
+    {name:'Tripping',description:'Strike leg with hand'},
+    {name:'Holding',description:'Clasping wrist'},
+    {name:'High Sticking',description:'Two hands held high'},
+    {name:'Slashing',description:'Chopping motion'},
+    {name:'Icing',description:'Arms crossed at chest'},
+    {name:'Goal',description:'Both arms pointed at goal'},
+    {name:'No Goal',description:'Arms crossed overhead'},
+    {name:'Time Out',description:'Hands forming T'},
+    {name:'Penalty Shot',description:'Arms crossed then pointed'}
+  ];
+
+if(showPlayerStats&&screen==='game'){
         const statColumns={
-          'goals':['Mål','OnIce+','OnIce-'],
+          'goals':['Goals','OnIce+','OnIce-'],
           'faceoffs':['FO+','FO-'],
-          'all':['Mål','OnIce+','OnIce-','FO+','FO-','SOG']
+          'all':['Goals','OnIce+','OnIce-','FO+','FO-','SOG']
         };
         
         const activeColumns=playerStatsMoment==='goals'?statColumns.goals:
@@ -708,13 +613,14 @@ const calcTotals=()=>{
                       {activeColumns.map(col=>(
                         <th key={col} className="px-2 py-2 text-center text-xs font-semibold">{col}</th>
                       ))}
+                      {playerStatsEditMode&&<th className="px-2 py-2 text-center text-xs font-semibold"></th>}
                     </tr>
                   </thead>
                   <tbody>
                     {playerNums.length===0?(
                       <tr>
-                        <td colSpan={activeColumns.length+1} className={`text-center py-8 ${darkMode?'text-gray-400':'text-gray-500'}`}>
-                          {language==='en'?'No players added yet':'Inga spelare tillagda än'}
+                        <td colSpan={activeColumns.length+(playerStatsEditMode?2:1)} className={`text-center py-8 ${darkMode?'text-gray-400':'text-gray-500'}`}>
+                          No players added yet
                         </td>
                       </tr>
                     ):playerNums.map(pNum=>{
@@ -729,19 +635,28 @@ const calcTotals=()=>{
                                   <button
                                     onClick={()=>updatePlayerStat(team,pNum,stat,-1)}
                                     disabled={matchEnded||isViewer}
-                                    className={`w-7 h-7 rounded ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 text-red-200':'bg-red-100 hover:bg-red-200 text-red-800'} text-sm font-bold`}
+                                    className={`w-6 h-6 rounded text-xs font-bold ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 text-red-200':'bg-red-100 hover:bg-red-200 text-red-800'}`}
                                   >−</button>
                                 )}
                                 <button
                                   onClick={()=>updatePlayerStat(team,pNum,stat,1)}
                                   disabled={matchEnded||isViewer}
-                                  className={`min-w-[2.5rem] h-7 px-2 rounded ${darkMode?'bg-blue-900 bg-opacity-40 hover:bg-opacity-60 text-blue-200':'bg-blue-100 hover:bg-blue-200 text-blue-800'} text-sm font-bold ${sparkleStats[`${team}${pNum}${stat}${currentPeriod}`]?'sparkle':''}`}
+                                  className={`min-w-[2rem] h-6 px-2 rounded text-xs font-bold ${darkMode?'bg-blue-900 bg-opacity-40 hover:bg-opacity-60 text-blue-200':'bg-blue-100 hover:bg-blue-200 text-blue-800'} ${sparkleStats[`${team}${pNum}${stat}${currentPeriod}`]?'sparkle':''}`}
                                 >
                                   {pStats[stat]||0}
                                 </button>
                               </div>
                             </td>
                           ))}
+                          {playerStatsEditMode&&(
+                            <td className="px-2 py-2">
+                              <button
+                                onClick={()=>removePlayer(team,pNum)}
+                                disabled={matchEnded||isViewer}
+                                className={`w-6 h-6 rounded text-xs font-bold ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 text-red-200':'bg-red-100 hover:bg-red-200 text-red-800'}`}
+                              >−</button>
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
@@ -755,7 +670,7 @@ const calcTotals=()=>{
                     onClick={()=>{setAddPlayerTeam(team);setShowAddPlayerModal(true)}}
                     className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 text-gray-200':'bg-gray-100 hover:bg-gray-200 text-gray-800'} py-2 rounded font-semibold text-sm`}
                   >
-                    + {t.addPlayer}
+                    + Add Player
                   </button>
                 </div>
               )}
@@ -765,13 +680,11 @@ const calcTotals=()=>{
         
         return(
           <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-            {/* Header */}
             <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg sticky top-0 z-50`}>
               <div className="max-w-7xl mx-auto">
-                {/* Period Selector */}
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex gap-2 items-center flex-wrap">
-                    <span className="text-xs font-medium">{t.period}:</span>
+                    <span className="text-xs font-medium">Period:</span>
                     {[1,2,3].map(p=>(
                       <button
                         key={p}
@@ -798,6 +711,21 @@ const calcTotals=()=>{
                         OT{parseInt(p)-3}
                       </button>
                     ))}
+                    {!periodStats[currentPeriod+1]&&currentPeriod>=3&&(
+                      <button
+                        onClick={()=>{
+                          const newP=currentPeriod+1;
+                          const updated={...periodStats,[newP]:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
+                          setPeriodStats(updated);
+                          setCurrentPeriod(newP);
+                          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:updated,currentPeriod:newP});
+                        }}
+                        disabled={matchEnded||isViewer}
+                        className={`px-3 py-1 rounded text-sm font-bold ${darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
+                      >
+                        +OT
+                      </button>
+                    )}
                   </div>
                   
                   <button
@@ -809,7 +737,6 @@ const calcTotals=()=>{
                   </button>
                 </div>
                 
-                {/* Toggles */}
                 <div className="flex gap-4 mb-3 flex-wrap">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -818,29 +745,28 @@ const calcTotals=()=>{
                       onChange={(e)=>setPlayerStatsEditMode(e.target.checked)}
                       className="w-4 h-4"
                     />
-                    <span className="text-sm">{t.editMode}</span>
+                    <span className="text-sm">Edit Mode</span>
                   </label>
                   
                   <label className="flex items-center gap-2">
-                    <span className="text-sm">{t.viewMode}:</span>
+                    <span className="text-sm">View:</span>
                     <select
                       value={playerStatsViewMode}
                       onChange={(e)=>setPlayerStatsViewMode(e.target.value)}
                       className={`px-2 py-1 rounded text-sm ${darkMode?'bg-gray-700 text-white':'bg-white text-gray-800'}`}
                     >
-                      <option value="sideBySide">{t.sideBySide}</option>
-                      <option value="stacked">{t.stacked}</option>
+                      <option value="sideBySide">Side by Side</option>
+                      <option value="stacked">Stacked</option>
                     </select>
                   </label>
                 </div>
                 
-                {/* Moment Selector */}
                 <div className="flex gap-2 items-center flex-wrap">
-                  <span className="text-sm font-medium">{t.moment}:</span>
+                  <span className="text-sm font-medium">Stats:</span>
                   {[
-                    {key:'goals',label:t.goals},
-                    {key:'faceoffs',label:t.faceoffs},
-                    {key:'all',label:t.all}
+                    {key:'goals',label:'Goals'},
+                    {key:'faceoffs',label:'Faceoffs'},
+                    {key:'all',label:'All'}
                   ].map(m=>(
                     <button
                       key={m.key}
@@ -854,7 +780,6 @@ const calcTotals=()=>{
               </div>
             </div>
             
-            {/* Tables */}
             <div className="max-w-7xl mx-auto p-4">
               <div className={`grid ${playerStatsViewMode==='sideBySide'?'grid-cols-1 lg:grid-cols-2':'grid-cols-1'} gap-4`}>
                 {renderPlayerTable('home')}
@@ -862,32 +787,45 @@ const calcTotals=()=>{
               </div>
             </div>
             
-            {/* Add Player Modal */}
             {showAddPlayerModal&&(
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-6 max-w-sm w-full`}>
-                  <h3 className="text-xl font-bold mb-4">{t.enterPlayerNumber}</h3>
-                  <input
-                    type="number"
-                    value={addPlayerNumber}
-                    onChange={(e)=>setAddPlayerNumber(e.target.value)}
-                    placeholder="#"
-                    className={`w-full px-4 py-3 border rounded-lg text-center text-2xl font-bold mb-4 ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
-                    autoFocus
-                    onKeyPress={(e)=>{if(e.key==='Enter')addPlayer(addPlayerTeam,addPlayerNumber)}}
-                  />
-                  <div className="flex gap-3">
+                <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
+                  <h3 className="text-lg font-bold mb-3">Add Player(s)</h3>
+                  <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
+                    {addPlayerNumbers.map((num,idx)=>(
+                      <input
+                        key={idx}
+                        type="number"
+                        value={num}
+                        onChange={(e)=>{
+                          const newNums=[...addPlayerNumbers];
+                          newNums[idx]=e.target.value;
+                          setAddPlayerNumbers(newNums);
+                        }}
+                        placeholder={`#${idx+1}`}
+                        className={`w-full px-3 py-2 border rounded text-center font-bold ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
+                        autoFocus={idx===0}
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={()=>setAddPlayerNumbers([...addPlayerNumbers,''])}
+                    className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold text-sm mb-3`}
+                  >
+                    + Add Another
+                  </button>
+                  <div className="flex gap-2">
                     <button
-                      onClick={()=>{setShowAddPlayerModal(false);setAddPlayerNumber('')}}
-                      className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold`}
+                      onClick={()=>{setShowAddPlayerModal(false);setAddPlayerNumbers([''])}}
+                      className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold text-sm`}
                     >
-                      {t.cancel}
+                      Cancel
                     </button>
                     <button
-                      onClick={()=>addPlayer(addPlayerTeam,addPlayerNumber)}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold"
+                      onClick={()=>addPlayers(addPlayerTeam,addPlayerNumbers)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold text-sm"
                     >
-                      {t.add}
+                      Add
                     </button>
                   </div>
                 </div>
@@ -897,129 +835,119 @@ const calcTotals=()=>{
         );
       }
 
-// RECONNECT PROMPT
-      if(showReconnectPrompt)return(
+if(showReconnectPrompt)return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <h3 className="text-xl font-bold mb-3">{t.reconnectPrompt}</h3>
+              <h3 className="text-xl font-bold mb-3">Reconnect to match</h3>
               <p className={`${darkMode?'text-gray-300':'text-gray-600'} mb-6`}>
-                {t.matchCode}: <span className="font-mono font-bold">{savedMatchCode}</span>
+                Match Code: <span className="font-mono font-bold">{savedMatchCode}</span>
               </p>
               <div className="flex gap-3">
-                <button onClick={reconnectToMatch} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">{t.reconnect}</button>
-                <button onClick={startNewSession} className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}>{t.startNew}</button>
+                <button onClick={reconnectToMatch} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Reconnect</button>
+                <button onClick={startNewSession} className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}>Start New</button>
               </div>
             </div>
           </div>
         </div>
       );
 
-      // START SCREEN
       if(screen==='start')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <div className="text-center mb-8">
-                <div className="text-5xl mb-4">🏒</div>
                 <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
                 <p className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
-                  {language==='en'?'Track your game together':'Följ matchen tillsammans'}
+                  Track your game together
                 </p>
               </div>
               <div className="space-y-4">
-                <button onClick={()=>setScreen('create')} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.createMatch}</button>
-                <button onClick={()=>setScreen('join')} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-4 rounded-xl font-bold text-lg shadow-lg`}>{t.joinMatch}</button>
-                <button onClick={continueAlone} className={`w-full ${darkMode?'text-gray-400 hover:text-gray-300':'text-gray-500 hover:text-gray-700'} py-2 text-sm`}>→ {t.continueAlone}</button>
+                <button onClick={()=>setScreen('create')} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CREATE NEW MATCH</button>
+                <button onClick={()=>setScreen('join')} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-4 rounded-xl font-bold text-lg shadow-lg`}>JOIN MATCH</button>
+                <button onClick={continueAlone} className={`w-full ${darkMode?'text-gray-400 hover:text-gray-300':'text-gray-500 hover:text-gray-700'} py-2 text-sm`}>→ Or continue alone</button>
               </div>
               <div className="mt-6 text-center">
-                <button onClick={()=>setLanguage(language==='en'?'sv':'en')} className={`text-sm ${darkMode?'text-gray-400':'text-gray-500'}`}>{language==='en'?'🇸🇪 Svenska':'🇬🇧 English'}</button>
-                <span className="mx-2">|</span>
-                <button onClick={()=>setDarkMode(!darkMode)} className={`text-sm ${darkMode?'text-gray-400':'text-gray-500'}`}>{darkMode?'☀️':'🌙'}</button>
+                <button onClick={()=>setDarkMode(!darkMode)} className={`text-sm ${darkMode?'text-gray-400':'text-gray-500'}`}>{darkMode?'☀️ Light Mode':'🌙 Dark Mode'}</button>
               </div>
             </div>
           </div>
         </div>
       );
 
-      // CREATE SCREEN
       if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← {t.goBack}</button>
-              <h2 className="text-2xl font-bold mb-6">{t.newMatch}</h2>
+              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
+              <h2 className="text-2xl font-bold mb-6">New Match</h2>
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-sm mb-2">{t.homeTeam}</label>
+                  <label className="block text-sm mb-2">Home Team</label>
                   <input type="text" value={homeName} onChange={e=>setHomeName(e.target.value)} className={`w-full px-4 py-3 border rounded-lg ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
                 </div>
                 <div>
-                  <label className="block text-sm mb-2">{t.awayTeam}</label>
+                  <label className="block text-sm mb-2">Away Team</label>
                   <input type="text" value={awayName} onChange={e=>setAwayName(e.target.value)} className={`w-full px-4 py-3 border rounded-lg ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
                 </div>
               </div>
-              <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.startMatch}</button>
+              <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START MATCH</button>
             </div>
           </div>
         </div>
       );
 
-      // CREATED SCREEN
       if(screen==='created')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <div className="text-center mb-6">
-                <div className="text-5xl mb-4">✅</div>
-                <h2 className="text-2xl font-bold mb-2">{t.matchCreated}</h2>
+                <h2 className="text-2xl font-bold mb-2">Match Created</h2>
               </div>
               <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
-                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>📝 Editor Code (max 5 users)</p>
+                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}> Editor Code (max 5 users)</p>
                 <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-4">
                   <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
                     <div className={`text-3xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
                   </div>
-                  <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">{t.copy}</button>
+                  <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">Copy</button>
                 </div>
                 
-                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>👁️ Viewer Code (read-only, unlimited)</p>
+                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}> Viewer Code (read-only)</p>
                 <div className="flex flex-col sm:flex-row items-stretch gap-3">
                   <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
                     <div className={`text-2xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}-V</div>
                   </div>
-                  <button onClick={()=>navigator.clipboard.writeText(matchCode+'-V').then(()=>alert(t.statsCopied)).catch(()=>alert(t.copyFailed))} className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">{t.copy}</button>
+                  <button onClick={()=>navigator.clipboard.writeText(matchCode+'-V').then(()=>alert('Code copied!')).catch(()=>alert('Failed to copy'))} className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">Copy</button>
                 </div>
               </div>
 
               {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
-              <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.continueToMatch}</button>
-              <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>{t.goBack}</button>
+              <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO MATCH</button>
+              <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>Go Back</button>
             </div>
           </div>
         </div>
       );
 
-      // JOIN SCREEN
       if(screen==='join')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← {t.goBack}</button>
-              <h2 className="text-2xl font-bold mb-6">{t.joinMatch}</h2>
+              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
+              <h2 className="text-2xl font-bold mb-6">Join Match</h2>
               <div className="mb-6">
-                <label className="block text-sm mb-2">{t.enterCode}</label>
+                <label className="block text-sm mb-2">Enter match code:</label>
                 <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={8} placeholder="ABC123" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
               </div>
               {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
-              <button onClick={joinMatch} disabled={!(inputCode.length===6||(inputCode.length===8&&inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">{t.connect}</button>
+              <button onClick={joinMatch} disabled={!(inputCode.length===6||(inputCode.length===8&&inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONNECT</button>
             </div>
           </div>
         </div>
       );
 
-// FOCUS MODE - Improved compact design with dark mode fix
-      if(focusMode&&screen==='game'){
+if(focusMode&&screen==='game'){
         const ft=focusMode==='home'?
           {name:sidesSwapped?awayName:homeName,score:sidesSwapped?totals.awayScore:totals.homeScore,saves:sidesSwapped?totals.awaySaves:totals.homeSaves,team:sidesSwapped?'away':'home',oppScore:sidesSwapped?totals.homeScore:totals.awayScore}:
           {name:sidesSwapped?homeName:awayName,score:sidesSwapped?totals.homeScore:totals.awayScore,saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away',oppScore:sidesSwapped?totals.awayScore:totals.homeScore};
@@ -1039,7 +967,7 @@ const calcTotals=()=>{
             <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-3 shadow-lg`}>
               <div className="max-w-4xl mx-auto flex justify-between items-center">
                 <div className="flex gap-2 items-center">
-                  <span className="text-xs font-medium">{t.period}:</span>
+                  <span className="text-xs font-medium">Period:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
                   {!periodStats[4] && currentPeriod >= 3 && (
@@ -1060,6 +988,7 @@ const calcTotals=()=>{
                         }
                       }}
                       disabled={matchEnded||isViewer}
+                      className={`px-2 py-1 rounded text-sm font-bold ${darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
                     >
                       +OT
                     </button>
@@ -1082,10 +1011,8 @@ const calcTotals=()=>{
 
             <div className="max-w-4xl mx-auto p-3">
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-xl shadow-xl p-4`}>
-                {/* GOALS SECTION */}
-                <div className={`text-lg font-semibold mb-3 text-center ${darkMode?'text-gray-200':'opacity-75'}`}>{t.goals}</div>
+                <div className={`text-lg font-semibold mb-3 text-center ${darkMode?'text-gray-200':'opacity-75'}`}>Goals</div>
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  {/* Focus Team Goals */}
                   <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-lg p-3`}>
                     <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{ft.name}</div>
                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -1093,10 +1020,9 @@ const calcTotals=()=>{
                       <div className={`text-5xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ft.team}Score${currentPeriod}`]?'sparkle':''}`}>{ft.score}</div>
                       <button onClick={()=>updateStat(ft.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
                     </div>
-                    <div className={`text-xs text-center ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Score']}{i<arr.length-1?'-':''}</span>)}</div>
+                    <div className={`text-xs text-center ${darkMode?'text-gray-300':'opacity-75'}`}>By period: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Score']}{i<arr.length-1?'-':''}</span>)}</div>
                   </div>
                   
-                  {/* Opponent Goals */}
                   <div className={`${darkMode?'bg-gray-700':'bg-red-50'} rounded-lg p-3`}>
                     <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{on}</div>
                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -1104,15 +1030,13 @@ const calcTotals=()=>{
                       <div className={`text-5xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ot}Score${currentPeriod}`]?'sparkle':''}`}>{os}</div>
                       <button onClick={()=>updateStat(ot,'Score',1)} disabled={matchEnded||isViewer} className="bg-green-500 hover:bg-green-600 text-white w-12 h-12 rounded-lg text-2xl font-bold">+</button>
                     </div>
-                    <div className={`text-xs text-center ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Score']}{i<arr.length-1?'-':''}</span>)}</div>
+                    <div className={`text-xs text-center ${darkMode?'text-gray-300':'opacity-75'}`}>By period: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Score']}{i<arr.length-1?'-':''}</span>)}</div>
                   </div>
                 </div>
 
-                {/* SAVES SECTION */}
                 <div className={`pt-4 border-t-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                  <div className={`text-lg font-semibold mb-3 text-center ${darkMode?'text-gray-200':'opacity-75'}`}>{t.saves}</div>
+                  <div className={`text-lg font-semibold mb-3 text-center ${darkMode?'text-gray-200':'opacity-75'}`}>Saves</div>
                   <div className="grid grid-cols-2 gap-3 mb-4">
-                    {/* Focus Team Saves */}
                     <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-lg p-3`}>
                       <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{ft.name}</div>
                       <div className="flex items-center justify-center gap-2 mb-2">
@@ -1120,9 +1044,9 @@ const calcTotals=()=>{
                         <div className={`text-4xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ft.team}Saves${currentPeriod}`]?'sparkle':''}`}>{ft.saves}</div>
                         <button onClick={()=>updateStat(ft.team,'Saves',1)} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
                       </div>
-                      <div className={`text-xs text-center mb-2 ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Saves']}{i<arr.length-1?'-':''}</span>)}</div>
+                      <div className={`text-xs text-center mb-2 ${darkMode?'text-gray-300':'opacity-75'}`}>By period: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ft.team+'Saves']}{i<arr.length-1?'-':''}</span>)}</div>
                       <div className={`${darkMode?'bg-gray-600 text-gray-100':'bg-white'} rounded p-2 text-xs`}>
-                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{(() => {
+                        <div className="flex justify-between mb-1"><span>SOG:</span><span className="font-bold">{(() => {
                           const oppTeam = ft.team === 'home' ? 'away' : 'home';
                           return Object.keys(periodStats).reduce((sum,p)=>sum+(periodStats[p][oppTeam+'Saves']+periodStats[p][ft.team+'Score']),0);
                         })()}</span></div>
@@ -1130,7 +1054,7 @@ const calcTotals=()=>{
                           const oppTeam = ft.team === 'home' ? 'away' : 'home';
                           return periodStats[p][oppTeam+'Saves']+periodStats[p][ft.team+'Score'];
                         }).join('-')})</div>
-                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{(() => {
+                        <div className="flex justify-between mb-1 mt-2"><span>SA:</span><span className="font-bold">{(() => {
                           const oppTeam = ft.team === 'home' ? 'away' : 'home';
                           return Object.keys(periodStats).reduce((sum,p)=>sum+(periodStats[p][ft.team+'Saves']+periodStats[p][oppTeam+'Score']),0);
                         })()}</span></div>
@@ -1138,11 +1062,10 @@ const calcTotals=()=>{
                           const oppTeam = ft.team === 'home' ? 'away' : 'home';
                           return periodStats[p][ft.team+'Saves']+periodStats[p][oppTeam+'Score'];
                         }).join('-')})</div>
-                        <div className={`flex justify-between mt-2 pt-2 border-t ${darkMode?'border-gray-500':''}`}><span>{t.savePercent}:</span><span className="font-bold">{calcSP(ft.saves,ft.oppScore)}%</span></div>
+                        <div className={`flex justify-between mt-2 pt-2 border-t ${darkMode?'border-gray-500':''}`}><span>SVS %:</span><span className="font-bold">{calcSP(ft.saves,ft.oppScore)}%</span></div>
                       </div>
                     </div>
                     
-                    {/* Opponent Saves */}
                     <div className={`${darkMode?'bg-gray-700':'bg-red-50'} rounded-lg p-3`}>
                       <div className={`text-sm font-semibold text-center mb-2 ${darkMode?'text-gray-100':''}`}>{on}</div>
                       <div className="flex items-center justify-center gap-2 mb-2">
@@ -1150,9 +1073,9 @@ const calcTotals=()=>{
                         <div className={`text-4xl font-bold text-center min-w-[80px] ${darkMode?'text-white':''} ${sparkleStats[`${ot}Saves${currentPeriod}`]?'sparkle':''}`}>{otsv}</div>
                         <button onClick={()=>updateStat(ot,'Saves',1)} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-600 hover:bg-gray-500':'bg-gray-300 hover:bg-gray-400'} text-white w-12 h-12 rounded-lg text-2xl font-bold`}>+</button>
                       </div>
-                      <div className={`text-xs text-center mb-2 ${darkMode?'text-gray-300':'opacity-75'}`}>{t.byPeriod}: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Saves']}{i<arr.length-1?'-':''}</span>)}</div>
+                      <div className={`text-xs text-center mb-2 ${darkMode?'text-gray-300':'opacity-75'}`}>By period: {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][ot+'Saves']}{i<arr.length-1?'-':''}</span>)}</div>
                       <div className={`${darkMode?'bg-gray-600 text-gray-100':'bg-white'} rounded p-2 text-xs`}>
-                        <div className="flex justify-between mb-1"><span>{t.shotsFor}:</span><span className="font-bold">{(() => {
+                        <div className="flex justify-between mb-1"><span>SOG:</span><span className="font-bold">{(() => {
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return Object.keys(periodStats).reduce((sum,p)=>sum+(periodStats[p][oppTeam+'Saves']+periodStats[p][ot+'Score']),0);
                         })()}</span></div>
@@ -1160,7 +1083,7 @@ const calcTotals=()=>{
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return periodStats[p][oppTeam+'Saves']+periodStats[p][ot+'Score'];
                         }).join('-')})</div>
-                        <div className="flex justify-between mb-1 mt-2"><span>{t.shotsAgainst}:</span><span className="font-bold">{(() => {
+                        <div className="flex justify-between mb-1 mt-2"><span>SA:</span><span className="font-bold">{(() => {
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return Object.keys(periodStats).reduce((sum,p)=>sum+(periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score']),0);
                         })()}</span></div>
@@ -1168,7 +1091,7 @@ const calcTotals=()=>{
                           const oppTeam = ot === 'home' ? 'away' : 'home';
                           return periodStats[p][ot+'Saves']+periodStats[p][oppTeam+'Score'];
                         }).join('-')})</div>
-                        <div className={`flex justify-between mt-2 pt-2 border-t ${darkMode?'border-gray-500':''}`}><span>{t.savePercent}:</span><span className="font-bold">{calcSP(otsv,ft.score)}%</span></div>
+                        <div className={`flex justify-between mt-2 pt-2 border-t ${darkMode?'border-gray-500':''}`}><span>SVS %:</span><span className="font-bold">{calcSP(otsv,ft.score)}%</span></div>
                       </div>
                     </div>
                   </div>
@@ -1179,11 +1102,10 @@ const calcTotals=()=>{
         );
       }
 
-// GAME SCREEN - Normal mode
-      return(
+return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           {isViewer&&<div className="bg-yellow-500 text-gray-900 px-4 py-2 text-center font-semibold text-sm">
-            👁️ VIEWER MODE - You are viewing live stats (read-only)
+             VIEWER MODE - You are viewing live stats (read-only)
           </div>}
           <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
           <audio ref={audioRefs.awayGoal} src="awayGoal.mp3"/>
@@ -1196,7 +1118,7 @@ const calcTotals=()=>{
               {isMultiplayer&&<div className="mb-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded-full text-xs font-bold animate-pulse"><span className="w-1.5 h-1.5 bg-white rounded-full"></span>LIVE</span>}
-                  {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">{t.matchEnded}</span>}
+                  {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">MATCH ENDED</span>}
                   <span className="text-xs">👥 {connectedUsers}</span>
                   {!isViewer&&viewerCount>0&&<span className="text-xs">👁️ {viewerCount}</span>}
                 </div>
@@ -1214,7 +1136,7 @@ const calcTotals=()=>{
 
               <div className="flex justify-between items-center mb-3">
                 <div className="flex gap-2 items-center">
-                  <span className="text-sm font-medium">{t.period}:</span>
+                  <span className="text-sm font-medium">Period:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
                   {!periodStats[4] && currentPeriod >= 3 && (
@@ -1235,6 +1157,7 @@ const calcTotals=()=>{
                         }
                       }}
                       disabled={matchEnded||isViewer}
+                      className={`px-3 py-1 rounded font-bold text-xs ${darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
                     >
                       +OT
                     </button>
@@ -1248,68 +1171,60 @@ const calcTotals=()=>{
 
               {showSettings&&<div className={`${darkMode?'bg-gray-700 text-white':'bg-white text-gray-800'} rounded-lg p-4 mb-4 max-h-[70vh] overflow-y-auto`}>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-bold">{t.settings}</h3>
+                  <h3 className="font-bold">Settings</h3>
                   <button onClick={()=>setShowSettings(false)} className={`${darkMode?'text-gray-400':'text-gray-500'} text-2xl`}>×</button>
                 </div>
                 
-                {/* Two column layout on desktop */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   
-                  {/* Left Column - Match Settings */}
                   <div className="space-y-3">
                     <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>Match Settings</h4>
                     <div>
-                      <label className="block text-sm mb-1">{t.homeTeam}</label>
+                      <label className="block text-sm mb-1">Home Team</label>
                       <div className="flex gap-2">
                         <input type="text" value={homeName} onChange={e=>{setHomeName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({homeName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                        <button onClick={()=>setHomeName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.clear}</button>
+                        <button onClick={()=>setHomeName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Clear</button>
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm mb-1">{t.awayTeam}</label>
+                      <label className="block text-sm mb-1">Away Team</label>
                       <div className="flex gap-2">
                         <input type="text" value={awayName} onChange={e=>{setAwayName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({awayName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                        <button onClick={()=>setAwayName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.clear}</button>
+                        <button onClick={()=>setAwayName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Clear</button>
                       </div>
                     </div>
                     <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">{t.swapSides}</span>
+                      <span className="text-sm">Swap Sides</span>
                       <input type="checkbox" checked={sidesSwapped} onChange={e=>{setSidesSwapped(e.target.checked);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({sidesSwapped:e.target.checked})}} disabled={matchEnded||isViewer} className="w-5 h-5"/>
                     </label>
+                    <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 border border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border border-red-300 text-gray-900'} py-2 rounded text-sm font-semibold`}>
+                      Reset All Stats
+                    </button>
                   </div>
                   
-                  {/* Right Column - My Preferences */}
                   <div className="space-y-3">
                     <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>My Preferences</h4>
                     <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">{t.language}</span>
-                      <select value={language} onChange={e=>setLanguage(e.target.value)} className={`px-3 py-2 rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':'border'}`}>
-                        <option value="en">English</option>
-                        <option value="sv">Svenska</option>
-                      </select>
-                    </label>
-                    <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">{t.darkMode}</span>
+                      <span className="text-sm">Dark Mode</span>
                       <input type="checkbox" checked={darkMode} onChange={e=>setDarkMode(e.target.checked)} className="w-5 h-5"/>
                     </label>
                     <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">{t.keepScreenOn}</span>
+                      <span className="text-sm">Keep Screen On</span>
                       <input type="checkbox" checked={keepScreenOn} onChange={e=>setKeepScreenOn(e.target.checked)} className="w-5 h-5"/>
                     </label>
                   </div>
                 </div>
 
-                {/* Full width sections below */}
                 <div className="space-y-3 mt-4 pt-4 border-t">
                   <div>
-                    <label className="block text-sm mb-2 font-semibold">{t.spotifyPlaylistUrl}</label>
+                    <label className="block text-sm mb-2 font-semibold">Spotify Playlist URL</label>
                     <div className="flex gap-2">
                       <input type="text" value={spotifyPlaylist} onChange={e=>{setSpotifyPlaylist(e.target.value);setSpotifyLoaded(false)}} placeholder="https://open.spotify.com/playlist/..." className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                      <button onClick={()=>{setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');setSpotifyLoaded(false)}} className={`px-3 py-2 rounded text-sm whitespace-nowrap ${darkMode?'bg-gray-600':'bg-gray-200'}`}>{t.restore}</button>
+                      <button onClick={()=>{setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');setSpotifyLoaded(false)}} className={`px-3 py-2 rounded text-sm whitespace-nowrap ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Restore</button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm mb-2 font-semibold">{t.externalLink}</label>
+                    <label className="block text-sm mb-2 font-semibold">External Link</label>
                     <input type="text" value={externalLinkTitle} onChange={e=>setExternalLinkTitle(e.target.value)} placeholder="Club Rules" className={`w-full px-3 py-2 border rounded text-sm mb-2 ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                     <input type="text" value={externalLinkUrl} onChange={e=>setExternalLinkUrl(e.target.value)} placeholder="https://..." className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                   </div>
@@ -1334,35 +1249,34 @@ const calcTotals=()=>{
                   <div key={idx} className={`${darkMode?'bg-gray-700 border border-gray-600':'bg-white bg-opacity-10'} rounded-lg p-3`}>
                     <div className="text-sm font-semibold mb-2">{tm.name}</div>
                     <div className="mb-3">
-                      <div className="text-xs opacity-75 mb-1">{t.goals}</div>
+                      <div className="text-xs opacity-75 mb-1">Goals</div>
                       <div className="flex items-center justify-center gap-2">
                         <button onClick={()=>updateStat(tm.team,'Score',-1)} disabled={matchEnded||isViewer} className="bg-red-500 bg-opacity-50 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
                         <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`]?'sparkle':''}`}>{tm.score}</div>
                         <button onClick={()=>updateStat(tm.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-green-500 bg-opacity-50 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
                       </div>
-                      {!statsCollapsed&&<div className="text-xs opacity-75 mt-1 text-center">{t.byPeriod}: ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Score']}{i<arr.length-1?'-':''}</span>)})</div>}
+                      {!statsCollapsed&&<div className="text-xs opacity-75 mt-1 text-center">By period: ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Score']}{i<arr.length-1?'-':''}</span>)})</div>}
                     </div>
                     <div className={`pt-2 border-t ${darkMode?'border-gray-600':'border-white border-opacity-20'}`}>
-                      <div className="text-xs opacity-75 mb-1">{t.saves}</div>
+                      <div className="text-xs opacity-75 mb-1">Saves</div>
                       <div className="flex items-center justify-center gap-2">
                         <button onClick={()=>updateStat(tm.team,'Saves',-1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
                         <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`]?'sparkle':''}`}>{tm.saves}</div>
                         <button onClick={()=>updateStat(tm.team,'Saves',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
                       </div>
                       {!statsCollapsed&&<div className={`${darkMode?'bg-gray-600':'bg-white bg-opacity-10'} rounded p-2 text-xs text-center mt-2`}>
-                        <div>{t.shotsFor}: {tm.oppShots} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][(tm.team==='home'?'away':'home')+'Saves']+periodStats[p][tm.team+'Score'])).join('-')})</div>
-                        <div>{t.shotsAgainst}: {tm.saves+tm.oppScore} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][tm.team+'Saves']+periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
-                        <div>{t.savePercent}: {calcSP(tm.saves,tm.oppScore)}% ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>calcSP(periodStats[p][tm.team+'Saves'],periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
+                        <div>SOG: {tm.oppShots} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][(tm.team==='home'?'away':'home')+'Saves']+periodStats[p][tm.team+'Score'])).join('-')})</div>
+                        <div>SA: {tm.saves+tm.oppScore} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][tm.team+'Saves']+periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
+                        <div>SVS %: {calcSP(tm.saves,tm.oppScore)}% ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>calcSP(periodStats[p][tm.team+'Saves'],periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
                       </div>}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-10'} py-2 rounded text-sm`}>{t.resetAllStats}</button>
-                <button onClick={()=>{setFocusMode('home');setActiveTab('audio')}} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ {t.focusMode}</button>
-                {!isViewer&&<button onClick={()=>setShowPlayerStats(true)} className={`${darkMode?'bg-purple-700 hover:bg-purple-600':'bg-purple-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>📊 {t.playerStats}</button>}
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={()=>{setFocusMode('home');setActiveTab('audio')}} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Goalie Focus</button>
+                {!isViewer&&<button onClick={()=>setShowPlayerStats(true)} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Skater Focus</button>}
               </div>
             </div>
           </div>
@@ -1371,7 +1285,7 @@ const calcTotals=()=>{
             <div className="max-w-6xl mx-auto flex">
               {(isViewer?['stats']:['audio','stats','referee',...(externalLinkUrl?['external']:[])]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab===tab?(darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white'):(darkMode?'bg-gray-700 text-gray-300':'bg-gray-100 text-gray-600')}`}>
-                  {tab==='audio'?t.audio:tab==='stats'?t.stats:tab==='referee'?t.referee:externalLinkTitle||t.externalLinkTab}
+                  {tab==='audio'?'Audio':tab==='stats'?'Stats':tab==='referee'?'Referee':externalLinkTitle||'Link'}
                 </button>
               ))}
             </div>
@@ -1379,7 +1293,6 @@ const calcTotals=()=>{
 
           <div className="max-w-6xl mx-auto p-4">
             {activeTab==='audio'&&<div>
-              {/* Intro Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
                 <button onClick={toggleIntro} className={`w-full ${introPlaying?(darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'):(darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-100 hover:bg-gray-200')} ${darkMode&&!introPlaying?'text-gray-200':'text-white'} ${!darkMode&&!introPlaying?'text-gray-800':''} py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2`}>
                   {introPlaying?<>
@@ -1393,9 +1306,8 @@ const calcTotals=()=>{
                 </button>
               </div>
 
-              {/* Goal Sounds Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>🚨 {t.goal}</h3>
+                <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>🚨 Goal</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     {
@@ -1427,9 +1339,8 @@ const calcTotals=()=>{
                 </div>
               </div>
 
-              {/* Penalty Sounds Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>{t.penalty}</h3>
+                <h3 className={`text-xs font-semibold mb-2 ${darkMode?'text-white':''}`}>Penalty</h3>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     {
@@ -1461,54 +1372,64 @@ const calcTotals=()=>{
                 </div>
               </div>
 
-              {/* Stop All Button */}
               <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-grey-900'} py-2 rounded-lg font-semibold mb-3 transition-colors`}>
-                {t.stopAllSounds}
+                Stop All Sounds
               </button>
 
-              {/* Spotify Section */}
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3`}>
-                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>▶ {language==='en'?'Load Spotify':'Ladda Spotify'}</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>{language==='en'?'Loading...':'Laddar...'}</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>{language==='en'?'Invalid Spotify URL. Please check Settings.':'Ogiltig Spotify-URL. Kontrollera inställningarna.'}</div>}</div>}
+                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>▶ Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>Invalid Spotify URL. Please check Settings.</div>}</div>}
               </div>
             </div>}
 
-{activeTab==='stats'&&<div>
+            {activeTab==='stats'&&<div>
               {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>{
                 p=parseInt(p);
                 const ps=periodStats[p];
+                
+                const renderTeamStats=(team)=>{
+                  const isHome=team==='home';
+                  const name=isHome?homeName:awayName;
+                  const score=ps[team+'Score'];
+                  const saves=ps[team+'Saves'];
+                  const oppTeam=isHome?'away':'home';
+                  const oppScore=ps[oppTeam+'Score'];
+                  const shotsFor=ps[oppTeam+'Saves']+score;
+                  const shotsAgainst=saves+oppScore;
+                  const color=darkMode?(isHome?'bg-blue-900 bg-opacity-30 border-blue-700':'bg-red-900 bg-opacity-30 border-red-700'):(isHome?'bg-blue-50':'bg-red-50');
+                  
+                  return(
+                    <div className={`${color} ${darkMode?'border':''} rounded p-3`}>
+                      <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{name}</div>
+                      <div className={`text-sm space-y-1 ${darkMode?'text-gray-300':'text-gray-700'}`}>
+                        <div className="flex justify-between"><span>Goals:</span><span className="font-bold">{score}</span></div>
+                        <div className="flex justify-between"><span>SOG:</span><span className="font-bold">{shotsFor}</span></div>
+                        <div className="flex justify-between"><span>Saves:</span><span className="font-bold">{saves}</span></div>
+                        <div className="flex justify-between"><span>SA:</span><span className="font-bold">{shotsAgainst}</span></div>
+                        <div className="flex justify-between border-t pt-1"><span>SVS %:</span><span className="font-bold">{calcSP(saves,oppScore)}%</span></div>
+                      </div>
+                    </div>
+                  );
+                };
+                
                 return(
                   <div key={p} className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>{p<=3?`${t.period} ${p}`:`OT${p-3}`}</h3>
+                      <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>{p<=3?`Period ${p}`:`OT${p-3}`}</h3>
                       {currentPeriod===p&&<span className="bg-yellow-400 text-blue-900 px-3 py-1 rounded text-sm font-bold">Current</span>}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      {[
-                        {name:homeName,score:ps.homeScore,saves:ps.homeSaves,shotsFor:ps.awaySaves+ps.homeScore,shotsAgainst:ps.homeSaves+ps.awayScore,oppScore:ps.awayScore,color:darkMode?'bg-blue-900 bg-opacity-30 border-blue-700':'bg-blue-50'},
-                        {name:awayName,score:ps.awayScore,saves:ps.awaySaves,shotsFor:ps.homeSaves+ps.awayScore,shotsAgainst:ps.awaySaves+ps.homeScore,oppScore:ps.homeScore,color:darkMode?'bg-red-900 bg-opacity-30 border-red-700':'bg-red-50'}
-                      ].map((tm,i)=>(
-                        <div key={i} className={`${tm.color} ${darkMode?'border':''} rounded p-3`}>
-                          <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{tm.name}</div>
-                          <div className={`text-sm space-y-1 ${darkMode?'text-gray-300':'text-gray-700'}`}>
-                            <div className="flex justify-between"><span>{t.goals}:</span><span className="font-bold">{tm.score}</span></div>
-                            <div className="flex justify-between"><span>{t.shotsFor}:</span><span className="font-bold">{tm.shotsFor}</span></div>
-                            <div className="flex justify-between"><span>{t.saves}:</span><span className="font-bold">{tm.saves}</span></div>
-                            <div className="flex justify-between"><span>{t.shotsAgainst}:</span><span className="font-bold">{tm.shotsAgainst}</span></div>
-                            <div className="flex justify-between border-t pt-1"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(tm.saves,tm.oppScore)}%</span></div>
-                          </div>
-                        </div>
-                      ))}
+                      {renderTeamStats('home')}
+                      {renderTeamStats('away')}
                     </div>
                     
-                    {/* Player Stats for this period */}
                     {playerStats[p]&&(playerStats[p].home?.players||playerStats[p].away?.players)&&Object.keys({...playerStats[p].home?.players,...playerStats[p].away?.players}).length>0&&(
                       <div className="mt-4 pt-4 border-t">
                         <button
                           onClick={()=>setExpandedPlayerStats(prev=>({...prev,[p]:!prev[p]}))}
-                          className={`w-full text-left font-semibold text-sm ${darkMode?'text-blue-300':'text-blue-600'} flex items-center justify-between`}
+                          className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
                         >
-                          <span>📊 {t.playerStatistics}</span>
-                          <span>{expandedPlayerStats[p]?'▼':'▶'}</span>
+                          <span>Player Statistics</span>
+                          <span>{expandedPlayerStats[p]?'▲':'▼'}</span>
                         </button>
                         
                         {expandedPlayerStats[p]&&(
@@ -1522,24 +1443,37 @@ const calcTotals=()=>{
                               
                               return(
                                 <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
-                                  <div className={`font-semibold mb-2 text-sm ${darkMode?'text-white':''}`}>{teamName}</div>
-                                  <div className="space-y-1 text-xs">
-                                    {playerNums.map(pNum=>{
-                                      const pStats=players[pNum];
-                                      return(
-                                        <div key={pNum} className={`flex justify-between ${darkMode?'text-gray-300':'text-gray-700'}`}>
-                                          <span className="font-bold">#{pNum}</span>
-                                          <span>
-                                            {pStats['Mål']>0&&`⚽${pStats['Mål']} `}
-                                            {pStats['OnIce+']>0&&`➕${pStats['OnIce+']} `}
-                                            {pStats['OnIce-']>0&&`➖${pStats['OnIce-']} `}
-                                            {pStats['FO+']>0&&`🔵${pStats['FO+']} `}
-                                            {pStats['FO-']>0&&`🔴${pStats['FO-']} `}
-                                            {pStats['SOG']>0&&`🎯${pStats['SOG']}`}
-                                          </span>
-                                        </div>
-                                      );
-                                    })}
+                                  <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
+                                  <div className="overflow-x-auto">
+                                    <table className="w-full text-xs">
+                                      <thead>
+                                        <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                          <th className="text-left">#</th>
+                                          <th className="text-center">G</th>
+                                          <th className="text-center">+</th>
+                                          <th className="text-center">-</th>
+                                          <th className="text-center">FO+</th>
+                                          <th className="text-center">FO-</th>
+                                          <th className="text-center">SOG</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {playerNums.map(pNum=>{
+                                          const pStats=players[pNum];
+                                          return(
+                                            <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
+                                              <td className="font-bold py-1">{pNum}</td>
+                                              <td className="text-center">{pStats['Goals']||0}</td>
+                                              <td className="text-center">{pStats['OnIce+']||0}</td>
+                                              <td className="text-center">{pStats['OnIce-']||0}</td>
+                                              <td className="text-center">{pStats['FO+']||0}</td>
+                                              <td className="text-center">{pStats['FO-']||0}</td>
+                                              <td className="text-center">{pStats['SOG']||0}</td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
                                   </div>
                                 </div>
                               );
@@ -1554,35 +1488,42 @@ const calcTotals=()=>{
               
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>{t.final}</h3>
+                  <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>FINAL</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {[
-                    {name:homeName,score:totals.homeScore,saves:totals.homeSaves,shotsFor:totals.awaySaves+totals.homeScore,shotsAgainst:totals.homeSaves+totals.awayScore,oppScore:totals.awayScore,color:darkMode?'bg-blue-900 bg-opacity-30 border-blue-700':'bg-blue-50'},
-                    {name:awayName,score:totals.awayScore,saves:totals.awaySaves,shotsFor:totals.homeSaves+totals.awayScore,shotsAgainst:totals.awaySaves+totals.homeScore,oppScore:totals.homeScore,color:darkMode?'bg-red-900 bg-opacity-30 border-red-700':'bg-red-50'}
-                  ].map((tm,i)=>(
-                    <div key={i} className={`${tm.color} ${darkMode?'border':''} rounded p-3`}>
-                      <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{tm.name}</div>
-                      <div className={`text-sm space-y-1 ${darkMode?'text-gray-300':'text-gray-700'}`}>
-                        <div className="flex justify-between"><span>{t.goals}:</span><span className="font-bold text-lg">{tm.score}</span></div>
-                        <div className="flex justify-between"><span>{t.shotsFor}:</span><span className="font-bold">{tm.shotsFor}</span></div>
-                        <div className="flex justify-between"><span>{t.saves}:</span><span className="font-bold">{tm.saves}</span></div>
-                        <div className="flex justify-between"><span>{t.shotsAgainst}:</span><span className="font-bold">{tm.shotsAgainst}</span></div>
-                        <div className="flex justify-between border-t pt-1"><span>{t.savePercent}:</span><span className="font-bold">{calcSP(tm.saves,tm.oppScore)}%</span></div>
+                  {['home','away'].map(team=>{
+                    const name=team==='home'?homeName:awayName;
+                    const score=team==='home'?totals.homeScore:totals.awayScore;
+                    const saves=team==='home'?totals.homeSaves:totals.awaySaves;
+                    const oppTeam=team==='home'?'away':'home';
+                    const oppScore=team==='home'?totals.awayScore:totals.homeScore;
+                    const shotsFor=(team==='home'?totals.awaySaves:totals.homeSaves)+score;
+                    const shotsAgainst=saves+oppScore;
+                    const color=darkMode?(team==='home'?'bg-blue-900 bg-opacity-30 border-blue-700':'bg-red-900 bg-opacity-30 border-red-700'):(team==='home'?'bg-blue-50':'bg-red-50');
+                    
+                    return(
+                      <div key={team} className={`${color} ${darkMode?'border':''} rounded p-3`}>
+                        <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{name}</div>
+                        <div className={`text-sm space-y-1 ${darkMode?'text-gray-300':'text-gray-700'}`}>
+                          <div className="flex justify-between"><span>Goals:</span><span className="font-bold text-lg">{score}</span></div>
+                          <div className="flex justify-between"><span>SOG:</span><span className="font-bold">{shotsFor}</span></div>
+                          <div className="flex justify-between"><span>Saves:</span><span className="font-bold">{saves}</span></div>
+                          <div className="flex justify-between"><span>SA:</span><span className="font-bold">{shotsAgainst}</span></div>
+                          <div className="flex justify-between border-t pt-1"><span>SVS %:</span><span className="font-bold">{calcSP(saves,oppScore)}%</span></div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 
-                {/* Total Player Stats */}
                 {Object.keys(playerStats).length>0&&(
                   <div className="mt-4 pt-4 border-t">
                     <button
                       onClick={()=>setExpandedPlayerStats(prev=>({...prev,total:!prev.total}))}
-                      className={`w-full text-left font-semibold text-sm ${darkMode?'text-blue-300':'text-blue-600'} flex items-center justify-between mb-3`}
+                      className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between mb-3`}
                     >
-                      <span>📊 {t.totalStats} - {t.playerStatistics}</span>
-                      <span>{expandedPlayerStats.total?'▼':'▶'}</span>
+                      <span>Total Player Statistics</span>
+                      <span>{expandedPlayerStats.total?'▲':'▼'}</span>
                     </button>
                     
                     {expandedPlayerStats.total&&(
@@ -1594,7 +1535,7 @@ const calcTotals=()=>{
                           Object.keys(playerStats).forEach(period=>{
                             const players=playerStats[period]?.[team]?.players||{};
                             Object.keys(players).forEach(pNum=>{
-                              if(!allPlayers[pNum])allPlayers[pNum]={'Mål':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+                              if(!allPlayers[pNum])allPlayers[pNum]={'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
                               Object.keys(players[pNum]).forEach(stat=>{
                                 allPlayers[pNum][stat]=(allPlayers[pNum][stat]||0)+(players[pNum][stat]||0);
                               });
@@ -1612,7 +1553,7 @@ const calcTotals=()=>{
                                   <thead>
                                     <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
                                       <th className="text-left">#</th>
-                                      <th className="text-center">Mål</th>
+                                      <th className="text-center">G</th>
                                       <th className="text-center">+</th>
                                       <th className="text-center">-</th>
                                       <th className="text-center">FO+</th>
@@ -1626,7 +1567,7 @@ const calcTotals=()=>{
                                       return(
                                         <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
                                           <td className="font-bold py-1">{pNum}</td>
-                                          <td className="text-center">{pStats['Mål']}</td>
+                                          <td className="text-center">{pStats['Goals']}</td>
                                           <td className="text-center">{pStats['OnIce+']}</td>
                                           <td className="text-center">{pStats['OnIce-']}</td>
                                           <td className="text-center">{pStats['FO+']}</td>
@@ -1647,11 +1588,12 @@ const calcTotals=()=>{
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mt-4">
-                <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>📋 {t.copyStats}</button>
-                <button onClick={downloadCSV} className="bg-green-600 text-white py-3 rounded-lg font-semibold">📥 {t.exportCSV}</button>
-              </div>
-              <button onClick={shareStats} className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold mt-3">✉️ {t.share}</button>
+              <div className="grid grid-cols-3 gap-3 mt-4">
+                <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}> Copy Stats</button>
+                <button onClick={downloadCSV} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}> Export CSV</button>
+               <button onClick={shareStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}> Share</button> 
+     </div>
+              
             </div>}
 
             {activeTab==='referee'&&<div>
@@ -1667,7 +1609,7 @@ const calcTotals=()=>{
 
             {activeTab==='external'&&externalLinkUrl&&<div>
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow overflow-hidden`}>
-                <iframe src={externalLinkUrl} className="w-full" style={{height:'70vh',border:'none'}} title={externalLinkTitle||t.externalLink}></iframe>
+                <iframe src={externalLinkUrl} className="w-full" style={{height:'70vh',border:'none'}} title={externalLinkTitle||'External Link'}></iframe>
               </div>
             </div>}
           </div>
