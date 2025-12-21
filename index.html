@@ -27,8 +27,8 @@
   <div id="root"></div>
   <script type="text/babel">
     const {useState,useRef,useEffect}=React;
-    
-    const firebaseConfig={
+
+const firebaseConfig={
       apiKey:"AIzaSyBFO04MS1hfTnE_ciPxTJCXO_Jk1w8DudY",
       authDomain:"hockey-scorekeeper.firebaseapp.com",
       databaseURL:"https://hockey-scorekeeper-default-rtdb.europe-west1.firebasedatabase.app",
@@ -54,7 +54,7 @@
       </div>
     );
 
-const JuniorLeagueApp=()=>{
+    const JuniorLeagueApp=()=>{
       const [activeTab,setActiveTab]=useState('audio');
       const [currentPeriod,setCurrentPeriod]=useState(1);
       const [homeName,setHomeName]=useState('HOME TEAM');
@@ -86,12 +86,16 @@ const JuniorLeagueApp=()=>{
         2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
       });
-      
-      const [playerStats,setPlayerStats]=useState({});
+
+// New player stats structure: players persist across periods
+      const [playerStats,setPlayerStats]=useState({
+        home:{players:{}},
+        away:{players:{}}
+      });
       const [showPlayerStats,setShowPlayerStats]=useState(false);
       const [playerStatsEditMode,setPlayerStatsEditMode]=useState(false);
       const [playerStatsViewMode,setPlayerStatsViewMode]=useState('sideBySide');
-      const [playerStatsMoment,setPlayerStatsMoment]=useState('all');
+      const [playerStatsMoment,setPlayerStatsMoment]=useState('FO/SOG');
       const [showAddPlayerModal,setShowAddPlayerModal]=useState(false);
       const [addPlayerTeam,setAddPlayerTeam]=useState('');
       const [addPlayerNumbers,setAddPlayerNumbers]=useState(['']);
@@ -111,7 +115,7 @@ const JuniorLeagueApp=()=>{
         }
       }, [isViewer, screen]);
 
-useEffect(()=>{
+      useEffect(()=>{
         try {
           const raw = localStorage.getItem('multiplayerMatch');
           if (raw) {
@@ -170,7 +174,7 @@ useEffect(()=>{
         }
       },[]);
 
-      useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
+useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
       useEffect(()=>{localStorage.setItem('spotifyPlaylist',spotifyPlaylist)},[spotifyPlaylist]);
       useEffect(()=>{localStorage.setItem('statsCollapsed',JSON.stringify(statsCollapsed))},[statsCollapsed]);
       useEffect(()=>{localStorage.setItem('keepScreenOn',JSON.stringify(keepScreenOn))},[keepScreenOn]);
@@ -219,7 +223,7 @@ useEffect(()=>{
         return()=>{if(matchRef.current){matchRef.current.off();ur.remove()}}
       },[isMultiplayer,matchCode,isViewer]);
 
-const reconnectToMatch=()=>{
+      const reconnectToMatch=()=>{
         try{
           const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
           setMatchCode(savedMatchCode);
@@ -249,14 +253,14 @@ const reconnectToMatch=()=>{
         setIsViewer(false);
         setScreen('created');
       };
-      
-      const startMatch=()=>{
+
+const startMatch=()=>{
         if(!db){setError('Firebase not configured');return}
         const viewerCode=matchCode+'-V';
         db.ref(`matches/${matchCode}`).set({
           homeName,awayName,currentPeriod:1,sidesSwapped:false,
           periodStats:{1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}},
-          playerStats:{},
+          playerStats:{home:{players:{}},away:{players:{}}},
           ended:false,createdAt:Date.now(),users:{[userId.current]:true},
           viewerCode:viewerCode,viewers:{}
         }).then(()=>{
@@ -333,24 +337,40 @@ const reconnectToMatch=()=>{
         setTimeout(()=>setSparkleStats(p=>({...p,[k]:false})),600);
         if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns})
       };
-      
+
+// Updated player stats functions with new structure
       const updatePlayerStat=(team,playerNum,stat,delta)=>{
         if(isViewer||matchEnded)return;
         
         const period=currentPeriod;
         const newStats={...playerStats};
         
-        if(!newStats[period])newStats[period]={home:{players:{}},away:{players:{}}};
-        if(!newStats[period][team])newStats[period][team]={players:{}};
-        if(!newStats[period][team].players)newStats[period][team].players={};
-        if(!newStats[period][team].players[playerNum]){
-          newStats[period][team].players[playerNum]={
-            'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0
+        // Ensure team structure exists
+        if(!newStats[team])newStats[team]={players:{}};
+        if(!newStats[team].players)newStats[team].players={};
+        
+        // Ensure player exists
+        if(!newStats[team].players[playerNum]){
+          newStats[team].players[playerNum]={
+            periods:{},
+            total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
           };
         }
         
-        const currentVal=newStats[period][team].players[playerNum][stat]||0;
-        newStats[period][team].players[playerNum][stat]=Math.max(0,currentVal+delta);
+        // Ensure period exists for this player
+        if(!newStats[team].players[playerNum].periods[period]){
+          newStats[team].players[playerNum].periods[period]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+        }
+        
+        // Update period stat
+        const currentPeriodVal=newStats[team].players[playerNum].periods[period][stat]||0;
+        newStats[team].players[playerNum].periods[period][stat]=Math.max(0,currentPeriodVal+delta);
+        
+        // Recalculate total
+        newStats[team].players[playerNum].total[stat]=0;
+        Object.keys(newStats[team].players[playerNum].periods).forEach(p=>{
+          newStats[team].players[playerNum].total[stat]+=newStats[team].players[playerNum].periods[p][stat]||0;
+        });
         
         setPlayerStats(newStats);
         
@@ -364,11 +384,10 @@ const reconnectToMatch=()=>{
       const removePlayer=(team,playerNum)=>{
         if(isViewer||matchEnded)return;
         
-        const period=currentPeriod;
         const newStats={...playerStats};
         
-        if(newStats[period]&&newStats[period][team]&&newStats[period][team].players){
-          delete newStats[period][team].players[playerNum];
+        if(newStats[team]&&newStats[team].players){
+          delete newStats[team].players[playerNum];
         }
         
         setPlayerStats(newStats);
@@ -379,17 +398,16 @@ const reconnectToMatch=()=>{
         const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
         if(validNumbers.length===0)return;
         
-        const period=currentPeriod;
         const newStats={...playerStats};
         
-        if(!newStats[period])newStats[period]={home:{players:{}},away:{players:{}}};
-        if(!newStats[period][team])newStats[period][team]={players:{}};
-        if(!newStats[period][team].players)newStats[period][team].players={};
+        if(!newStats[team])newStats[team]={players:{}};
+        if(!newStats[team].players)newStats[team].players={};
         
         validNumbers.forEach(playerNum=>{
-          if(!newStats[period][team].players[playerNum]){
-            newStats[period][team].players[playerNum]={
-              'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0
+          if(!newStats[team].players[playerNum]){
+            newStats[team].players[playerNum]={
+              periods:{},
+              total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
             };
           }
         });
@@ -401,7 +419,7 @@ const reconnectToMatch=()=>{
         setAddPlayerNumbers(['']);
       };
 
-const playSound = st => {
+      const playSound = st => {
         const a = audioRefs[st].current;
         if (!a) return;
         setPlayingSound(st);
@@ -442,13 +460,13 @@ const playSound = st => {
           const ns={1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
           setPeriodStats(ns);
           setCurrentPeriod(1);
-          setPlayerStats({});
-          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{}});
+          setPlayerStats({home:{players:{}},away:{players:{}}});
+          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}}});
           else localStorage.removeItem('juniorLeagueGame')
         }
       };
 
-      const calcTotals=()=>{
+const calcTotals=()=>{
         let hs=0,as=0,hsv=0,asv=0;
         Object.keys(periodStats).forEach(p=>{
           hs+=periodStats[p].homeScore;
@@ -467,7 +485,7 @@ const playSound = st => {
         let r=`Game Report - ${d}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\nPERIOD BREAKDOWN:\n`;
         Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(p=>{
           const ps=periodStats[p];
-          const pLabel=parseInt(p)<=3?`Period ${p}`:`OT${parseInt(p)-3}`;
+          const pLabel=parseInt(p)<=3?`Period ${p}`:`OT`;
           r+=`${pLabel}: ${homeName} ${ps.homeScore}-${ps.awayScore} ${awayName}\n`;
         });
         r+=`\nGOALIE STATS:\n${homeName}: ${totals.homeSaves} saves, ${totals.homeSaves+totals.awayScore} shots against, ${calcSP(totals.homeSaves,totals.awayScore)}%\n`;
@@ -486,7 +504,7 @@ const playSound = st => {
         csv+=`Period,${homeName},${awayName}\n`;
         Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(p=>{
           const ps=periodStats[p];
-          const pLabel=parseInt(p)<=3?`Period ${p}`:`OT${parseInt(p)-3}`;
+          const pLabel=parseInt(p)<=3?`Period ${p}`:`OT`;
           csv+=`${pLabel},${ps.homeScore},${ps.awayScore}\n`;
         });
         
@@ -495,42 +513,32 @@ const playSound = st => {
         csv+=`${homeName},${totals.homeSaves},${totals.homeSaves+totals.awayScore},${calcSP(totals.homeSaves,totals.awayScore)}%\n`;
         csv+=`${awayName},${totals.awaySaves},${totals.awaySaves+totals.homeScore},${calcSP(totals.awaySaves,totals.homeScore)}%\n`;
         
-        if(Object.keys(playerStats).length>0){
+        if(playerStats.home?.players||playerStats.away?.players){
           csv+=`\nPlayer Statistics\n`;
           
           ['home','away'].forEach(team=>{
             const teamName=team==='home'?homeName:awayName;
+            const players=playerStats[team]?.players||{};
+            const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
+            
+            if(playerNums.length===0)return;
+            
             csv+=`\n${teamName}\n`;
-            csv+=`Period,Player #,Goals,OnIce+,OnIce-,FO+,FO-,SOG\n`;
+            csv+=`Player #,Period,G,A,OnIce+,OnIce-,FO+,FO-,SOG\n`;
             
-            Object.keys(playerStats).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(period=>{
-              const pLabel=parseInt(period)<=3?`P${period}`:`OT${parseInt(period)-3}`;
-              const players=playerStats[period]?.[team]?.players||{};
+            playerNums.forEach(pNum=>{
+              const pData=players[pNum];
               
-              Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(pNum=>{
-                const stats=players[pNum];
-                csv+=`${pLabel},${pNum},${stats['Goals']||0},${stats['OnIce+']||0},${stats['OnIce-']||0},${stats['FO+']||0},${stats['FO-']||0},${stats['SOG']||0}\n`;
+              // Write period-by-period stats
+              Object.keys(pData.periods).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(period=>{
+                const pLabel=parseInt(period)<=3?`P${period}`:`OT`;
+                const stats=pData.periods[period];
+                csv+=`${pNum},${pLabel},${stats['G']||0},${stats['A']||0},${stats['OnIce+']||0},${stats['OnIce-']||0},${stats['FO+']||0},${stats['FO-']||0},${stats['SOG']||0}\n`;
               });
+              
+              // Write total
+              csv+=`${pNum},TOTAL,${pData.total['G']},${pData.total['A']},${pData.total['OnIce+']},${pData.total['OnIce-']},${pData.total['FO+']},${pData.total['FO-']},${pData.total['SOG']}\n`;
             });
-            
-            const allPlayers={};
-            Object.keys(playerStats).forEach(period=>{
-              const players=playerStats[period]?.[team]?.players||{};
-              Object.keys(players).forEach(pNum=>{
-                if(!allPlayers[pNum])allPlayers[pNum]={'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
-                Object.keys(players[pNum]).forEach(stat=>{
-                  allPlayers[pNum][stat]=(allPlayers[pNum][stat]||0)+(players[pNum][stat]||0);
-                });
-              });
-            });
-            
-            if(Object.keys(allPlayers).length>0){
-              csv+=`TOTAL,,,,,,\n`;
-              Object.keys(allPlayers).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(pNum=>{
-                const stats=allPlayers[pNum];
-                csv+=`Total,${pNum},${stats['Goals']},${stats['OnIce+']},${stats['OnIce-']},${stats['FO+']},${stats['FO-']},${stats['SOG']}\n`;
-              });
-            }
           });
         }
         
@@ -568,35 +576,33 @@ const playSound = st => {
         setSpotifyLoaded(true);
         setSpotifyLoading(false);
         },100);
-        };
+      };
 
-const refSigs=[
-    {name:'Offside',description:'Arm raised straight up'},
-    {name:'Tripping',description:'Strike leg with hand'},
-    {name:'Holding',description:'Clasping wrist'},
-    {name:'High Sticking',description:'Two hands held high'},
-    {name:'Slashing',description:'Chopping motion'},
-    {name:'Icing',description:'Arms crossed at chest'},
-    {name:'Goal',description:'Both arms pointed at goal'},
-    {name:'No Goal',description:'Arms crossed overhead'},
-    {name:'Time Out',description:'Hands forming T'},
-    {name:'Penalty Shot',description:'Arms crossed then pointed'}
-  ];
+      const refSigs=[
+        {name:'Offside',description:'Arm raised straight up'},
+        {name:'Tripping',description:'Strike leg with hand'},
+        {name:'Holding',description:'Clasping wrist'},
+        {name:'High Sticking',description:'Two hands held high'},
+        {name:'Slashing',description:'Chopping motion'},
+        {name:'Icing',description:'Arms crossed at chest'},
+        {name:'Goal',description:'Both arms pointed at goal'},
+        {name:'No Goal',description:'Arms crossed overhead'},
+        {name:'Time Out',description:'Hands forming T'},
+        {name:'Penalty Shot',description:'Arms crossed then pointed'}
+      ];
 
 if(showPlayerStats&&screen==='game'){
         const statColumns={
-          'goals':['Goals','OnIce+','OnIce-'],
-          'faceoffs':['FO+','FO-'],
-          'all':['Goals','OnIce+','OnIce-','FO+','FO-','SOG']
+          'Goals':['G','A','OnIce+','OnIce-'],
+          'FO/SOG':['FO+','FO-','SOG'],
+          'All':['G','A','OnIce+','OnIce-','FO+','FO-','SOG']
         };
         
-        const activeColumns=playerStatsMoment==='goals'?statColumns.goals:
-                           playerStatsMoment==='faceoffs'?statColumns.faceoffs:
-                           statColumns.all;
+        const activeColumns=statColumns[playerStatsMoment];
         
         const renderPlayerTable=(team)=>{
           const teamName=team==='home'?homeName:awayName;
-          const players=playerStats[currentPeriod]?.[team]?.players||{};
+          const players=playerStats[team]?.players||{};
           const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
           
           return(
@@ -624,7 +630,9 @@ if(showPlayerStats&&screen==='game'){
                         </td>
                       </tr>
                     ):playerNums.map(pNum=>{
-                      const pStats=players[pNum];
+                      const pData=players[pNum];
+                      const currentPeriodStats=pData.periods[currentPeriod]||{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+                      
                       return(
                         <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'}`}>
                           <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} z-10`}>{pNum}</td>
@@ -643,7 +651,7 @@ if(showPlayerStats&&screen==='game'){
                                   disabled={matchEnded||isViewer}
                                   className={`min-w-[2rem] h-6 px-2 rounded text-xs font-bold ${darkMode?'bg-blue-900 bg-opacity-40 hover:bg-opacity-60 text-blue-200':'bg-blue-100 hover:bg-blue-200 text-blue-800'} ${sparkleStats[`${team}${pNum}${stat}${currentPeriod}`]?'sparkle':''}`}
                                 >
-                                  {pStats[stat]||0}
+                                  {currentPeriodStats[stat]||0}
                                 </button>
                               </div>
                             </td>
@@ -654,7 +662,7 @@ if(showPlayerStats&&screen==='game'){
                                 onClick={()=>removePlayer(team,pNum)}
                                 disabled={matchEnded||isViewer}
                                 className={`w-6 h-6 rounded text-xs font-bold ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 text-red-200':'bg-red-100 hover:bg-red-200 text-red-800'}`}
-                              >−</button>
+                              >×</button>
                             </td>
                           )}
                         </tr>
@@ -677,8 +685,8 @@ if(showPlayerStats&&screen==='game'){
             </div>
           );
         };
-        
-        return(
+
+return(
           <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
             <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg sticky top-0 z-50`}>
               <div className="max-w-7xl mx-auto">
@@ -698,27 +706,25 @@ if(showPlayerStats&&screen==='game'){
                         {p}
                       </button>
                     ))}
-                    {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(
+                    {periodStats[4]&&(
                       <button
-                        key={p}
                         onClick={()=>{
-                          setCurrentPeriod(parseInt(p));
-                          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)});
+                          setCurrentPeriod(4);
+                          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4});
                         }}
                         disabled={matchEnded||isViewer}
-                        className={`px-3 py-1 rounded text-sm font-bold ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
+                        className={`px-3 py-1 rounded text-sm font-bold ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
                       >
-                        OT{parseInt(p)-3}
+                        OT
                       </button>
-                    ))}
-                    {!periodStats[currentPeriod+1]&&currentPeriod>=3&&(
+                    )}
+                    {!periodStats[4]&&currentPeriod===3&&(
                       <button
                         onClick={()=>{
-                          const newP=currentPeriod+1;
-                          const updated={...periodStats,[newP]:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
+                          const updated={...periodStats,4:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
                           setPeriodStats(updated);
-                          setCurrentPeriod(newP);
-                          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:updated,currentPeriod:newP});
+                          setCurrentPeriod(4);
+                          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:updated,currentPeriod:4});
                         }}
                         disabled={matchEnded||isViewer}
                         className={`px-3 py-1 rounded text-sm font-bold ${darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
@@ -764,9 +770,9 @@ if(showPlayerStats&&screen==='game'){
                 <div className="flex gap-2 items-center flex-wrap">
                   <span className="text-sm font-medium">Stats:</span>
                   {[
-                    {key:'goals',label:'Goals'},
-                    {key:'faceoffs',label:'Faceoffs'},
-                    {key:'all',label:'All'}
+                    {key:'Goals',label:'Goals'},
+                    {key:'FO/SOG',label:'FO/SOG'},
+                    {key:'All',label:'All'}
                   ].map(m=>(
                     <button
                       key={m.key}
@@ -835,7 +841,7 @@ if(showPlayerStats&&screen==='game'){
         );
       }
 
-if(showReconnectPrompt)return(
+      if(showReconnectPrompt)return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
@@ -875,7 +881,7 @@ if(showReconnectPrompt)return(
         </div>
       );
 
-      if(screen==='create')return(
+if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
@@ -947,7 +953,7 @@ if(showReconnectPrompt)return(
         </div>
       );
 
-if(focusMode&&screen==='game'){
+      if(focusMode&&screen==='game'){
         const ft=focusMode==='home'?
           {name:sidesSwapped?awayName:homeName,score:sidesSwapped?totals.awayScore:totals.homeScore,saves:sidesSwapped?totals.awaySaves:totals.homeSaves,team:sidesSwapped?'away':'home',oppScore:sidesSwapped?totals.homeScore:totals.awayScore}:
           {name:sidesSwapped?homeName:awayName,score:sidesSwapped?totals.homeScore:totals.awayScore,saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away',oppScore:sidesSwapped?totals.awayScore:totals.homeScore};
@@ -956,7 +962,7 @@ if(focusMode&&screen==='game'){
         const os=focusMode==='home'?(sidesSwapped?totals.homeScore:totals.awayScore):(sidesSwapped?totals.awayScore:totals.homeScore);
         const otsv=ot==='home'?totals.homeSaves:totals.awaySaves;
 
-        return(
+return(
           <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
             <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
             <audio ref={audioRefs.awayGoal} src="awayGoal.mp3"/>
@@ -969,22 +975,15 @@ if(focusMode&&screen==='game'){
                 <div className="flex gap-2 items-center">
                   <span className="text-xs font-medium">Period:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
-                  {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
-                  {!periodStats[4] && currentPeriod >= 3 && (
+                  {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
+                  {!periodStats[4]&&currentPeriod===3&&(
                     <button
                       onClick={() => {
-                        const newP = 4;
-                        const updated = {
-                          ...periodStats,
-                          [newP]: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
-                        };
+                        const updated = {...periodStats,4:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
                         setPeriodStats(updated);
-                        setCurrentPeriod(newP);
+                        setCurrentPeriod(4);
                         if (isMultiplayer && matchRef.current && !matchEnded) {
-                          matchRef.current.update({
-                            periodStats: updated,
-                            currentPeriod: newP
-                          });
+                          matchRef.current.update({periodStats:updated,currentPeriod:4});
                         }
                       }}
                       disabled={matchEnded||isViewer}
@@ -1138,22 +1137,15 @@ return(
                 <div className="flex gap-2 items-center">
                   <span className="text-sm font-medium">Period:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
-                  {Object.keys(periodStats).filter(p=>parseInt(p)>3).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=><button key={p} onClick={()=>{setCurrentPeriod(parseInt(p));if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:parseInt(p)})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===parseInt(p)?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT{parseInt(p)-3}</button>)}
-                  {!periodStats[4] && currentPeriod >= 3 && (
+                  {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
+                  {!periodStats[4]&&currentPeriod===3&&(
                     <button
                       onClick={() => {
-                        const newP = 4;
-                        const updated = {
-                          ...periodStats,
-                          [newP]: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
-                        };
+                        const updated = {...periodStats,4:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
                         setPeriodStats(updated);
-                        setCurrentPeriod(newP);
+                        setCurrentPeriod(4);
                         if (isMultiplayer && matchRef.current && !matchEnded) {
-                          matchRef.current.update({
-                            periodStats: updated,
-                            currentPeriod: newP
-                          });
+                          matchRef.current.update({periodStats:updated,currentPeriod:4});
                         }
                       }}
                       disabled={matchEnded||isViewer}
@@ -1241,7 +1233,7 @@ return(
                 </div>
               </div>}
 
-              <div className="grid grid-cols-2 gap-4 mb-3">
+<div className="grid grid-cols-2 gap-4 mb-3">
                 {[
                   {name:sidesSwapped?awayName:homeName,score:sidesSwapped?totals.awayScore:totals.homeScore,saves:sidesSwapped?totals.awaySaves:totals.homeSaves,team:sidesSwapped?'away':'home',oppScore:sidesSwapped?totals.homeScore:totals.awayScore,oppShots:sidesSwapped?(totals.homeSaves+totals.awayScore):(totals.awaySaves+totals.homeScore)},
                   {name:sidesSwapped?homeName:awayName,score:sidesSwapped?totals.homeScore:totals.awayScore,saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away',oppScore:sidesSwapped?totals.awayScore:totals.homeScore,oppShots:sidesSwapped?(totals.awaySaves+totals.homeScore):(totals.homeSaves+totals.awayScore)}
@@ -1281,7 +1273,7 @@ return(
             </div>
           </div>
 
-<div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-white'} shadow-md sticky top-48 z-40`}>
+          <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-white'} shadow-md sticky top-48 z-40`}>
             <div className="max-w-6xl mx-auto flex">
               {(isViewer?['stats']:['audio','stats','referee',...(externalLinkUrl?['external']:[])]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab===tab?(darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white'):(darkMode?'bg-gray-700 text-gray-300':'bg-gray-100 text-gray-600')}`}>
@@ -1315,7 +1307,7 @@ return(
                       label: homeName,
                       bg: darkMode ? 'bg-blue-900 bg-opacity-40' : 'bg-blue-50',
                       hover: darkMode ? 'hover:bg-blue-900 hover:bg-opacity-60' : 'hover:bg-blue-100',
-                      text: darkMode ? 'text-blue-200' : 'text-grey-800',
+                      text: darkMode ? 'text-blue-200' : 'text-gray-800',
                       border: darkMode ? 'border-blue-700' : 'border-blue-200'
                     },
                     {
@@ -1323,7 +1315,7 @@ return(
                       label: awayName,
                       bg: darkMode ? 'bg-red-900 bg-opacity-40' : 'bg-red-50',
                       hover: darkMode ? 'hover:bg-red-900 hover:bg-opacity-60' : 'hover:bg-red-100',
-                      text: darkMode ? 'text-red-200' : 'text-grey-800',
+                      text: darkMode ? 'text-red-200' : 'text-gray-800',
                       border: darkMode ? 'border-red-700' : 'border-red-200'
                     }
                   ].map(btn => (
@@ -1348,7 +1340,7 @@ return(
                       label: homeName,
                       bg: darkMode ? 'bg-blue-900 bg-opacity-30' : 'bg-blue-50',
                       hover: darkMode ? 'hover:bg-blue-900 hover:bg-opacity-50' : 'hover:bg-blue-100',
-                      text: darkMode ? 'text-blue-200' : 'text-grey-900',
+                      text: darkMode ? 'text-blue-200' : 'text-gray-900',
                       border: darkMode ? 'border-blue-700' : 'border-blue-300'
                     },
                     {
@@ -1356,7 +1348,7 @@ return(
                       label: awayName,
                       bg: darkMode ? 'bg-red-900 bg-opacity-30' : 'bg-red-50',
                       hover: darkMode ? 'hover:bg-red-900 hover:bg-opacity-50' : 'hover:bg-red-100',
-                      text: darkMode ? 'text-red-200' : 'text-grey-900',
+                      text: darkMode ? 'text-red-200' : 'text-gray-900',
                       border: darkMode ? 'border-red-700' : 'border-red-200'
                     }
                   ].map(btn => (
@@ -1372,7 +1364,7 @@ return(
                 </div>
               </div>
 
-              <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-grey-900'} py-2 rounded-lg font-semibold mb-3 transition-colors`}>
+              <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-900 hover:bg-opacity-60 border-2 border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border-2 border-red-300 text-gray-900'} py-2 rounded-lg font-semibold mb-3 transition-colors`}>
                 Stop All Sounds
               </button>
 
@@ -1381,7 +1373,7 @@ return(
               </div>
             </div>}
 
-            {activeTab==='stats'&&<div>
+{activeTab==='stats'&&<div>
               {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>{
                 p=parseInt(p);
                 const ps=periodStats[p];
@@ -1414,7 +1406,7 @@ return(
                 return(
                   <div key={p} className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>{p<=3?`Period ${p}`:`OT${p-3}`}</h3>
+                      <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>{p<=3?`Period ${p}`:`OT`}</h3>
                       {currentPeriod===p&&<span className="bg-yellow-400 text-blue-900 px-3 py-1 rounded text-sm font-bold">Current</span>}
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -1422,71 +1414,82 @@ return(
                       {renderTeamStats('away')}
                     </div>
                     
-                    {playerStats[p]&&(playerStats[p].home?.players||playerStats[p].away?.players)&&Object.keys({...playerStats[p].home?.players,...playerStats[p].away?.players}).length>0&&(
-                      <div className="mt-4 pt-4 border-t">
-                        <button
-                          onClick={()=>setExpandedPlayerStats(prev=>({...prev,[p]:!prev[p]}))}
-                          className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
-                        >
-                          <span>Player Statistics</span>
-                          <span>{expandedPlayerStats[p]?'▲':'▼'}</span>
-                        </button>
-                        
-                        {expandedPlayerStats[p]&&(
-                          <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {['home','away'].map(team=>{
-                              const teamName=team==='home'?homeName:awayName;
-                              const players=playerStats[p]?.[team]?.players||{};
-                              const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
-                              
-                              if(playerNums.length===0)return null;
-                              
-                              return(
-                                <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
-                                  <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
-                                  <div className="overflow-x-auto">
-                                    <table className="w-full text-xs">
-                                      <thead>
-                                        <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
-                                          <th className="text-left">#</th>
-                                          <th className="text-center">G</th>
-                                          <th className="text-center">+</th>
-                                          <th className="text-center">-</th>
-                                          <th className="text-center">FO+</th>
-                                          <th className="text-center">FO-</th>
-                                          <th className="text-center">SOG</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {playerNums.map(pNum=>{
-                                          const pStats=players[pNum];
-                                          return(
-                                            <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                                              <td className="font-bold py-1">{pNum}</td>
-                                              <td className="text-center">{pStats['Goals']||0}</td>
-                                              <td className="text-center">{pStats['OnIce+']||0}</td>
-                                              <td className="text-center">{pStats['OnIce-']||0}</td>
-                                              <td className="text-center">{pStats['FO+']||0}</td>
-                                              <td className="text-center">{pStats['FO-']||0}</td>
-                                              <td className="text-center">{pStats['SOG']||0}</td>
-                                            </tr>
-                                          );
-                                        })}
-                                      </tbody>
-                                    </table>
+                    {(playerStats.home?.players||playerStats.away?.players)&&(()=>{
+                      const homePlayers=playerStats.home?.players||{};
+                      const awayPlayers=playerStats.away?.players||{};
+                      const hasPlayersWithData=Object.keys(homePlayers).some(pNum=>homePlayers[pNum].periods[p])||
+                                                Object.keys(awayPlayers).some(pNum=>awayPlayers[pNum].periods[p]);
+                      
+                      if(!hasPlayersWithData)return null;
+                      
+                      return(
+                        <div className="mt-4 pt-4 border-t">
+                          <button
+                            onClick={()=>setExpandedPlayerStats(prev=>({...prev,[p]:!prev[p]}))}
+                            className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
+                          >
+                            <span>Player Statistics</span>
+                            <span>{expandedPlayerStats[p]?'▲':'▼'}</span>
+                          </button>
+                          
+                          {expandedPlayerStats[p]&&(
+                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {['home','away'].map(team=>{
+                                const teamName=team==='home'?homeName:awayName;
+                                const players=playerStats[team]?.players||{};
+                                const playerNums=Object.keys(players).filter(pNum=>players[pNum].periods[p]).sort((a,b)=>parseInt(a)-parseInt(b));
+                                
+                                if(playerNums.length===0)return null;
+                                
+                                return(
+                                  <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
+                                    <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
+                                    <div className="overflow-x-auto">
+                                      <table className="w-full text-xs">
+                                        <thead>
+                                          <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                            <th className="text-left">#</th>
+                                            <th className="text-center">G</th>
+                                            <th className="text-center">A</th>
+                                            <th className="text-center">+</th>
+                                            <th className="text-center">-</th>
+                                            <th className="text-center">FO+</th>
+                                            <th className="text-center">FO-</th>
+                                            <th className="text-center">SOG</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {playerNums.map(pNum=>{
+                                            const pStats=players[pNum].periods[p];
+                                            return(
+                                              <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
+                                                <td className="font-bold py-1">{pNum}</td>
+                                                <td className="text-center">{pStats['G']||0}</td>
+                                                <td className="text-center">{pStats['A']||0}</td>
+                                                <td className="text-center">{pStats['OnIce+']||0}</td>
+                                                <td className="text-center">{pStats['OnIce-']||0}</td>
+                                                <td className="text-center">{pStats['FO+']||0}</td>
+                                                <td className="text-center">{pStats['FO-']||0}</td>
+                                                <td className="text-center">{pStats['SOG']||0}</td>
+                                              </tr>
+                                            );
+                                          })}
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               })}
-              
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
+
+<div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
                 <div className="flex justify-between items-center mb-3">
                   <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>FINAL</h3>
                 </div>
@@ -1516,83 +1519,82 @@ return(
                   })}
                 </div>
                 
-                {Object.keys(playerStats).length>0&&(
-                  <div className="mt-4 pt-4 border-t">
-                    <button
-                      onClick={()=>setExpandedPlayerStats(prev=>({...prev,total:!prev.total}))}
-                      className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between mb-3`}
-                    >
-                      <span>Total Player Statistics</span>
-                      <span>{expandedPlayerStats.total?'▲':'▼'}</span>
-                    </button>
-                    
-                    {expandedPlayerStats.total&&(
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {['home','away'].map(team=>{
-                          const teamName=team==='home'?homeName:awayName;
-                          const allPlayers={};
-                          
-                          Object.keys(playerStats).forEach(period=>{
-                            const players=playerStats[period]?.[team]?.players||{};
-                            Object.keys(players).forEach(pNum=>{
-                              if(!allPlayers[pNum])allPlayers[pNum]={'Goals':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
-                              Object.keys(players[pNum]).forEach(stat=>{
-                                allPlayers[pNum][stat]=(allPlayers[pNum][stat]||0)+(players[pNum][stat]||0);
-                              });
-                            });
-                          });
-                          
-                          const playerNums=Object.keys(allPlayers).sort((a,b)=>parseInt(a)-parseInt(b));
-                          if(playerNums.length===0)return null;
-                          
-                          return(
-                            <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
-                              <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-xs">
-                                  <thead>
-                                    <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
-                                      <th className="text-left">#</th>
-                                      <th className="text-center">G</th>
-                                      <th className="text-center">+</th>
-                                      <th className="text-center">-</th>
-                                      <th className="text-center">FO+</th>
-                                      <th className="text-center">FO-</th>
-                                      <th className="text-center">SOG</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {playerNums.map(pNum=>{
-                                      const pStats=allPlayers[pNum];
-                                      return(
-                                        <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                                          <td className="font-bold py-1">{pNum}</td>
-                                          <td className="text-center">{pStats['Goals']}</td>
-                                          <td className="text-center">{pStats['OnIce+']}</td>
-                                          <td className="text-center">{pStats['OnIce-']}</td>
-                                          <td className="text-center">{pStats['FO+']}</td>
-                                          <td className="text-center">{pStats['FO-']}</td>
-                                          <td className="text-center">{pStats['SOG']}</td>
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
+                {(playerStats.home?.players||playerStats.away?.players)&&(()=>{
+                  const homePlayers=playerStats.home?.players||{};
+                  const awayPlayers=playerStats.away?.players||{};
+                  
+                  if(Object.keys(homePlayers).length===0&&Object.keys(awayPlayers).length===0)return null;
+                  
+                  return(
+                    <div className="mt-4 pt-4 border-t">
+                      <button
+                        onClick={()=>setExpandedPlayerStats(prev=>({...prev,total:!prev.total}))}
+                        className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between mb-3`}
+                      >
+                        <span>Total Player Statistics</span>
+                        <span>{expandedPlayerStats.total?'▲':'▼'}</span>
+                      </button>
+                      
+                      {expandedPlayerStats.total&&(
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {['home','away'].map(team=>{
+                            const teamName=team==='home'?homeName:awayName;
+                            const players=playerStats[team]?.players||{};
+                            const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
+                            
+                            if(playerNums.length===0)return null;
+                            
+                            return(
+                              <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
+                                <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full text-xs">
+                                    <thead>
+                                      <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                        <th className="text-left">#</th>
+                                        <th className="text-center">G</th>
+                                        <th className="text-center">A</th>
+                                        <th className="text-center">+</th>
+                                        <th className="text-center">-</th>
+                                        <th className="text-center">FO+</th>
+                                        <th className="text-center">FO-</th>
+                                        <th className="text-center">SOG</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {playerNums.map(pNum=>{
+                                        const pStats=players[pNum].total;
+                                        return(
+                                          <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
+                                            <td className="font-bold py-1">{pNum}</td>
+                                            <td className="text-center">{pStats['G']}</td>
+                                            <td className="text-center">{pStats['A']}</td>
+                                            <td className="text-center">{pStats['OnIce+']}</td>
+                                            <td className="text-center">{pStats['OnIce-']}</td>
+                                            <td className="text-center">{pStats['FO+']}</td>
+                                            <td className="text-center">{pStats['FO-']}</td>
+                                            <td className="text-center">{pStats['SOG']}</td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-3 gap-3 mt-4">
-                <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}> Copy Stats</button>
-                <button onClick={downloadCSV} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}> Export CSV</button>
-               <button onClick={shareStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}> Share</button> 
-     </div>
+                <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Copy Stats</button>
+                <button onClick={downloadCSV} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Export CSV</button>
+                <button onClick={shareStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Share</button> 
+              </div>
               
             </div>}
 
