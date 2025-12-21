@@ -55,7 +55,7 @@ const firebaseConfig={
     );
 
     const JuniorLeagueApp=()=>{
-      const [activeTab,setActiveTab]=useState('audio');
+      const [activeTab,setActiveTab]=useState('stats');
       const [currentPeriod,setCurrentPeriod]=useState(1);
       const [homeName,setHomeName]=useState('HOME TEAM');
       const [awayName,setAwayName]=useState('AWAY TEAM');
@@ -1317,7 +1317,7 @@ return(
 
           <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-white'} shadow-md sticky top-48 z-40`}>
             <div className="max-w-6xl mx-auto flex">
-              {(isViewer?['stats']:['audio','stats','referee',...(externalLinkUrl?['external']:[])]).map(tab=>(
+              {(isViewer?['stats']:['stats','audio','referee',...(externalLinkUrl?['external']:[])]).map(tab=>(
                 <button key={tab} onClick={()=>setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab===tab?(darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white'):(darkMode?'bg-gray-700 text-gray-300':'bg-gray-100 text-gray-600')}`}>
                   {tab==='audio'?'Audio':tab==='stats'?'Stats':tab==='referee'?'Referee':externalLinkTitle||'Link'}
                 </button>
