@@ -813,38 +813,53 @@ return(
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
       <h3 className="text-lg font-bold mb-3">Add Player(s)</h3>
-      <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
+      <div className="space-y-3 mb-3 max-h-64 overflow-y-auto">
         {addPlayerNumbers.map((num,idx)=>(
-          <input
-            key={idx}
-            type="number"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={num}
-            onChange={(e)=>{
-              const newNums=[...addPlayerNumbers];
-              newNums[idx]=e.target.value;
-              setAddPlayerNumbers(newNums);
-            }}
-            onKeyDown={(e)=>{
-              if(e.key==='Enter'&&num.trim()!==''){
-                e.preventDefault();
-                if(idx===addPlayerNumbers.length-1){
+          <div key={idx}>
+            <input
+              type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={num}
+              onChange={(e)=>{
+                const newNums=[...addPlayerNumbers];
+                newNums[idx]=e.target.value;
+                setAddPlayerNumbers(newNums);
+              }}
+              onKeyDown={(e)=>{
+                if(e.key==='Enter'&&num.trim()!==''){
+                  e.preventDefault();
+                  if(idx===addPlayerNumbers.length-1){
+                    setAddPlayerNumbers([...addPlayerNumbers,'']);
+                    setTimeout(()=>{
+                      const inputs=document.querySelectorAll('input[type="number"]');
+                      inputs[inputs.length-1]?.focus();
+                    },50);
+                  }else{
+                    const inputs=document.querySelectorAll('input[type="number"]');
+                    inputs[idx+1]?.focus();
+                  }
+                }
+              }}
+              placeholder={`Player #${idx+1}`}
+              className={`w-full px-3 py-3 border rounded text-center font-bold text-xl ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
+              autoFocus={idx===addPlayerNumbers.length-1}
+            />
+            {num.trim()!==''&&idx===addPlayerNumbers.length-1&&(
+              <button
+                onClick={()=>{
                   setAddPlayerNumbers([...addPlayerNumbers,'']);
                   setTimeout(()=>{
                     const inputs=document.querySelectorAll('input[type="number"]');
                     inputs[inputs.length-1]?.focus();
                   },50);
-                }else{
-                  const inputs=document.querySelectorAll('input[type="number"]');
-                  inputs[idx+1]?.focus();
-                }
-              }
-            }}
-            placeholder={`Player #${idx+1}`}
-            className={`w-full px-3 py-3 border rounded text-center font-bold text-xl ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
-            autoFocus={idx===addPlayerNumbers.length-1}
-          />
+                }}
+                className={`w-full mt-2 ${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 hover:bg-blue-600'} text-white py-2 rounded font-semibold text-sm`}
+              >
+                Next → Add Another Player
+              </button>
+            )}
+          </div>
         ))}
       </div>
       <div className="flex gap-2">
@@ -864,8 +879,7 @@ return(
       </div>
     </div>
   </div>
-)}
-          </div>
+)}          </div>
         );
       }
 
