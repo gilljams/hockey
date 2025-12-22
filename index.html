@@ -46,6 +46,8 @@ const firebaseConfig={
 
     const genCode=()=>Array(6).fill(0).map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*33)]).join('');
 
+    const ADMIN_PASSWORD = 'hockey123';
+
     const SoundEQ = () => (
       <div className="flex items-end gap-0.5 h-4 ml-2">
         <div className="eq-bar w-1 bg-white rounded-full"></div>
@@ -466,6 +468,100 @@ const joinMatch=()=>{
           setScreen('start');
         }
       };
+
+
+const AdminPanel = ({ darkMode, setScreen }) => {
+  const [matches, setMatches] = React.useState({});
+
+  React.useEffect(() => {
+    if (!db) return;
+
+    const ref = db.ref('matches');
+    ref.on('value', snap => {
+      setMatches(snap.val() || {});
+    });
+
+    return () => ref.off();
+  }, []);
+
+  const deleteMatch = (id) => {
+    if (!window.confirm(`Delete match ${id}?`)) return;
+    db.ref(`matches/${id}`).remove();
+  };
+
+  const toggleEnded = (id, ended) => {
+    db.ref(`matches/${id}`).update({ ended: !ended });
+  };
+
+  return (
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+      <div className={`${darkMode?'bg-gray-800':'bg-blue-600'} text-white p-4`}>
+        <div className="max-w-5xl mx-auto flex justify-between items-center">
+          <h2 className="font-bold text-lg">Admin – Matches</h2>
+          <button
+            onClick={() => setScreen('game')}
+            className="bg-white bg-opacity-20 px-3 py-2 rounded"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto p-4 overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className={darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-200'}>
+            <tr>
+              <th className="px-3 py-2 text-left">Match ID</th>
+              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">Created</th>
+              <th className="px-3 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.keys(matches).length === 0 && (
+              <tr>
+                <td colSpan="4" className="text-center py-6 opacity-60">
+                  No matches found
+                </td>
+              </tr>
+            )}
+
+            {Object.entries(matches).map(([id, m]) => (
+              <tr
+                key={id}
+                className={`border-t ${darkMode?'border-gray-700':'border-gray-300'}`}
+              >
+                <td className="px-3 py-2 font-mono">{id}</td>
+                <td className="px-3 py-2 text-center">
+                  {m.ended ? 'Ended' : 'Active'}
+                </td>
+                <td className="px-3 py-2 text-center">
+                  {m.createdAt
+                    ? new Date(m.createdAt).toLocaleString()
+                    : '—'}
+                </td>
+                <td className="px-3 py-2 text-center space-x-2">
+                  <button
+                    onClick={() => toggleEnded(id, m.ended)}
+                    className="px-2 py-1 rounded bg-yellow-500 text-white"
+                  >
+                    {m.ended ? '▶' : '⏹'}
+                  </button>
+                  <button
+                    onClick={() => deleteMatch(id)}
+                    className="px-2 py-1 rounded bg-red-600 text-white"
+                  >
+                    🗑
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
 
 
       const updateStat=(team,stat,delta)=>{
@@ -1064,6 +1160,13 @@ return(
         </div>
       );
 
+if (screen === 'admin') {
+  return <AdminPanel
+    darkMode={darkMode}
+    setScreen={setScreen}
+  />;
+}
+
 
 if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -1385,6 +1488,26 @@ return(
         <span className="text-sm">Swap Sides</span>
         <input type="checkbox" checked={sidesSwapped} onChange={e=>{setSidesSwapped(e.target.checked);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({sidesSwapped:e.target.checked})}} disabled={matchEnded||isViewer} className="w-5 h-5"/>
       </label>
+
+<button
+  onClick={() => {
+    const pwd = prompt('Admin password');
+    if (pwd === ADMIN_PASSWORD) {
+      setScreen('admin');
+    } else if (pwd !== null) {
+      alert('Wrong password');
+    }
+  }}
+  className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-semibold ${
+    darkMode
+      ? 'bg-gray-700 hover:bg-gray-600 text-white'
+      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+  }`}
+>
+  <span>Admin</span>
+  <span>🔒</span>
+</button>
+
       <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 border border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border border-red-300 text-gray-900'} py-2 rounded text-sm font-semibold`}>
         Reset All Stats
       </button>
@@ -1417,14 +1540,26 @@ return(
                     <input type="text" value={externalLinkTitle} onChange={e=>setExternalLinkTitle(e.target.value)} placeholder="Club Rules" className={`w-full px-3 py-2 border rounded text-sm mb-2 ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                     <input type="text" value={externalLinkUrl} onChange={e=>setExternalLinkUrl(e.target.value)} placeholder="https://..." className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                   </div>
-                  {isMultiplayer && !isViewer && !isCreator && (
-                    <div className="pt-3 border-t">
-                      <button
+                  
+
+
+
+
+{isMultiplayer && !isViewer && !isCreator && (
+                    <div className="pt-4 border-t">
+                     
+
+
+
+
+
+		    <button
                         onClick={leaveMatch}
                         className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded text-sm font-semibold"
                       >
                         Leave Multiplayer Match
                       </button>
+
                     </div>
                   )}
                 </div>
