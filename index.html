@@ -105,7 +105,15 @@ const firebaseConfig={
       const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
       const [introPlaying,setIntroPlaying]=useState(false);
       const matchRef=useRef(null);
-      const userId=useRef(Math.random().toString(36).substr(2,9));
+      const userId = useRef(
+        localStorage.getItem('userId') ||
+        (() => {
+          const id = Math.random().toString(36).substr(2,9);
+          localStorage.setItem('userId', id);
+          return id;
+        })()
+      );
+
       const [isViewer,setIsViewer]=useState(false);
       const [viewerCount,setViewerCount]=useState(0);
       const [playingSound, setPlayingSound] = useState(null);
@@ -265,6 +273,27 @@ const firebaseConfig={
           localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
         }
       },[currentPeriod,homeName,awayName,sidesSwapped,periodStats,playerStats,isMultiplayer,screen]);
+
+useEffect(() => {
+  const handleBeforeUnload = (e) => {
+  if (
+    screen === 'game' &&
+    (
+      (!isMultiplayer && !matchEnded) ||
+      (isMultiplayer && matchEnded && isCreator)
+    )
+  ) {
+
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
+}, [screen, isMultiplayer, matchEnded]);
 
 
       useEffect(()=>{
@@ -1246,7 +1275,7 @@ return(
 return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           {isViewer&&<div className="bg-yellow-500 text-gray-900 px-4 py-2 text-center font-semibold text-sm">
-             👁️ VIEWER MODE - You are viewing live stats (read-only)
+             👁️ VIEWER MODE - live stats (read-only)
           </div>}
           <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
           <audio ref={audioRefs.awayGoal} src="awayGoal.mp3"/>
