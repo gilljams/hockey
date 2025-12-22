@@ -101,7 +101,7 @@ const firebaseConfig={
       const [addPlayerTeam,setAddPlayerTeam]=useState('');
       const [addPlayerNumbers,setAddPlayerNumbers]=useState(['']);
       const [expandedPlayerStats,setExpandedPlayerStats]=useState({});
-      
+     
       const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
       const [introPlaying,setIntroPlaying]=useState(false);
       const matchRef=useRef(null);
@@ -390,35 +390,50 @@ useEffect(() => {
         }).catch(e=>setError('Failed: '+e.message))
       };
       
-      const joinMatch=()=>{
-        if(!db){setError('Firebase not configured');return}
-        const c=inputCode.toUpperCase().trim();
-        const isViewerCode=c.endsWith('-V');
-        const baseCode=isViewerCode?c.slice(0,-2):c;
-  
-        if((!isViewerCode&&c.length!==6)||(isViewerCode&&baseCode.length!==6)){
-          setError('Invalid code');
-          return;
+const joinMatch=()=>{
+  if(!db){setError('Firebase not configured');return}
+  const c=inputCode.toUpperCase().trim();
+  const isViewerCode=c.endsWith('-V');
+  const baseCode=isViewerCode?c.slice(0,-2):c;
+
+  if((!isViewerCode&&c.length!==6)||(isViewerCode&&baseCode.length!==6)){
+    setError('Invalid code');
+    return;
+  }
+
+  db.ref(`matches/${baseCode}`).once('value').then(s=>{
+    if(s.exists()){
+      const d=s.val();
+      if(d.ended){
+        // NY KOD: Erbjud att joina som viewer
+        if(window.confirm('This match has ended. Join as viewer to see final stats?')){
+          resetGameState();
+          setMatchCode(baseCode);
+          setIsViewer(true);
+          setIsCreator(d.creatorId === userId.current);
+          setIsMultiplayer(true);
+          setScreen('game');
+          localStorage.removeItem('juniorLeagueGame');
+          localStorage.removeItem('multiplayerMatch');
+          if(window.gtag)gtag('event','match_joined_viewer_ended',{match_code:baseCode});
+        }else{
+          setError('This match has already ended');
         }
-  
-        db.ref(`matches/${baseCode}`).once('value').then(s=>{
-          if(s.exists()){
-            const d=s.val();
-            if(d.ended)setError('This match has already ended');
-            else{
-              resetGameState();
-              setMatchCode(baseCode);
-              setIsViewer(isViewerCode);
-              setIsCreator(d.creatorId === userId.current);
-              setIsMultiplayer(true);
-              setScreen('game');
-              localStorage.removeItem('juniorLeagueGame');
-              localStorage.removeItem('multiplayerMatch');
-              if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
-            }
-          }else setError('No match found with that code')
-        }).catch(e=>setError('Failed: '+e.message))
-      };
+      }
+      else{
+        resetGameState();
+        setMatchCode(baseCode);
+        setIsViewer(isViewerCode);
+        setIsCreator(d.creatorId === userId.current);
+        setIsMultiplayer(true);
+        setScreen('game');
+        localStorage.removeItem('juniorLeagueGame');
+        localStorage.removeItem('multiplayerMatch');
+        if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
+      }
+    }else setError('No match found with that code')
+  }).catch(e=>setError('Failed: '+e.message))
+};
 
       const continueAlone=()=>{
         localStorage.removeItem('multiplayerMatch');
@@ -1347,45 +1362,47 @@ return(
                   <button onClick={()=>setShowSettings(false)} className={`${darkMode?'text-gray-400':'text-gray-500'} text-2xl`}>×</button>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
-                  <div className="space-y-3">
-                    <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>Match Settings</h4>
-                    <div>
-                      <label className="block text-sm mb-1">Home Team</label>
-                      <div className="flex gap-2">
-                        <input type="text" value={homeName} onChange={e=>{setHomeName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({homeName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                        <button onClick={()=>setHomeName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Clear</button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm mb-1">Away Team</label>
-                      <div className="flex gap-2">
-                        <input type="text" value={awayName} onChange={e=>{setAwayName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({awayName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                        <button onClick={()=>setAwayName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Clear</button>
-                      </div>
-                    </div>
-                    <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">Swap Sides</span>
-                      <input type="checkbox" checked={sidesSwapped} onChange={e=>{setSidesSwapped(e.target.checked);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({sidesSwapped:e.target.checked})}} disabled={matchEnded||isViewer} className="w-5 h-5"/>
-                    </label>
-                    <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 border border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border border-red-300 text-gray-900'} py-2 rounded text-sm font-semibold`}>
-                      Reset All Stats
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>My Preferences</h4>
-                    <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">Dark Mode</span>
-                      <input type="checkbox" checked={darkMode} onChange={e=>setDarkMode(e.target.checked)} className="w-5 h-5"/>
-                    </label>
-                    <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">Keep Screen On</span>
-                      <input type="checkbox" checked={keepScreenOn} onChange={e=>setKeepScreenOn(e.target.checked)} className="w-5 h-5"/>
-                    </label>
-                  </div>
-                </div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  
+  {!isViewer && (
+    <div className="space-y-3">
+      <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>Match Settings</h4>
+      <div>
+        <label className="block text-sm mb-1">Home Team</label>
+        <div className="flex gap-2">
+          <input type="text" value={homeName} onChange={e=>{setHomeName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({homeName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
+          <button onClick={()=>setHomeName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Clear</button>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm mb-1">Away Team</label>
+        <div className="flex gap-2">
+          <input type="text" value={awayName} onChange={e=>{setAwayName(e.target.value);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({awayName:e.target.value})}} disabled={matchEnded||isViewer} className={`flex-1 px-3 py-2 border rounded ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
+          <button onClick={()=>setAwayName('')} disabled={matchEnded||isViewer} className={`px-3 py-2 rounded text-sm ${darkMode?'bg-gray-600':'bg-gray-200'}`}>Clear</button>
+        </div>
+      </div>
+      <label className="flex items-center justify-between py-2">
+        <span className="text-sm">Swap Sides</span>
+        <input type="checkbox" checked={sidesSwapped} onChange={e=>{setSidesSwapped(e.target.checked);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({sidesSwapped:e.target.checked})}} disabled={matchEnded||isViewer} className="w-5 h-5"/>
+      </label>
+      <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 border border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border border-red-300 text-gray-900'} py-2 rounded text-sm font-semibold`}>
+        Reset All Stats
+      </button>
+    </div>
+  )}
+  
+  <div className="space-y-3">
+    <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>My Preferences</h4>
+    <label className="flex items-center justify-between py-2">
+      <span className="text-sm">Dark Mode</span>
+      <input type="checkbox" checked={darkMode} onChange={e=>setDarkMode(e.target.checked)} className="w-5 h-5"/>
+    </label>
+    <label className="flex items-center justify-between py-2">
+      <span className="text-sm">Keep Screen On</span>
+      <input type="checkbox" checked={keepScreenOn} onChange={e=>setKeepScreenOn(e.target.checked)} className="w-5 h-5"/>
+    </label>
+  </div>
+</div>
 
                 <div className="space-y-3 mt-4 pt-4 border-t">
                   <div>
