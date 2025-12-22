@@ -81,13 +81,14 @@ const firebaseConfig={
       const [error,setError]=useState('');
       const [showReconnectPrompt,setShowReconnectPrompt]=useState(false);
       const [savedMatchCode,setSavedMatchCode]=useState('');
+      const [isCreator,setIsCreator]=useState(false);
       const [periodStats,setPeriodStats]=useState({
         1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
       });
 
-// New player stats structure: players persist across periods
+
       const [playerStats,setPlayerStats]=useState({
         home:{players:{}},
         away:{players:{}}
@@ -109,13 +110,73 @@ const firebaseConfig={
       const [viewerCount,setViewerCount]=useState(0);
       const [playingSound, setPlayingSound] = useState(null);
 
+      // Normalization functions
+      const normalizePeriodStats = (stats) => {
+        const normalized = {};
+        for (let p = 1; p <= 4; p++) {
+          normalized[p] = {
+            homeScore: stats?.[p]?.homeScore ?? 0,
+            awayScore: stats?.[p]?.awayScore ?? 0,
+            homeSaves: stats?.[p]?.homeSaves ?? 0,
+            awaySaves: stats?.[p]?.awaySaves ?? 0
+          };
+        }
+        return normalized;
+      };
+
+      const normalizePlayerStats = (stats) => {
+        const normalized = {
+          home: { players: {} },
+          away: { players: {} }
+        };
+        
+        ['home', 'away'].forEach(team => {
+          const players = stats?.[team]?.players ?? {};
+          Object.keys(players).forEach(playerNum => {
+            const player = players[playerNum];
+            normalized[team].players[playerNum] = {
+              periods: player?.periods ?? {},
+              total: {
+                'G': player?.total?.['G'] ?? 0,
+                'A': player?.total?.['A'] ?? 0,
+                'OnIce+': player?.total?.['OnIce+'] ?? 0,
+                'OnIce-': player?.total?.['OnIce-'] ?? 0,
+                'FO+': player?.total?.['FO+'] ?? 0,
+                'FO-': player?.total?.['FO-'] ?? 0,
+                'SOG': player?.total?.['SOG'] ?? 0
+              }
+            };
+          });
+        });
+        
+        return normalized;
+      };
+
+      // Reset all game state
+      const resetGameState = () => {
+        setPeriodStats({
+          1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
+          2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
+          3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
+        });
+        setPlayerStats({home:{players:{}},away:{players:{}}});
+        setCurrentPeriod(1);
+        setSidesSwapped(false);
+        setMatchEnded(false);
+        setIsCreator(false);
+        setSparkleStats({});
+        setExpandedPlayerStats({});
+      };
+
       useEffect(() => {
         if (isViewer && screen === 'game') {
           setActiveTab('stats');
         }
       }, [isViewer, screen]);
 
+
       useEffect(()=>{
+        // Clean up old multiplayer data
         try {
           const raw = localStorage.getItem('multiplayerMatch');
           if (raw) {
@@ -128,11 +189,16 @@ const firebaseConfig={
           localStorage.removeItem('multiplayerMatch');
         }
 
+        // Load user preferences
         ['darkMode','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle'].forEach(k=>{
           const v=localStorage.getItem(k);
           if(v){
             if(['darkMode','statsCollapsed','keepScreenOn'].includes(k)){
-              eval(`set${k.charAt(0).toUpperCase()+k.slice(1)}(JSON.parse(v))`);
+              try {
+                eval(`set${k.charAt(0).toUpperCase()+k.slice(1)}(JSON.parse(v))`);
+              } catch(e) {
+                console.log('Failed to parse', k);
+              }
             }else if(k==='focusMode'){
               setFocusMode(v==='null'?null:v);
             }else if(k==='externalLinkUrl'){
@@ -145,6 +211,7 @@ const firebaseConfig={
           }
         });
         
+        // Check for multiplayer reconnect
         const savedMatch=localStorage.getItem('multiplayerMatch');
         if(savedMatch){
           try{
@@ -160,21 +227,31 @@ const firebaseConfig={
           }
         }
         
+        // Load single-player game if no multiplayer session
         if(!savedMatch){
           const saved=localStorage.getItem('juniorLeagueGame');
           if(saved){
-            const gs=JSON.parse(saved);
-            setCurrentPeriod(gs.currentPeriod);
-            setHomeName(gs.homeName);
-            setAwayName(gs.awayName);
-            setSidesSwapped(gs.sidesSwapped);
-            setPeriodStats(gs.periodStats);
-            if(gs.playerStats)setPlayerStats(gs.playerStats);
+            try {
+              const gs=JSON.parse(saved);
+              if(gs.currentPeriod && gs.periodStats && gs.homeName) {
+                setCurrentPeriod(gs.currentPeriod);
+                setHomeName(gs.homeName);
+                setAwayName(gs.awayName);
+                setSidesSwapped(gs.sidesSwapped ?? false);
+                setPeriodStats(normalizePeriodStats(gs.periodStats));
+                if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
+              } else {
+                localStorage.removeItem('juniorLeagueGame');
+              }
+            } catch(e) {
+              console.log('Failed to load saved game:', e);
+              localStorage.removeItem('juniorLeagueGame');
+            }
           }
         }
       },[]);
 
-useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
+      useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
       useEffect(()=>{localStorage.setItem('spotifyPlaylist',spotifyPlaylist)},[spotifyPlaylist]);
       useEffect(()=>{localStorage.setItem('statsCollapsed',JSON.stringify(statsCollapsed))},[statsCollapsed]);
       useEffect(()=>{localStorage.setItem('keepScreenOn',JSON.stringify(keepScreenOn))},[keepScreenOn]);
@@ -188,6 +265,7 @@ useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkM
           localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
         }
       },[currentPeriod,homeName,awayName,sidesSwapped,periodStats,playerStats,isMultiplayer,screen]);
+
 
       useEffect(()=>{
         const req=async()=>{try{if('wakeLock'in navigator&&keepScreenOn){const l=await navigator.wakeLock.request('screen');setWakeLock(l)}}catch(e){}};
@@ -204,15 +282,16 @@ useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkM
         matchRef.current.on('value',s=>{
           const d=s.val();
           if(d){
-            setPeriodStats(d.periodStats);
-            setCurrentPeriod(d.currentPeriod);
-            setHomeName(d.homeName);
-            setAwayName(d.awayName);
-            setSidesSwapped(d.sidesSwapped);
-            setMatchEnded(d.ended||false);
-            if(d.playerStats)setPlayerStats(d.playerStats);
-            if(d.users)setConnectedUsers(Object.keys(d.users).length);
-            if(d.viewers)setViewerCount(Object.keys(d.viewers).length);
+            setPeriodStats(normalizePeriodStats(d.periodStats));
+            setCurrentPeriod(d.currentPeriod ?? 1);
+            setHomeName(d.homeName ?? 'HOME TEAM');
+            setAwayName(d.awayName ?? 'AWAY TEAM');
+            setSidesSwapped(d.sidesSwapped ?? false);
+            setMatchEnded(d.ended ?? false);
+            setPlayerStats(normalizePlayerStats(d.playerStats));
+            setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
+            setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
+            setIsCreator(d.creatorId === userId.current);
           }
         });
         const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
@@ -226,12 +305,14 @@ useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkM
       const reconnectToMatch=()=>{
         try{
           const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
+          resetGameState();
           setMatchCode(savedMatchCode);
           setIsViewer(saved?.isViewer||false);
           setIsMultiplayer(true);
           setScreen('game');
           setShowReconnectPrompt(false);
         }catch(e){
+          resetGameState();
           setMatchCode(savedMatchCode);
           setIsMultiplayer(true);
           setScreen('game');
@@ -241,6 +322,8 @@ useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkM
       
       const startNewSession=()=>{
         localStorage.removeItem('multiplayerMatch');
+        localStorage.removeItem('juniorLeagueGame');
+        resetGameState();
         setShowReconnectPrompt(false);
         setIsViewer(false);
         setMatchEnded(false);
@@ -251,22 +334,29 @@ useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkM
         setMatchCode(code);
         setMatchEnded(false);
         setIsViewer(false);
+        setIsCreator(true);
         setScreen('created');
       };
 
-const startMatch=()=>{
+
+      const startMatch=()=>{
         if(!db){setError('Firebase not configured');return}
         const viewerCode=matchCode+'-V';
         db.ref(`matches/${matchCode}`).set({
           homeName,awayName,currentPeriod:1,sidesSwapped:false,
           periodStats:{1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}},
           playerStats:{home:{players:{}},away:{players:{}}},
-          ended:false,createdAt:Date.now(),users:{[userId.current]:true},
+          ended:false,createdAt:Date.now(),
+          creatorId:userId.current,
+          users:{[userId.current]:true},
           viewerCode:viewerCode,viewers:{}
         }).then(()=>{
+          resetGameState();
           setIsMultiplayer(true);
+          setIsCreator(true);
           setScreen('game');
           localStorage.removeItem('juniorLeagueGame');
+          localStorage.removeItem('multiplayerMatch');
           if(window.gtag)gtag('event','match_created',{match_code:matchCode});
         }).catch(e=>setError('Failed: '+e.message))
       };
@@ -287,11 +377,14 @@ const startMatch=()=>{
             const d=s.val();
             if(d.ended)setError('This match has already ended');
             else{
+              resetGameState();
               setMatchCode(baseCode);
               setIsViewer(isViewerCode);
+              setIsCreator(d.creatorId === userId.current);
               setIsMultiplayer(true);
               setScreen('game');
               localStorage.removeItem('juniorLeagueGame');
+              localStorage.removeItem('multiplayerMatch');
               if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
             }
           }else setError('No match found with that code')
@@ -299,11 +392,12 @@ const startMatch=()=>{
       };
 
       const continueAlone=()=>{
+        localStorage.removeItem('multiplayerMatch');
+        resetGameState();
         setIsMultiplayer(false);
         setIsViewer(false);
         setMatchEnded(false);
         setScreen('game');
-        localStorage.removeItem('multiplayerMatch');
       };
       
       const endMatch = () => {
@@ -320,6 +414,7 @@ const startMatch=()=>{
       const leaveMatch=()=>{
         if(window.confirm('Leave multiplayer match?')){
           localStorage.removeItem('multiplayerMatch');
+          resetGameState();
           setIsMultiplayer(false);
           setIsViewer(false);
           setMatchEnded(false);
@@ -327,10 +422,15 @@ const startMatch=()=>{
           setScreen('start');
         }
       };
-      
+
+
       const updateStat=(team,stat,delta)=>{
         if(isViewer)return;
-        const ns={...periodStats,[currentPeriod]:{...periodStats[currentPeriod],[team+stat]:Math.max(0,periodStats[currentPeriod][team+stat]+delta)}};
+        const ns=structuredClone(periodStats);
+        if(!ns[currentPeriod]) {
+          ns[currentPeriod]={homeScore:0,awayScore:0,homeSaves:0,awaySaves:0};
+        }
+        ns[currentPeriod][team+stat]=Math.max(0,(ns[currentPeriod][team+stat]||0)+delta);
         setPeriodStats(ns);
         const k=`${team}${stat}${currentPeriod}`;
         setSparkleStats(p=>({...p,[k]:true}));
@@ -338,69 +438,61 @@ const startMatch=()=>{
         if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns})
       };
 
-// Updated player stats functions with new structure
-const updatePlayerStat=(team,playerNum,stat,delta)=>{
-  if(isViewer||matchEnded)return;
-  
-  const period=currentPeriod;
-  const newStats={...playerStats};
-  
-  // Ensure team structure exists
-  if(!newStats[team])newStats[team]={players:{}};
-  if(!newStats[team].players)newStats[team].players={};
-  
-  // Ensure player exists
-  if(!newStats[team].players[playerNum]){
-    newStats[team].players[playerNum]={
-      periods:{},
-      total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
-    };
-  }
-  
-  // Ensure period exists for this player
-  if(!newStats[team].players[playerNum].periods[period]){
-    newStats[team].players[playerNum].periods[period]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
-  }
-  
-  // Auto-increment SOG when G changes
-  if(stat==='G'){
-    const currentSOG=newStats[team].players[playerNum].periods[period]['SOG']||0;
-    newStats[team].players[playerNum].periods[period]['SOG']=Math.max(0,currentSOG+delta);
-  }
-  
-  // Update period stat
-  const currentPeriodVal=newStats[team].players[playerNum].periods[period][stat]||0;
-  newStats[team].players[playerNum].periods[period][stat]=Math.max(0,currentPeriodVal+delta);
-  
-  // Recalculate totals for both the stat and SOG if G was changed
-  const statsToRecalc=stat==='G'?[stat,'SOG']:[stat];
-  statsToRecalc.forEach(s=>{
-    newStats[team].players[playerNum].total[s]=0;
-    Object.keys(newStats[team].players[playerNum].periods).forEach(p=>{
-      newStats[team].players[playerNum].total[s]+=newStats[team].players[playerNum].periods[p][s]||0;
-    });
-  });
-  
-  setPlayerStats(newStats);
-  
-  // Sparkle both G and SOG when G is clicked
-  const sparkleKeys=stat==='G'?[`${team}${playerNum}G${period}`,`${team}${playerNum}SOG${period}`]:[`${team}${playerNum}${stat}${period}`];
-  sparkleKeys.forEach(k=>{
-    setSparkleStats(p=>({...p,[k]:true}));
-  });
-  setTimeout(()=>{
-    sparkleKeys.forEach(k=>{
-      setSparkleStats(p=>({...p,[k]:false}));
-    });
-  },600);
-  
-  if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
-};
+      const updatePlayerStat=(team,playerNum,stat,delta)=>{
+        if(isViewer||matchEnded)return;
+        
+        const period=currentPeriod;
+        const newStats=structuredClone(playerStats);
+        
+        if(!newStats[team])newStats[team]={players:{}};
+        if(!newStats[team].players)newStats[team].players={};
+        
+        if(!newStats[team].players[playerNum]){
+          newStats[team].players[playerNum]={
+            periods:{},
+            total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
+          };
+        }
+        
+        if(!newStats[team].players[playerNum].periods[period]){
+          newStats[team].players[playerNum].periods[period]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+        }
+        
+        if(stat==='G'){
+          const currentSOG=newStats[team].players[playerNum].periods[period]['SOG']||0;
+          newStats[team].players[playerNum].periods[period]['SOG']=Math.max(0,currentSOG+delta);
+        }
+        
+        const currentPeriodVal=newStats[team].players[playerNum].periods[period][stat]||0;
+        newStats[team].players[playerNum].periods[period][stat]=Math.max(0,currentPeriodVal+delta);
+        
+        const statsToRecalc=stat==='G'?[stat,'SOG']:[stat];
+        statsToRecalc.forEach(s=>{
+          newStats[team].players[playerNum].total[s]=0;
+          Object.keys(newStats[team].players[playerNum].periods).forEach(p=>{
+            newStats[team].players[playerNum].total[s]+=newStats[team].players[playerNum].periods[p][s]||0;
+          });
+        });
+        
+        setPlayerStats(newStats);
+        
+        const sparkleKeys=stat==='G'?[`${team}${playerNum}G${period}`,`${team}${playerNum}SOG${period}`]:[`${team}${playerNum}${stat}${period}`];
+        sparkleKeys.forEach(k=>{
+          setSparkleStats(p=>({...p,[k]:true}));
+        });
+        setTimeout(()=>{
+          sparkleKeys.forEach(k=>{
+            setSparkleStats(p=>({...p,[k]:false}));
+          });
+        },600);
+        
+        if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
+      };
       
       const removePlayer=(team,playerNum)=>{
         if(isViewer||matchEnded)return;
         
-        const newStats={...playerStats};
+        const newStats=structuredClone(playerStats);
         
         if(newStats[team]&&newStats[team].players){
           delete newStats[team].players[playerNum];
@@ -409,12 +501,13 @@ const updatePlayerStat=(team,playerNum,stat,delta)=>{
         setPlayerStats(newStats);
         if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
       };
-      
+
+
       const addPlayers=(team,numbers)=>{
         const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
         if(validNumbers.length===0)return;
         
-        const newStats={...playerStats};
+        const newStats=structuredClone(playerStats);
         
         if(!newStats[team])newStats[team]={players:{}};
         if(!newStats[team].players)newStats[team].players={};
@@ -453,10 +546,12 @@ const updatePlayerStat=(team,playerNum,stat,delta)=>{
           a.pause();
           a.currentTime=0;
           setIntroPlaying(false);
+          setPlayingSound(null);
         }else{
           a.loop=true;
           a.play().catch(e=>console.log('Play failed:',e));
           setIntroPlaying(true);
+          setPlayingSound('intro');
         }
       };
       
@@ -482,20 +577,21 @@ const updatePlayerStat=(team,playerNum,stat,delta)=>{
         }
       };
 
-const calcTotals=()=>{
+      const calcTotals=()=>{
         let hs=0,as=0,hsv=0,asv=0;
         Object.keys(periodStats).forEach(p=>{
-          hs+=periodStats[p].homeScore;
-          as+=periodStats[p].awayScore;
-          hsv+=periodStats[p].homeSaves;
-          asv+=periodStats[p].awaySaves;
+          hs+=(periodStats[p]?.homeScore ?? 0);
+          as+=(periodStats[p]?.awayScore ?? 0);
+          hsv+=(periodStats[p]?.homeSaves ?? 0);
+          asv+=(periodStats[p]?.awaySaves ?? 0);
         });
         return{homeScore:hs,awayScore:as,homeSaves:hsv,awaySaves:asv}
       };
       
       const totals=calcTotals();
       const calcSP=(sv,g)=>{const sh=sv+g;return sh===0?'0.0':((sv/sh)*100).toFixed(1)};
-      
+
+
       const genReport=()=>{
         const d=new Date().toLocaleDateString();
         let r=`Game Report - ${d}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\nPERIOD BREAKDOWN:\n`;
@@ -545,14 +641,12 @@ const calcTotals=()=>{
             playerNums.forEach(pNum=>{
               const pData=players[pNum];
               
-              // Write period-by-period stats
               Object.keys(pData.periods).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(period=>{
                 const pLabel=parseInt(period)<=3?`P${period}`:`OT`;
                 const stats=pData.periods[period];
                 csv+=`${pNum},${pLabel},${stats['G']||0},${stats['A']||0},${stats['OnIce+']||0},${stats['OnIce-']||0},${stats['FO+']||0},${stats['FO-']||0},${stats['SOG']||0}\n`;
               });
               
-              // Write total
               csv+=`${pNum},TOTAL,${pData.total['G']},${pData.total['A']},${pData.total['OnIce+']},${pData.total['OnIce-']},${pData.total['FO+']},${pData.total['FO-']},${pData.total['SOG']}\n`;
             });
           });
@@ -607,6 +701,7 @@ const calcTotals=()=>{
         {name:'Penalty Shot',description:'Arms crossed then pointed'}
       ];
 
+
 if(showPlayerStats&&screen==='game'){
         const statColumns={
           'Goals':['G','A','OnIce+','OnIce-'],
@@ -618,7 +713,7 @@ if(showPlayerStats&&screen==='game'){
         
         const renderPlayerTable=(team)=>{
           const teamName=team==='home'?homeName:awayName;
-          const players=playerStats[team]?.players||{};
+          const players=playerStats?.[team]?.players??{};
           const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
           
           return(
@@ -647,7 +742,7 @@ if(showPlayerStats&&screen==='game'){
                       </tr>
                     ):playerNums.map(pNum=>{
                       const pData=players[pNum];
-                      const currentPeriodStats=pData.periods[currentPeriod]||{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
+                      const currentPeriodStats=pData?.periods?.[currentPeriod]??{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
                       
                       return(
                         <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'}`}>
@@ -701,6 +796,7 @@ if(showPlayerStats&&screen==='game'){
             </div>
           );
         };
+
 
 return(
           <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -808,7 +904,8 @@ return(
                 {renderPlayerTable('away')}
               </div>
             </div>
-            
+
+
 {showAddPlayerModal&&(
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
@@ -923,6 +1020,7 @@ return(
         </div>
       );
 
+
 if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
@@ -953,7 +1051,7 @@ if(screen==='create')return(
                 <h2 className="text-2xl font-bold mb-2">Match Created</h2>
               </div>
               <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
-                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}> Editor Code (max 5 users)</p>
+                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>📝 Editor Code (max 5 users)</p>
                 <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-4">
                   <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
                     <div className={`text-3xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
@@ -961,7 +1059,7 @@ if(screen==='create')return(
                   <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">Copy</button>
                 </div>
                 
-                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}> Viewer Code (read-only)</p>
+                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>👁️ Viewer Code (read-only)</p>
                 <div className="flex flex-col sm:flex-row items-stretch gap-3">
                   <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
                     <div className={`text-2xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}-V</div>
@@ -994,6 +1092,7 @@ if(screen==='create')return(
           </div>
         </div>
       );
+
 
       if(focusMode&&screen==='game'){
         const ft=focusMode==='home'?
@@ -1143,10 +1242,11 @@ return(
         );
       }
 
+
 return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           {isViewer&&<div className="bg-yellow-500 text-gray-900 px-4 py-2 text-center font-semibold text-sm">
-             VIEWER MODE - You are viewing live stats (read-only)
+             👁️ VIEWER MODE - You are viewing live stats (read-only)
           </div>}
           <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
           <audio ref={audioRefs.awayGoal} src="awayGoal.mp3"/>
@@ -1165,11 +1265,20 @@ return(
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={copyCode} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-2 py-1 rounded font-mono font-bold text-xs`}>{matchCode}</button>
-                  {!matchEnded && !isViewer && (
+                  {!matchEnded && isCreator && (
                     <button onClick={endMatch}
                       className="bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
+                      title="End match for all users (Creator only)"
                     >
                       End
+                    </button>
+                  )}
+                  {!matchEnded && !isViewer && !isCreator && (
+                    <button onClick={leaveMatch}
+                      className="bg-orange-500 hover:bg-orange-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
+                      title="Leave this match"
+                    >
+                      Leave
                     </button>
                   )}
                 </div>
@@ -1262,11 +1371,11 @@ return(
                     <input type="text" value={externalLinkTitle} onChange={e=>setExternalLinkTitle(e.target.value)} placeholder="Club Rules" className={`w-full px-3 py-2 border rounded text-sm mb-2 ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                     <input type="text" value={externalLinkUrl} onChange={e=>setExternalLinkUrl(e.target.value)} placeholder="https://..." className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
                   </div>
-                  {isMultiplayer && !isViewer && (
+                  {isMultiplayer && !isViewer && !isCreator && (
                     <div className="pt-3 border-t">
                       <button
                         onClick={leaveMatch}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded text-sm font-semibold"
+                        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded text-sm font-semibold"
                       >
                         Leave Multiplayer Match
                       </button>
@@ -1314,6 +1423,7 @@ return(
               </div>
             </div>
           </div>
+
 
           <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-white'} shadow-md sticky top-48 z-40`}>
             <div className="max-w-6xl mx-auto flex">
@@ -1415,6 +1525,7 @@ return(
               </div>
             </div>}
 
+
 {activeTab==='stats'&&<div>
               {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>{
                 p=parseInt(p);
@@ -1459,8 +1570,8 @@ return(
                     {(playerStats.home?.players||playerStats.away?.players)&&(()=>{
                       const homePlayers=playerStats.home?.players||{};
                       const awayPlayers=playerStats.away?.players||{};
-                      const hasPlayersWithData=Object.keys(homePlayers).some(pNum=>homePlayers[pNum].periods[p])||
-                                                Object.keys(awayPlayers).some(pNum=>awayPlayers[pNum].periods[p]);
+                      const hasPlayersWithData=Object.keys(homePlayers).some(pNum=>homePlayers[pNum]?.periods?.[p])||
+                                                Object.keys(awayPlayers).some(pNum=>awayPlayers[pNum]?.periods?.[p]);
                       
                       if(!hasPlayersWithData)return null;
                       
@@ -1479,7 +1590,7 @@ return(
                               {['home','away'].map(team=>{
                                 const teamName=team==='home'?homeName:awayName;
                                 const players=playerStats[team]?.players||{};
-                                const playerNums=Object.keys(players).filter(pNum=>players[pNum].periods[p]).sort((a,b)=>parseInt(a)-parseInt(b));
+                                const playerNums=Object.keys(players).filter(pNum=>players[pNum]?.periods?.[p]).sort((a,b)=>parseInt(a)-parseInt(b));
                                 
                                 if(playerNums.length===0)return null;
                                 
@@ -1506,13 +1617,13 @@ return(
                                             return(
                                               <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
                                                 <td className="font-bold py-1">{pNum}</td>
-                                                <td className="text-center">{pStats['G']||0}</td>
-                                                <td className="text-center">{pStats['A']||0}</td>
-                                                <td className="text-center">{pStats['OnIce+']||0}</td>
-                                                <td className="text-center">{pStats['OnIce-']||0}</td>
-                                                <td className="text-center">{pStats['FO+']||0}</td>
-                                                <td className="text-center">{pStats['FO-']||0}</td>
-                                                <td className="text-center">{pStats['SOG']||0}</td>
+                                                <td className="text-center">{pStats?.['G']||0}</td>
+                                                <td className="text-center">{pStats?.['A']||0}</td>
+                                                <td className="text-center">{pStats?.['OnIce+']||0}</td>
+                                                <td className="text-center">{pStats?.['OnIce-']||0}</td>
+                                                <td className="text-center">{pStats?.['FO+']||0}</td>
+                                                <td className="text-center">{pStats?.['FO-']||0}</td>
+                                                <td className="text-center">{pStats?.['SOG']||0}</td>
                                               </tr>
                                             );
                                           })}
@@ -1609,13 +1720,13 @@ return(
                                         return(
                                           <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
                                             <td className="font-bold py-1">{pNum}</td>
-                                            <td className="text-center">{pStats['G']}</td>
-                                            <td className="text-center">{pStats['A']}</td>
-                                            <td className="text-center">{pStats['OnIce+']}</td>
-                                            <td className="text-center">{pStats['OnIce-']}</td>
-                                            <td className="text-center">{pStats['FO+']}</td>
-                                            <td className="text-center">{pStats['FO-']}</td>
-                                            <td className="text-center">{pStats['SOG']}</td>
+                                            <td className="text-center">{pStats?.['G']??0}</td>
+                                            <td className="text-center">{pStats?.['A']??0}</td>
+                                            <td className="text-center">{pStats?.['OnIce+']??0}</td>
+                                            <td className="text-center">{pStats?.['OnIce-']??0}</td>
+                                            <td className="text-center">{pStats?.['FO+']??0}</td>
+                                            <td className="text-center">{pStats?.['FO-']??0}</td>
+                                            <td className="text-center">{pStats?.['SOG']??0}</td>
                                           </tr>
                                         );
                                       })}
