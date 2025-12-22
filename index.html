@@ -1436,10 +1436,10 @@ return(
                         <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`]?'sparkle':''}`}>{tm.saves}</div>
                         <button onClick={()=>updateStat(tm.team,'Saves',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
                       </div>
-                      {!statsCollapsed&&<div className={`${darkMode?'bg-gray-600':'bg-white bg-opacity-10'} rounded p-2 text-xs text-center mt-2`}>
-                        <div>SOG: {tm.oppShots} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][(tm.team==='home'?'away':'home')+'Saves']+periodStats[p][tm.team+'Score'])).join('-')})</div>
-                        <div>SA: {tm.saves+tm.oppScore} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][tm.team+'Saves']+periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
-                        <div>SVS %: {calcSP(tm.saves,tm.oppScore)}% ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>calcSP(periodStats[p][tm.team+'Saves'],periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
+                      {!statsCollapsed&&<div className={`${darkMode?'bg-gray-600':'bg-white bg-opacity-10'} rounded p-2 text-xs opacity-75 text-center mt-2`}>
+                        <div>SOG {tm.oppShots} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][(tm.team==='home'?'away':'home')+'Saves']+periodStats[p][tm.team+'Score'])).join('-')})</div>
+                        <div>SA {tm.saves+tm.oppScore} ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>(periodStats[p][tm.team+'Saves']+periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
+                        <div>SVS% {calcSP(tm.saves,tm.oppScore)}% ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>calcSP(periodStats[p][tm.team+'Saves'],periodStats[p][(tm.team==='home'?'away':'home')+'Score'])).join('-')})</div>
                       </div>}
                     </div>
                   </div>
@@ -1447,7 +1447,7 @@ return(
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <button onClick={()=>{setFocusMode('home');setActiveTab('audio')}} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Goalie Focus</button>
+                {!isViewer&&<button onClick={()=>{setFocusMode('home');setActiveTab('stats')}} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Goalie Focus</button>}
                 {!isViewer&&<button onClick={()=>setShowPlayerStats(true)} className={`${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Skater Focus</button>}
               </div>
             </div>
