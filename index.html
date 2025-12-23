@@ -87,6 +87,7 @@ try{
       const [inputCode,setInputCode]=useState('');
       const [connectedUsers,setConnectedUsers]=useState(1);
       const [isMultiplayer,setIsMultiplayer]=useState(false);
+      const [gameMode,setGameMode]=useState(localStorage.getItem('gameMode')||'single');
       const [matchEnded,setMatchEnded]=useState(false);
       const [sparkleStats,setSparkleStats]=useState({});
       const [error,setError]=useState('');
@@ -236,45 +237,47 @@ const DEFAULT_AWAY = 'AWAY TEAM';
           }
         });
         
-        // Check for multiplayer reconnect
-        const savedMatch=localStorage.getItem('multiplayerMatch');
-        if(savedMatch){
-          try{
-            const md=JSON.parse(savedMatch);
-            if(md.code){
-              setSavedMatchCode(md.code);
-              setShowReconnectPrompt(true);
-            }else{
-              localStorage.removeItem('multiplayerMatch');
-            }
-          }catch(e){
-            localStorage.removeItem('multiplayerMatch');
-          }
-        }
-        
-        // Load single-player game if no multiplayer session
-        if(!savedMatch){
-          const saved=localStorage.getItem('juniorLeagueGame');
-          if(saved){
-            try {
-              const gs=JSON.parse(saved);
-              if(gs.currentPeriod && gs.periodStats && gs.homeName) {
-                setCurrentPeriod(gs.currentPeriod);
-                setHomeName(gs.homeName);
-                setAwayName(gs.awayName);
-                setSidesSwapped(gs.sidesSwapped ?? false);
-                setPeriodStats(normalizePeriodStats(gs.periodStats));
-                if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
-              } else {
-                localStorage.removeItem('juniorLeagueGame');
-              }
-            } catch(e) {
-              console.log('Failed to load saved game:', e);
-              localStorage.removeItem('juniorLeagueGame');
-            }
-          }
-        }
-      },[]);
+// Check for multiplayer reconnect
+const savedMatch=localStorage.getItem('multiplayerMatch');
+if(savedMatch){
+  try{
+    const md=JSON.parse(savedMatch);
+    if(md.code){
+      setSavedMatchCode(md.code);
+      setGameMode(md.gameMode||'multi');
+      setShowReconnectPrompt(true);
+    }else{
+      localStorage.removeItem('multiplayerMatch');
+    }
+  }catch(e){
+    localStorage.removeItem('multiplayerMatch');
+  }
+}
+
+// Load single-player game if no multiplayer session
+if(!savedMatch){
+  const saved=localStorage.getItem('juniorLeagueGame');
+  if(saved){
+    try {
+      const gs=JSON.parse(saved);
+      if(gs.currentPeriod && gs.periodStats && gs.homeName) {
+        setCurrentPeriod(gs.currentPeriod);
+        setHomeName(gs.homeName);
+        setAwayName(gs.awayName);
+        setSidesSwapped(gs.sidesSwapped ?? false);
+        setPeriodStats(normalizePeriodStats(gs.periodStats));
+        if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
+        setGameMode('single');
+        setScreen('game');
+      } else {
+        localStorage.removeItem('juniorLeagueGame');
+      }
+    } catch(e) {
+      console.log('Failed to load saved game:', e);
+      localStorage.removeItem('juniorLeagueGame');
+    }
+  }
+}      },[]);
 
       useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
       useEffect(()=>{localStorage.setItem('spotifyPlaylist',spotifyPlaylist)},[spotifyPlaylist]);
@@ -303,14 +306,12 @@ useEffect(() => {
 
 useEffect(() => {
   const handleBeforeUnload = (e) => {
-  if (
-    screen === 'game' &&
-    (
-      (!isMultiplayer && !matchEnded) ||
-      (isMultiplayer && matchEnded && isCreator)
-    )
-  ) {
-
+    if (
+      screen === 'game' &&
+      isMultiplayer && 
+      matchEnded && 
+      isCreator
+    ) {
       e.preventDefault();
       e.returnValue = '';
     }
@@ -320,7 +321,7 @@ useEffect(() => {
   return () => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
   };
-}, [screen, isMultiplayer, matchEnded]);
+}, [screen, isMultiplayer, matchEnded, isCreator]);
 
 
       useEffect(()=>{
@@ -353,46 +354,58 @@ useEffect(() => {
         const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
         const ur=matchRef.current.child(path);
         ur.set(true);
-        ur.onDisconnect().remove();
-        localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer}));
+        ur.onDisconnect().remove();       
+localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer,gameMode:'multi'}));
         return()=>{if(matchRef.current){matchRef.current.off();ur.remove()}}
       },[isMultiplayer,matchCode,isViewer]);
 
-      const reconnectToMatch=()=>{
-        try{
-          const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
-          resetGameState();
-          setMatchCode(savedMatchCode);
-          setIsViewer(saved?.isViewer||false);
-          setIsMultiplayer(true);
-          setScreen('game');
-          setShowReconnectPrompt(false);
-        }catch(e){
-          resetGameState();
-          setMatchCode(savedMatchCode);
-          setIsMultiplayer(true);
-          setScreen('game');
-          setShowReconnectPrompt(false);
-        }
-      };
+const reconnectToMatch=()=>{
+  try{
+    const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
+    resetGameState();
+    setGameMode('multi');
+    localStorage.setItem('gameMode','multi');
+    setMatchCode(savedMatchCode);
+    setIsViewer(saved?.isViewer||false);
+    setIsMultiplayer(true);
+    setScreen('game');
+    setShowReconnectPrompt(false);
+  }catch(e){
+    resetGameState();
+    setGameMode('multi');
+    localStorage.setItem('gameMode','multi');
+    setMatchCode(savedMatchCode);
+    setIsMultiplayer(true);
+    setScreen('game');
+    setShowReconnectPrompt(false);
+  }
+};
       
-      const startNewSession=()=>{
-        localStorage.removeItem('multiplayerMatch');
-        localStorage.removeItem('juniorLeagueGame');
-        resetGameState();
-        setShowReconnectPrompt(false);
-        setIsViewer(false);
-        setMatchEnded(false);
-      };
+const startNewSession=()=>{
+  localStorage.removeItem('multiplayerMatch');
+  localStorage.removeItem('juniorLeagueGame');
+  resetGameState();
+  // Ta INTE bort gameMode här - låt användaren välja vad de vill göra
+  setShowReconnectPrompt(false);
+  setIsViewer(false);
+  setMatchEnded(false);
+};
       
-      const createMatch=()=>{
-        const code=genCode();
-        setMatchCode(code);
-        setMatchEnded(false);
-        setIsViewer(false);
-        setIsCreator(true);
-        setScreen('created');
-      };
+const createMatch=()=>{
+  // Rensa single-game data när vi går till multi
+  if(gameMode==='single'){
+    localStorage.removeItem('juniorLeagueGame');
+  }
+  
+  const code=genCode();
+  setMatchCode(code);
+  setMatchEnded(false);
+  setIsViewer(false);
+  setIsCreator(true);
+  setGameMode('multi');
+  localStorage.setItem('gameMode','multi');
+  setScreen('created');
+};
 
 
       const startMatch=()=>{
@@ -406,16 +419,18 @@ useEffect(() => {
           creatorId:userId.current,
           users:{[userId.current]:true},
           viewerCode:viewerCode,viewers:{}
-        }).then(()=>{
-          resetGameState();
-          setIsMultiplayer(true);
-          setIsCreator(true);
-          setScreen('game');
-          localStorage.removeItem('juniorLeagueGame');
-          localStorage.removeItem('multiplayerMatch');
-          if(window.gtag)gtag('event','match_created',{match_code:matchCode});
-        }).catch(e=>setError('Failed: '+e.message))
-      };
+   }).then(()=>{
+    resetGameState();
+    setGameMode('multi');
+    localStorage.setItem('gameMode','multi');
+    setIsMultiplayer(true);
+    setIsCreator(true);
+    localStorage.removeItem('juniorLeagueGame');
+    localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:false,gameMode:'multi'}));
+    setScreen('game');
+    if(window.gtag)gtag('event','match_created',{match_code:matchCode});
+  }).catch(e=>setError('Failed: '+e.message))
+};
       
 const joinMatch=()=>{
   if(!db){setError('Firebase not configured');return}
@@ -433,43 +448,56 @@ const joinMatch=()=>{
       const d=s.val();
       if(d.ended){
         // NY KOD: Erbjud att joina som viewer
-        if(window.confirm('This match has ended. Join as viewer to see final stats?')){
-          resetGameState();
-          setMatchCode(baseCode);
-          setIsViewer(true);
-          setIsCreator(d.creatorId === userId.current);
-          setIsMultiplayer(true);
-          setScreen('game');
-          localStorage.removeItem('juniorLeagueGame');
-          localStorage.removeItem('multiplayerMatch');
-          if(window.gtag)gtag('event','match_joined_viewer_ended',{match_code:baseCode});
+if(window.confirm('This match has ended. Join as viewer to see final stats?')){
+  resetGameState();
+  setGameMode('multi');
+  localStorage.setItem('gameMode','multi');
+  setMatchCode(baseCode);
+  setIsViewer(true);
+  setIsCreator(d.creatorId === userId.current);
+  setIsMultiplayer(true);
+  localStorage.removeItem('juniorLeagueGame');
+  localStorage.setItem('multiplayerMatch',JSON.stringify({code:baseCode,timestamp:Date.now(),isViewer:true,gameMode:'multi'}));
+  setScreen('game');
+  if(window.gtag)gtag('event','match_joined_viewer_ended',{match_code:baseCode});
         }else{
           setError('This match has already ended');
         }
       }
-      else{
-        resetGameState();
-        setMatchCode(baseCode);
-        setIsViewer(isViewerCode);
-        setIsCreator(d.creatorId === userId.current);
-        setIsMultiplayer(true);
-        setScreen('game');
-        localStorage.removeItem('juniorLeagueGame');
-        localStorage.removeItem('multiplayerMatch');
-        if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
+else{
+  resetGameState();
+  setGameMode('multi');
+  localStorage.setItem('gameMode','multi');
+  setMatchCode(baseCode);
+  setIsViewer(isViewerCode);
+  setIsCreator(d.creatorId === userId.current);
+  setIsMultiplayer(true);
+  localStorage.removeItem('juniorLeagueGame');
+  localStorage.setItem('multiplayerMatch',JSON.stringify({code:baseCode,timestamp:Date.now(),isViewer:isViewerCode,gameMode:'multi'}));
+  setScreen('game');
+  if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
       }
     }else setError('No match found with that code')
   }).catch(e=>setError('Failed: '+e.message))
 };
 
-      const continueAlone=()=>{
-        localStorage.removeItem('multiplayerMatch');
-        resetGameState();
-        setIsMultiplayer(false);
-        setIsViewer(false);
-        setMatchEnded(false);
-        setScreen('game');
-      };
+const continueAlone=()=>{
+  const prevMode=gameMode;
+  localStorage.removeItem('multiplayerMatch');
+  
+  // Om vi kommer från multi-läge, rensa och börja nytt
+  if(prevMode==='multi'){
+    resetGameState();
+    localStorage.removeItem('juniorLeagueGame');
+  }
+  
+  setGameMode('single');
+  localStorage.setItem('gameMode','single');
+  setIsMultiplayer(false);
+  setIsViewer(false);
+  setMatchEnded(false);
+  setScreen('game');
+};
       
       const endMatch = () => {
         if (window.confirm('End match for all users?')) {
@@ -482,17 +510,25 @@ const joinMatch=()=>{
         }
       };
 
-      const leaveMatch=()=>{
-        if(window.confirm('Leave multiplayer match?')){
-          localStorage.removeItem('multiplayerMatch');
-          resetGameState();
-          setIsMultiplayer(false);
-          setIsViewer(false);
-          setMatchEnded(false);
-          setMatchCode('');
-          setScreen('start');
-        }
-      };
+const leaveMatch=()=>{
+  if(window.confirm('Leave multiplayer match?')){
+    localStorage.removeItem('multiplayerMatch');
+    resetGameState();
+    setGameMode('single');
+    localStorage.setItem('gameMode','single');
+    setIsMultiplayer(false);
+    setIsViewer(false);
+    setMatchEnded(false);
+    setMatchCode('');
+    setScreen('start');
+  }
+};
+
+const exitToStart=()=>{
+  if(window.confirm('Exit to start screen? Current game will be saved.')){
+    setScreen('start');
+  }
+};
 
 
 const AdminPanel = ({ darkMode, setScreen }) => {
@@ -1568,10 +1604,15 @@ return(
                     </button>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={()=>setStatsCollapsed(!statsCollapsed)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>{statsCollapsed?'▼':'▲'}</button>
-                  <button onClick={()=>setShowSettings(!showSettings)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>⚙️</button>
-                </div>
+<div className="flex gap-2">
+  {!isMultiplayer&&(
+    <button onClick={exitToStart} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 rounded text-sm`}>
+      ←
+    </button>
+  )}
+  <button onClick={()=>setStatsCollapsed(!statsCollapsed)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>{statsCollapsed?'▼':'▲'}</button>
+  <button onClick={()=>setShowSettings(!showSettings)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>⚙️</button>
+</div>
               </div>
 
               {showSettings&&<div className={`${darkMode?'bg-gray-700 text-white':'bg-white text-gray-800'} rounded-lg p-4 mb-4 max-h-[70vh] overflow-y-auto`}>
