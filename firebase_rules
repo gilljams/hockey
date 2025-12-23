@@ -1,8 +1,12 @@
 {
   "rules": {
     "matches": {
-      ".read": true,
-      ".write": true
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$matchId": {
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
