@@ -44,7 +44,14 @@ const firebaseConfig={
       db=firebase.database();
     }catch(e){console.log("Firebase error:",e)}
 
-    const genCode=()=>Array(6).fill(0).map(()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*33)]).join('');
+    const genCode=()=>{
+      const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code='';
+      for(let i=0;i<6;i++){
+        code+=chars.charAt(Math.floor(Math.random()*chars.length));
+      }
+      return code;
+    };
 
     const ADMIN_PASSWORD = 'hockey123';
 
@@ -471,6 +478,8 @@ const joinMatch=()=>{
 
 
 const AdminPanel = ({ darkMode, setScreen }) => {
+
+  const [sortDir, setSortDir] = React.useState('desc');
   const [matches, setMatches] = React.useState({});
 
   React.useEffect(() => {
@@ -512,8 +521,18 @@ const AdminPanel = ({ darkMode, setScreen }) => {
           <thead className={darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-200'}>
             <tr>
               <th className="px-3 py-2 text-left">Match ID</th>
+              
+<th className="px-3 py-2 text-left">Home</th>
+              <th className="px-3 py-2 text-left">Away</th>
               <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Created</th>
+              <th
+               onClick={() =>
+               setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
+               }
+               className="px-3 py-2 text-center cursor-pointer select-none"
+               >
+               Created {sortDir === 'asc' ? '▲' : '▼'}
+              </th>
               <th className="px-3 py-2">Actions</th>
             </tr>
           </thead>
@@ -526,12 +545,20 @@ const AdminPanel = ({ darkMode, setScreen }) => {
               </tr>
             )}
 
-            {Object.entries(matches).map(([id, m]) => (
+            {Object.entries(matches)
+  .sort((a, b) => {
+    const tA = a[1].createdAt || 0;
+    const tB = b[1].createdAt || 0;
+    return sortDir === 'asc' ? tA - tB : tB - tA;
+  })
+  .map(([id, m]) => (
               <tr
                 key={id}
                 className={`border-t ${darkMode?'border-gray-700':'border-gray-300'}`}
               >
                 <td className="px-3 py-2 font-mono">{id}</td>
+                <td className="px-3 py-2">{m.homeName || '—'}</td>
+                <td className="px-3 py-2">{m.awayName || '—'}</td>
                 <td className="px-3 py-2 text-center">
                   {m.ended ? 'Ended' : 'Active'}
                 </td>
@@ -944,7 +971,7 @@ return(
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex gap-2 items-center flex-wrap">
-                    <span className="text-xs font-medium">Period:</span>
+                    <span className="text-sm font-medium">Period:</span>
                     {[1,2,3].map(p=>(
                       <button
                         key={p}
@@ -1177,11 +1204,57 @@ if(screen==='create')return(
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm mb-2">Home Team</label>
-                  <input type="text" value={homeName} onChange={e=>setHomeName(e.target.value)} className={`w-full px-4 py-3 border rounded-lg ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
+                  <div className="relative">
+  <input
+    type="text"
+    value={homeName}
+    onChange={e => setHomeName(e.target.value)}
+    className={`w-full px-4 py-3 pr-10 border rounded-lg
+      ${darkMode
+        ? 'bg-gray-700 border-gray-600 text-white'
+        : 'border-gray-300'
+      }`}
+  />
+
+  {homeName && (
+    <button
+      type="button"
+      onClick={() => setHomeName('')}
+      className="absolute right-3 top-1/2 -translate-y-1/2
+                 text-gray-400 hover:text-gray-600"
+      aria-label="Clear home team"
+    >
+      ×
+    </button>
+  )}
+</div>
                 </div>
                 <div>
                   <label className="block text-sm mb-2">Away Team</label>
-                  <input type="text" value={awayName} onChange={e=>setAwayName(e.target.value)} className={`w-full px-4 py-3 border rounded-lg ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
+                  <div className="relative">
+  <input
+    type="text"
+    value={awayName}
+    onChange={e => setAwayName(e.target.value)}
+    className={`w-full px-4 py-3 pr-10 border rounded-lg
+      ${darkMode
+        ? 'bg-gray-700 border-gray-600 text-white'
+        : 'border-gray-300'
+      }`}
+  />
+
+  {awayName && (
+    <button
+      type="button"
+      onClick={() => setAwayName('')}
+      className="absolute right-3 top-1/2 -translate-y-1/2
+                 text-gray-400 hover:text-gray-600"
+      aria-label="Clear away team"
+    >
+      ×
+    </button>
+  )}
+</div>
                 </div>
               </div>
               <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START MATCH</button>
@@ -1261,7 +1334,7 @@ return(
             <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-3 shadow-lg`}>
               <div className="max-w-4xl mx-auto flex justify-between items-center">
                 <div className="flex gap-2 items-center">
-                  <span className="text-xs font-medium">Period:</span>
+                  <span className="text-sm font-medium">Period:</span>
                   {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
                   {!periodStats[4]&&currentPeriod===3&&(
