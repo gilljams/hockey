@@ -122,6 +122,10 @@ const firebaseConfig={
           return id;
         })()
       );
+      const homeTeamInputRef = useRef(null);
+
+const DEFAULT_HOME = 'HOME TEAM';
+const DEFAULT_AWAY = 'AWAY TEAM';
 
       const [isViewer,setIsViewer]=useState(false);
       const [viewerCount,setViewerCount]=useState(0);
@@ -282,6 +286,16 @@ const firebaseConfig={
           localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
         }
       },[currentPeriod,homeName,awayName,sidesSwapped,periodStats,playerStats,isMultiplayer,screen]);
+
+useEffect(() => {
+  if (screen === 'create') {
+    setTimeout(() => {
+      homeTeamInputRef.current?.focus();
+      homeTeamInputRef.current?.select();
+    }, 50);
+  }
+}, [screen]);
+
 
 useEffect(() => {
   const handleBeforeUnload = (e) => {
@@ -1204,8 +1218,10 @@ if(screen==='create')return(
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm mb-2">Home Team</label>
-                  <div className="relative">
+                  
+<div className="relative">
   <input
+    ref={homeTeamInputRef}
     type="text"
     value={homeName}
     onChange={e => setHomeName(e.target.value)}
@@ -1216,7 +1232,7 @@ if(screen==='create')return(
       }`}
   />
 
-  {homeName && (
+  {homeName === DEFAULT_HOME && (
     <button
       type="button"
       onClick={() => setHomeName('')}
