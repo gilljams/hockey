@@ -8,6 +8,7 @@
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-39HWBJQ5Z1');</script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -38,11 +39,13 @@ const firebaseConfig={
       appId:"1:804304791634:web:98532061d3768f6b8c178b"
     };
 
-    let db=null;
-    try{
-      if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
-      db=firebase.database();
-    }catch(e){console.log("Firebase error:",e)}
+let db=null;
+let auth=null;
+try{
+  if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+  db=firebase.database();
+  auth=firebase.auth();
+}catch(e){console.log("Firebase error:",e)}
 
     const genCode=()=>{
       const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -53,7 +56,6 @@ const firebaseConfig={
       return code;
     };
 
-    const ADMIN_PASSWORD = 'hockey123';
 
     const SoundEQ = () => (
       <div className="flex items-end gap-0.5 h-4 ml-2">
@@ -523,12 +525,17 @@ const AdminPanel = ({ darkMode, setScreen }) => {
       <div className={`${darkMode?'bg-gray-800':'bg-blue-600'} text-white p-4`}>
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <h2 className="font-bold text-lg">Admin – Matches</h2>
-          <button
-            onClick={() => setScreen('game')}
-            className="bg-white bg-opacity-20 px-3 py-2 rounded"
-          >
-            ← Back
-          </button>
+<div className="flex gap-2">
+  <button
+    onClick={async () => {
+      await auth.signOut();
+      setScreen('game');
+    }}
+    className="bg-white bg-opacity-20 px-3 py-2 rounded"
+  >
+    ← Back & Sign Out
+  </button>
+</div>
         </div>
       </div>
 
@@ -1598,12 +1605,22 @@ return(
       </label>
 
 <button
-  onClick={() => {
-    const pwd = prompt('Admin password');
-    if (pwd === ADMIN_PASSWORD) {
+  onClick={async () => {
+    const email = prompt('Admin email:');
+    if (!email) return;
+    
+    const password = prompt('Admin password:');
+    if (!password) return;
+    
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
       setScreen('admin');
-    } else if (pwd !== null) {
-      alert('Wrong password');
+    } catch (error) {
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        alert('Wrong email or password');
+      } else {
+        alert('Login failed: ' + error.message);
+      }
     }
   }}
   className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-semibold ${
