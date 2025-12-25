@@ -596,7 +596,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
                >
                Created {sortDir === 'asc' ? '▲' : '▼'}
               </th>
-              <th className="px-3 py-2">Actions</th>
+              <th className="px-3 py-2 whitespace-nowrap min-w-[120px]">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -616,21 +616,21 @@ const AdminPanel = ({ darkMode, setScreen }) => {
   })
   .map(([id, m]) => (
               <tr
-                key={id}
-                className={`border-t ${darkMode?'border-gray-700':'border-gray-300'}`}
-              >
-                <td className="px-3 py-2 font-mono">{id}</td>
-                <td className="px-3 py-2">{m.homeName || '—'}</td>
-                <td className="px-3 py-2">{m.awayName || '—'}</td>
-                <td className="px-3 py-2 text-center">
-                  {m.ended ? 'Ended' : 'Active'}
-                </td>
-                <td className="px-3 py-2 text-center">
-                  {m.createdAt
-                    ? new Date(m.createdAt).toLocaleString()
-                    : '—'}
-                </td>
-                <td className="px-3 py-2 text-center space-x-2">
+  key={id}
+  className={`border-t ${darkMode?'border-gray-700 text-gray-200':'border-gray-300'}`}
+>
+  <td className={`px-3 py-2 font-mono ${darkMode?'text-gray-200':''}`}>{id}</td>
+  <td className={`px-3 py-2 ${darkMode?'text-gray-200':''}`}>{m.homeName || '—'}</td>
+  <td className={`px-3 py-2 ${darkMode?'text-gray-200':''}`}>{m.awayName || '—'}</td>
+  <td className={`px-3 py-2 text-center ${darkMode?'text-gray-200':''}`}>
+    {m.ended ? 'Ended' : 'Active'}
+  </td>
+  <td className={`px-3 py-2 text-center ${darkMode?'text-gray-200':''}`}>
+    {m.createdAt
+      ? new Date(m.createdAt).toLocaleString()
+      : '—'}
+  </td>
+  <td className="px-3 py-2 text-center space-x-2 whitespace-nowrap">
                   <button
                     onClick={() => toggleEnded(id, m.ended)}
                     className="px-2 py-1 rounded bg-yellow-500 text-white"
