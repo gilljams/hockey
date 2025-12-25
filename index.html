@@ -82,6 +82,7 @@ try{
       const [wakeLock,setWakeLock]=useState(null);
       const [externalLinkUrl,setExternalLinkUrl]=useState('');
       const [externalLinkTitle,setExternalLinkTitle]=useState('');
+      const [defaultHomeRoster,setDefaultHomeRoster]=useState('');
       const [screen,setScreen]=useState('start');
       const [matchCode,setMatchCode]=useState('');
       const [inputCode,setInputCode]=useState('');
@@ -219,8 +220,8 @@ const DEFAULT_AWAY = 'AWAY TEAM';
           localStorage.removeItem('multiplayerMatch');
         }
 
-        // Load user preferences
-        ['darkMode','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle'].forEach(k=>{
+      // Load user preferences
+      ['darkMode','spotifyPlaylist','statsCollapsed','keepScreenOn','focusMode','externalLinkUrl','externalLinkTitle','defaultHomeRoster'].forEach(k=>{
           const v=localStorage.getItem(k);
           if(v){
             if(['darkMode','statsCollapsed','keepScreenOn'].includes(k)){
@@ -231,11 +232,13 @@ const DEFAULT_AWAY = 'AWAY TEAM';
               }
             }else if(k==='focusMode'){
               setFocusMode(v==='null'?null:v);
-            }else if(k==='externalLinkUrl'){
-              setExternalLinkUrl(v);
-            }else if(k==='externalLinkTitle'){
-              setExternalLinkTitle(v);
-            }else{
+          }else if(k==='externalLinkUrl'){
+            setExternalLinkUrl(v);
+          }else if(k==='externalLinkTitle'){
+            setExternalLinkTitle(v);
+          }else if(k==='defaultHomeRoster'){
+            setDefaultHomeRoster(v);
+          }else{
               eval(`set${k.charAt(0).toUpperCase()+k.slice(1)}(v)`);
             }
           }
@@ -290,6 +293,7 @@ if(!savedMatch){
       useEffect(()=>{localStorage.setItem('focusMode',focusMode)},[focusMode]);
       useEffect(()=>{localStorage.setItem('externalLinkUrl',externalLinkUrl)},[externalLinkUrl]);
       useEffect(()=>{localStorage.setItem('externalLinkTitle',externalLinkTitle)},[externalLinkTitle]);
+      useEffect(()=>{localStorage.setItem('defaultHomeRoster',defaultHomeRoster)},[defaultHomeRoster]);
 
       useEffect(()=>{
         if(!isMultiplayer&&screen==='game'){
@@ -733,30 +737,72 @@ const AdminPanel = ({ darkMode, setScreen }) => {
       };
 
 
-      const addPlayers=(team,numbers)=>{
-        const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
-        if(validNumbers.length===0)return;
-        
-        const newStats=structuredClone(playerStats);
-        
-        if(!newStats[team])newStats[team]={players:{}};
-        if(!newStats[team].players)newStats[team].players={};
-        
-        validNumbers.forEach(playerNum=>{
-          if(!newStats[team].players[playerNum]){
-            newStats[team].players[playerNum]={
-              periods:{},
-              total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
-            };
-          }
-        });
-        
-        setPlayerStats(newStats);
-        if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
-        
-        setShowAddPlayerModal(false);
-        setAddPlayerNumbers(['']);
+
+
+
+const addPlayers=(team,numbers)=>{
+  const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
+  if(validNumbers.length===0)return;
+  
+  const newStats=structuredClone(playerStats);
+  
+  if(!newStats[team])newStats[team]={players:{}};
+  if(!newStats[team].players)newStats[team].players={};
+  
+  validNumbers.forEach(playerNum=>{
+    if(!newStats[team].players[playerNum]){
+      newStats[team].players[playerNum]={
+        periods:{},
+        total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0}
       };
+    }
+  });
+  
+  setPlayerStats(newStats);
+  if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
+  
+  setShowAddPlayerModal(false);
+  setAddPlayerNumbers(['']);
+};
+
+// Parse comma/space separated input into array
+const parsePlayerInput = (input) => {
+  // Split by comma or space, filter empty, remove duplicates
+  const nums = input
+    .split(/[,\s]+/)
+    .map(n => n.trim())
+    .filter(n => n !== '' && /^\d+$/.test(n));
+  return [...new Set(nums)];
+};
+
+
+
+// Handle smart input parsing
+const handlePlayerInputChange = (value, idx) => {
+  // Check if user typed comma or space (= wants to move to next field)
+  if (value.includes(',') || value.includes(' ')) {
+    const parsed = parsePlayerInput(value);
+    if (parsed.length > 0) {
+      // Keep all existing fields before current index, then add parsed numbers
+      const before = addPlayerNumbers.slice(0, idx);
+      const after = addPlayerNumbers.slice(idx + 1).filter(n => n.trim() !== '');
+      
+      // Combine: existing + parsed + remaining + empty
+      setAddPlayerNumbers([...before, ...parsed, ...after, '']);
+      
+      // Focus will auto-move to the new empty field
+      setTimeout(() => {
+        const inputs = document.querySelectorAll('input[type="text"][inputmode="decimal"]');
+        inputs[inputs.length - 1]?.focus();
+      }, 50);
+    }
+  } else {
+    // Normal single character input
+    const newNums = [...addPlayerNumbers];
+    newNums[idx] = value;
+    setAddPlayerNumbers(newNums);
+  }
+};
 
       const playSound = st => {
         const a = audioRefs[st].current;
@@ -1153,39 +1199,57 @@ return(
             </div>
 
 
+
+
 {showAddPlayerModal&&(
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
       <h3 className="text-lg font-bold mb-3">Add Player(s)</h3>
+      
+      {/* Default roster hint */}
+      {addPlayerTeam === 'home' && defaultHomeRoster && addPlayerNumbers.length === 1 && addPlayerNumbers[0] === '' && Object.keys(playerStats.home?.players || {}).length === 0 && (
+        <div className={`mb-3 p-3 rounded ${darkMode ? 'bg-blue-900 bg-opacity-30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
+          <p className="text-xs mb-2 opacity-75">Default home roster:</p>
+          <button
+            onClick={() => {
+              const parsed = parsePlayerInput(defaultHomeRoster);
+              setAddPlayerNumbers([...parsed, '']);
+            }}
+            className={`w-full ${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-500 hover:bg-blue-600'} text-white py-2 rounded font-semibold text-sm`}
+          >
+            Load: {defaultHomeRoster}
+          </button>
+        </div>
+      )}
+      
+      <div className={`mb-2 p-2 rounded text-xs ${darkMode?'bg-gray-700 text-gray-300':'bg-gray-100 text-gray-600'}`}>
+        💡 Tip: Type "2,3,4" or "2 3 4" to add multiple players at once
+      </div>
+      
       <div className="space-y-3 mb-3 max-h-64 overflow-y-auto">
         {addPlayerNumbers.map((num,idx)=>(
           <div key={idx}>
             <input
-              type="number"
-              inputMode="numeric"
-              pattern="[0-9]*"
+              type="text"
+              inputMode="decimal"
               value={num}
-              onChange={(e)=>{
-                const newNums=[...addPlayerNumbers];
-                newNums[idx]=e.target.value;
-                setAddPlayerNumbers(newNums);
-              }}
+              onChange={(e)=>handlePlayerInputChange(e.target.value, idx)}
               onKeyDown={(e)=>{
                 if(e.key==='Enter'&&num.trim()!==''){
                   e.preventDefault();
                   if(idx===addPlayerNumbers.length-1){
                     setAddPlayerNumbers([...addPlayerNumbers,'']);
                     setTimeout(()=>{
-                      const inputs=document.querySelectorAll('input[type="number"]');
+                      const inputs=document.querySelectorAll('input[type="text"][inputmode="decimal"]');
                       inputs[inputs.length-1]?.focus();
                     },50);
                   }else{
-                    const inputs=document.querySelectorAll('input[type="number"]');
+                    const inputs=document.querySelectorAll('input[type="text"][inputmode="decimal"]');
                     inputs[idx+1]?.focus();
                   }
                 }
               }}
-              placeholder={`Player #${idx+1}`}
+              placeholder={idx === 0 ? "e.g. 2,3,4 or 2 3 4" : `Player #${idx+1}`}
               className={`w-full px-3 py-3 border rounded text-center font-bold text-xl ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
               autoFocus={idx===addPlayerNumbers.length-1}
             />
@@ -1194,7 +1258,7 @@ return(
                 onClick={()=>{
                   setAddPlayerNumbers([...addPlayerNumbers,'']);
                   setTimeout(()=>{
-                    const inputs=document.querySelectorAll('input[type="number"]');
+                    const inputs=document.querySelectorAll('input[type="text"][inputmode="decimal"]');
                     inputs[inputs.length-1]?.focus();
                   },50);
                 }}
@@ -1706,10 +1770,25 @@ return(
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm mb-2 font-semibold">External Link</label>
-                    <input type="text" value={externalLinkTitle} onChange={e=>setExternalLinkTitle(e.target.value)} placeholder="Club Rules" className={`w-full px-3 py-2 border rounded text-sm mb-2 ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                    <input type="text" value={externalLinkUrl} onChange={e=>setExternalLinkUrl(e.target.value)} placeholder="https://..." className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
-                  </div>
+  <label className="block text-sm mb-2 font-semibold">External Link</label>
+  <input type="text" value={externalLinkTitle} onChange={e=>setExternalLinkTitle(e.target.value)} placeholder="Club Rules" className={`w-full px-3 py-2 border rounded text-sm mb-2 ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
+  <input type="text" value={externalLinkUrl} onChange={e=>setExternalLinkUrl(e.target.value)} placeholder="https://..." className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}/>
+</div>
+
+<div>
+  <label className="block text-sm mb-2 font-semibold">Default Home Team Roster</label>
+  <input 
+    type="text" 
+    inputMode="decimal"
+    value={defaultHomeRoster} 
+    onChange={e=>setDefaultHomeRoster(e.target.value)} 
+    placeholder="e.g. 2,3,4,7,9" 
+    className={`w-full px-3 py-2 border rounded text-sm ${darkMode?'bg-gray-800 border-gray-600 text-white':''}`}
+  />
+  <p className={`text-xs mt-1 ${darkMode?'text-gray-400':'text-gray-500'}`}>
+    Comma or space separated player numbers
+  </p>
+</div>
                   
 
 
