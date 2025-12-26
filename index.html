@@ -1011,7 +1011,19 @@ const renderPlayerTable=(team)=>{
   };
   
   return(
-            <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow-lg overflow-hidden`}>
+            <div
+  className={`
+    ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}
+    rounded-lg shadow-lg overflow-hidden
+    ${
+      (playerStatsMoment === 'HG' && team === 'away') ||
+      (playerStatsMoment === 'AG' && team === 'home')
+        ? 'text-sm'
+        : ''
+    }
+  `}
+>
+
 <button 
   onClick={() => setCollapsedPlayerTables(prev => ({...prev, [team]: !prev[team]}))}
   className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
@@ -1071,7 +1083,15 @@ const renderPlayerTable=(team)=>{
                   );
                 })}
                 {playerStatsEditMode&&(
-                  <td className="px-2 py-2">
+                  <td
+  className={
+    (playerStatsMoment === 'HG' && team === 'away') ||
+    (playerStatsMoment === 'AG' && team === 'home')
+      ? 'px-1 py-1'
+      : 'px-2 py-2'
+  }
+>
+
                     <button
                       onClick={()=>removePlayer(team,pNum)}
                       disabled={matchEnded||isViewer}
@@ -1214,10 +1234,23 @@ return(
             </div>
             
             <div className="max-w-7xl mx-auto p-4">
-              <div className={`grid ${playerStatsViewMode==='sideBySide'?'grid-cols-1 lg:grid-cols-2':'grid-cols-1'} gap-4`}>
-                {renderPlayerTable('home')}
-                {renderPlayerTable('away')}
-              </div>
+                <div
+    className="grid gap-3"
+    style={
+      playerStatsViewMode === 'sideBySide' &&
+      (playerStatsMoment === 'HG' || playerStatsMoment === 'AG')
+        ? {
+            gridTemplateColumns:
+              playerStatsMoment === 'HG'
+                ? '3fr 1fr'   // HOME bred, AWAY smal
+                : '1fr 3fr'   // AWAY bred, HOME smal
+          }
+        : undefined
+    }
+  >
+    {renderPlayerTable('home')}
+    {renderPlayerTable('away')}
+  </div>
             </div>
 
 
