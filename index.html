@@ -101,6 +101,7 @@ try{
       const [forceAuth,setForceAuth]=useState(false);
       const [userMatches,setUserMatches]=useState([]);
 const [loadingMatches,setLoadingMatches]=useState(false);
+const [wasInMatch, setWasInMatch]=useState(false);
 const [periodStats,setPeriodStats]=useState({
         1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
@@ -421,8 +422,9 @@ useEffect(() => {
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
                  setIsCreator(d.creatorId === userId.current);
       
-// Check if current user has been kicked out (was in list, but no longer is)
-      if(!isViewer && connectedUsers > 1 && d.users && !d.users[userId.current]){
+      // Check if user was in match but is now removed (kicked)
+      const isCurrentlyInMatch = d.users && d.users[userId.current];
+      if(!isViewer && wasInMatch && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0){
         // User has been kicked out
         localStorage.removeItem('multiplayerMatch');
         resetGameState();
@@ -431,6 +433,7 @@ useEffect(() => {
         setScreen('start');
         alert('You have been removed from the match');
       }
+      setWasInMatch(isCurrentlyInMatch);
     }
   });
   const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
