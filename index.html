@@ -1827,8 +1827,24 @@ if(screen==='start')return(
                 <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
                 {currentUser?(
                   <div className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
-                    <p className="mb-1">Welcome back!</p>
+                    
                     <p className="text-sm opacity-75">{currentUser.email}</p>
+
+                {currentUser&&(
+                  <button 
+                    onClick={async()=>{
+                      if(window.confirm('Sign out?')){
+                        await auth.signOut();
+                        setScreen('start');
+                      }
+                    }} 
+                    className={`w-full text-sm ${darkMode?'text-red-400 hover:text-red-300':'text-red-600 hover:text-red-700'} py-2 font-semibold`}
+                  >
+                    SIGN OUT
+                  </button>
+                )}
+
+
                   </div>
                 ):(
                   <p className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
@@ -1842,7 +1858,7 @@ if(screen==='start')return(
                 {!currentUser&&(
                   <button 
                     onClick={()=>{setForceAuth(true)}}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2"
                   >
                     <span>🔐</span>
                     <span>LOGIN / CREATE ACCOUNT</span>
@@ -1853,48 +1869,49 @@ if(screen==='start')return(
                 {currentUser&&userMatches.length>0&&(
                   <button 
                     onClick={()=>setScreen('history')} 
-                    className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-4 rounded-xl font-bold text-lg shadow-lg`}
+                    className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                   >
                     MY MATCHES ({userMatches.length})
                   </button>
                 )}
                 
                {/* Create Match */}
-                <button 
-                  onClick={()=>{
-                    if(!currentUser){
-                      setForceAuth(true);
-                    }else{
-                      setScreen('create');
-                    }
-                  }}
-                  className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2`}
-                >
-                  <span className={`${currentUser?'invisible':''}`}>🔒</span>
-                  <span>CREATE MATCH</span>
-                </button>
+<button 
+  onClick={()=>{
+    if(!currentUser){
+      setForceAuth(true);
+    }else{
+      setScreen('create');
+    }
+  }}
+  className={`w-full flex items-center justify-center relative ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
+>
+  <span className="absolute right-4">{!currentUser && '🔒'}</span>
+  <span>CREATE MATCH</span>
+</button>
                 
                 {/* Join Match as Editor */}
-                <button 
-                  onClick={()=>{
-                    if(!currentUser){
-                      setForceAuth(true);
-                    }else{
-                      setScreen('join');
-                    }
-                  }}
-                  className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2`}
-                >
-                  <span className={`${currentUser?'invisible':''}`}>🔒</span>
-                  <span>JOIN MATCH (Editor)</span>
-                </button>
+<button 
+  onClick={()=>{
+    if(!currentUser){
+      setForceAuth(true);
+    }else{
+      setScreen('join');
+    }
+  }}
+  className={`w-full flex items-center justify-center relative ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
+>
+  <span className="absolute right-4">{!currentUser && '🔒'}</span>
+  <span>JOIN MATCH</span>
+</button>
+
                 
                 {/* Join Match as Viewer - always available */}
                 <button 
                   onClick={()=>setScreen('join')}
                   className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                 >
-                  JOIN AS VIEWER
+                  JOIN MATCH AS VIEWER
                 </button>
                 
                 {/* Continue Alone - always available */}
@@ -1902,7 +1919,7 @@ if(screen==='start')return(
                   onClick={continueAlone} 
                   className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                 >
-                  CONTINUE ALONE
+                  ... or CONTINUE ALONE
                 </button>
               </div>
               
@@ -1915,19 +1932,7 @@ if(screen==='start')return(
                   {darkMode?'☀️ Light Mode':'🌙 Dark Mode'}
                 </button>
                 
-                {currentUser&&(
-                  <button 
-                    onClick={async()=>{
-                      if(window.confirm('Sign out?')){
-                        await auth.signOut();
-                        setScreen('start');
-                      }
-                    }} 
-                    className={`w-full text-sm ${darkMode?'text-red-400 hover:text-red-300':'text-red-600 hover:text-red-700'} py-2 font-semibold`}
-                  >
-                    🚪 SIGN OUT
-                  </button>
-                )}
+
               </div>
             </div>
           </div>
