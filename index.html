@@ -419,13 +419,24 @@ useEffect(() => {
             setPlayerStats(normalizePlayerStats(d.playerStats));
             setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
-            setIsCreator(d.creatorId === userId.current);
-          }
-        });
-        const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
-        const ur=matchRef.current.child(path);
-        ur.set(true);
-        ur.onDisconnect().remove();       
+                 setIsCreator(d.creatorId === userId.current);
+      
+      // Check if current user is still in the match
+      if(!isViewer && d.users && !d.users[userId.current]){
+        // User has been kicked out
+        localStorage.removeItem('multiplayerMatch');
+        resetGameState();
+        setIsMultiplayer(false);
+        setMatchCode('');
+        setScreen('start');
+        alert('You have been removed from the match');
+      }
+    }
+  });
+  const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
+  const ur=matchRef.current.child(path);
+  ur.set(true);
+  ur.onDisconnect().remove();      
 localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer,gameMode:'multi'}));
         return()=>{if(matchRef.current){matchRef.current.off();ur.remove()}}
       },[isMultiplayer,matchCode,isViewer]);
@@ -794,21 +805,21 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                         <div className="text-sm font-semibold mb-2">Connected Editors:</div>
                         {match.users && Object.keys(match.users).length > 0 ? (
                           <div className="space-y-1 mb-3">
-                            {Object.keys(match.users).map(userId => (
+                            {Object.keys(match.users).filter(userId => userId !== match.creatorId).map(userId => (
                               <div key={userId} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                                 <span className="text-sm">{userId}</span>
-                                  <button
-                                    onClick={() => {
-                                      if(window.confirm('Kick out this editor?')){
-                                        db.ref(`matches/${match.id}/users/${userId}`).remove();
-                                      }
-                                    }}
-                                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold"
-                                  >
-                                    Kick
-                                  </button>
-                                </div>
-))}
+                                <button
+                                  onClick={() => {
+                                    if(window.confirm('Kick out this editor?')){
+                                      db.ref(`matches/${match.id}/users/${userId}`).remove();
+                                    }
+                                  }}
+                                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold"
+                                >
+                                  Kick
+                                </button>
+                              </div>
+                            ))}
                               );
                             })}
                           </div>
