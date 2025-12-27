@@ -1,11 +1,19 @@
 {
   "rules": {
+    "users": {
+      ".read": false,
+      ".write": false,
+      "$uid": {
+        ".read": "auth.uid === $uid",
+        ".write": "auth.uid === $uid"
+      }
+    },
     "matches": {
       ".read": "auth != null",
       ".write": "auth != null",
       "$matchId": {
         ".read": true,
-        ".write": true
+        ".write": "auth != null && root.child($matchId).child('creatorId').val() === auth.uid || auth != null && !root.child($matchId).exists()"
       }
     }
   }
