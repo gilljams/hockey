@@ -433,7 +433,9 @@ useEffect(() => {
         setScreen('start');
         alert('You have been removed from the match');
       }
-      setWasInMatch(isCurrentlyInMatch);
+      if (isCurrentlyInMatch) {
+  setWasInMatch(true);
+}
     }
   });
   const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
