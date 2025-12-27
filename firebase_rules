@@ -13,7 +13,10 @@
       ".write": "auth != null",
       "$matchId": {
         ".read": true,
-        ".write": "auth != null && root.child($matchId).child('creatorId').val() === auth.uid || auth != null && !root.child($matchId).exists()"
+        ".write": "auth != null && root.child($matchId).child('creatorId').val() === auth.uid",
+        "users": {
+          ".write": "root.child($matchId).child('creatorId').val() === auth.uid || (root.child($matchId).child('locked').val() === false && auth != null)"
+        }
       }
     }
   }
