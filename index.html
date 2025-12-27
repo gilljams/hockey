@@ -2436,7 +2436,7 @@ return(
                   {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">MATCH ENDED</span>}
                   <span className="text-xs">👥 {connectedUsers}</span>
                   {!isViewer&&viewerCount>0&&<span className="text-xs">👁️ {viewerCount}</span>}
-                  {currentUser&&isCreator&&<span className="text-xs opacity-75">({currentUser.email})</span>}
+                  
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={copyCode} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-2 py-1 rounded font-mono font-bold text-xs`}>{matchCode}</button>
