@@ -99,8 +99,8 @@ try{
       const [isCreator,setIsCreator]=useState(false);
       const [forceAuth,setForceAuth]=useState(false);
       const [userMatches,setUserMatches]=useState([]);
-      const [loadingMatches,setLoadingMatches]=useState(false);
-      const [periodStats,setPeriodStats]=useState({
+const [loadingMatches,setLoadingMatches]=useState(false);
+const [periodStats,setPeriodStats]=useState({
         1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
@@ -209,6 +209,8 @@ const DEFAULT_AWAY = 'AWAY TEAM';
         }
       }, [isViewer, screen]);
 // Auth listener
+
+
       useEffect(()=>{
         if(!auth){
           setAuthLoading(false);
@@ -312,7 +314,8 @@ if(savedMatch){
 }
 
 // Load single-player game if no multiplayer session
-if(!savedMatch){
+const lastScreen=localStorage.getItem('currentScreen');
+if(!savedMatch && (!lastScreen || lastScreen==='game')){
   const saved=localStorage.getItem('juniorLeagueGame');
   if(saved){
     try {
@@ -334,7 +337,9 @@ if(!savedMatch){
       localStorage.removeItem('juniorLeagueGame');
     }
   }
-}      },[]);
+}
+
+      },[]);
 
       useEffect(()=>{localStorage.setItem('darkMode',JSON.stringify(darkMode))},[darkMode]);
       useEffect(()=>{localStorage.setItem('spotifyPlaylist',spotifyPlaylist)},[spotifyPlaylist]);
@@ -600,7 +605,10 @@ const leaveMatch=()=>{
 };
 
 const exitToStart=()=>{
-  if(window.confirm('Exit to start screen? Current game will be saved.')){
+  if(window.confirm('Exit to start screen?')){
+    localStorage.removeItem('juniorLeagueGame');
+    resetGameState();
+    setGameMode('single');
     setScreen('start');
   }
 };
@@ -2332,12 +2340,24 @@ return(
       ←
     </button>
   )}
+  {isViewer&&(
+    <button onClick={()=>{
+      localStorage.removeItem('multiplayerMatch');
+      resetGameState();
+      setIsMultiplayer(false);
+      setIsViewer(false);
+      setMatchCode('');
+      setScreen('start');
+    }} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 rounded text-sm`}>
+      ←
+    </button>
+  )}
   <button onClick={()=>setStatsCollapsed(!statsCollapsed)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>{statsCollapsed?'▼':'▲'}</button>
   <button onClick={()=>setShowSettings(!showSettings)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>⚙️</button>
 </div>
               </div>
 
-              {showSettings&&<div className={`${darkMode?'bg-gray-700 text-white':'bg-white text-gray-800'} rounded-lg p-4 mb-4 max-h-[70vh] overflow-y-auto`}>
+          {showSettings&&<div className={`${darkMode?'bg-gray-700 text-white':'bg-white text-gray-800'} rounded-lg p-4 mb-4 max-h-[70vh] overflow-y-auto`}>
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="font-bold">Settings</h3>
                   <button onClick={()=>setShowSettings(false)} className={`${darkMode?'text-gray-400':'text-gray-500'} text-2xl`}>×</button>
@@ -2434,7 +2454,7 @@ return(
     </label>
   </div>
 </div>
-
+      
                 <div className="space-y-3 mt-4 pt-4 border-t">
                   <div>
                     <label className="block text-sm mb-2 font-semibold">Spotify Playlist URL</label>
