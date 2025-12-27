@@ -794,18 +794,9 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                         <div className="text-sm font-semibold mb-2">Connected Editors:</div>
                         {match.users && Object.keys(match.users).length > 0 ? (
                           <div className="space-y-1 mb-3">
-                            {Object.keys(match.users).map(userId => {
-                              const [email, setEmail] = React.useState(userId);
-                              
-                              React.useEffect(() => {
-                                db.ref(`users/${userId}/email`).once('value', snap => {
-                                  if(snap.exists()) setEmail(snap.val());
-                                });
-                              }, [userId]);
-                              
-                              return (
-                                <div key={userId} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                  <span className="text-sm">{email}</span>
+                            {Object.keys(match.users).map(userId => (
+                              <div key={userId} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                                <span className="text-sm">{userId}</span>
                                   <button
                                     onClick={() => {
                                       if(window.confirm('Kick out this editor?')){
@@ -817,6 +808,7 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                                     Kick
                                   </button>
                                 </div>
+))}
                               );
                             })}
                           </div>
