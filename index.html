@@ -421,8 +421,8 @@ useEffect(() => {
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
                  setIsCreator(d.creatorId === userId.current);
       
-      // Check if current user is still in the match
-      if(!isViewer && d.users && !d.users[userId.current]){
+// Check if current user has been kicked out (was in list, but no longer is)
+      if(!isViewer && connectedUsers > 1 && d.users && !d.users[userId.current]){
         // User has been kicked out
         localStorage.removeItem('multiplayerMatch');
         resetGameState();
