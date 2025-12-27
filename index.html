@@ -94,15 +94,18 @@ try{
       const [error,setError]=useState('');
       const [showReconnectPrompt,setShowReconnectPrompt]=useState(false);
       const [savedMatchCode,setSavedMatchCode]=useState('');
+      const [currentUser,setCurrentUser]=useState(null);
+      const [authLoading,setAuthLoading]=useState(true);
       const [isCreator,setIsCreator]=useState(false);
+      const [forceAuth,setForceAuth]=useState(false);
+      const [userMatches,setUserMatches]=useState([]);
+      const [loadingMatches,setLoadingMatches]=useState(false);
       const [periodStats,setPeriodStats]=useState({
         1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
       });
-
-
-      const [playerStats,setPlayerStats]=useState({
+const [playerStats,setPlayerStats]=useState({
         home:{players:{}},
         away:{players:{}}
       });
@@ -121,6 +124,7 @@ try{
       const [introPlaying,setIntroPlaying]=useState(false);
       const matchRef=useRef(null);
       const userId = useRef(
+        currentUser?.uid ||
         localStorage.getItem('userId') ||
         (() => {
           const id = Math.random().toString(36).substr(2,9);
@@ -204,7 +208,53 @@ const DEFAULT_AWAY = 'AWAY TEAM';
           setActiveTab('stats');
         }
       }, [isViewer, screen]);
+// Auth listener
+      useEffect(()=>{
+        if(!auth){
+          setAuthLoading(false);
+          return;
+        }
+        
+        const unsubscribe=auth.onAuthStateChanged(user=>{
+          setCurrentUser(user);
+          setAuthLoading(false);
+        });
+        
+        return ()=>unsubscribe();
+      },[]);
 
+      // Update userId ref when user changes
+      useEffect(()=>{
+        if(currentUser?.uid){
+          userId.current=currentUser.uid;
+        }
+      },[currentUser]);
+
+      // Load user's matches when logged in
+      useEffect(()=>{
+        if(!currentUser||!db)return;
+        
+        setLoadingMatches(true);
+        const matchesRef=db.ref('matches').orderByChild('creatorId').equalTo(currentUser.uid);
+        
+        matchesRef.on('value',snapshot=>{
+          const matches=[];
+          snapshot.forEach(child=>{
+            matches.push({
+              id:child.key,
+              ...child.val()
+            });
+          });
+          
+          // Sort by creation date, newest first
+          matches.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+          
+          setUserMatches(matches);
+          setLoadingMatches(false);
+        });
+        
+        return()=>matchesRef.off();
+      },[currentUser]);
 
       useEffect(()=>{
         // Clean up old multiplayer data
@@ -400,6 +450,13 @@ const startNewSession=()=>{
 };
       
 const createMatch=()=>{
+  // Check if user is logged in
+  if(!currentUser){
+    alert('You must be logged in to create a match');
+    setScreen('start');
+    return;
+  }
+  
   // Rensa single-game data när vi går till multi
   if(gameMode==='single'){
     localStorage.removeItem('juniorLeagueGame');
@@ -418,6 +475,8 @@ const createMatch=()=>{
 
       const startMatch=()=>{
         if(!db){setError('Firebase not configured');return}
+        if(!currentUser){setError('You must be logged in to create a match');return}
+        
         const viewerCode=matchCode+'-V';
         db.ref(`matches/${matchCode}`).set({
           homeName,awayName,currentPeriod:1,sidesSwapped:false,
@@ -425,6 +484,7 @@ const createMatch=()=>{
           playerStats:{home:{players:{}},away:{players:{}}},
           ended:false,createdAt:Date.now(),
           creatorId:userId.current,
+          ownerEmail:currentUser.email,
           users:{[userId.current]:true},
           viewerCode:viewerCode,viewers:{}
    }).then(()=>{
@@ -442,12 +502,19 @@ const createMatch=()=>{
       
 const joinMatch=()=>{
   if(!db){setError('Firebase not configured');return}
+  
   const c=inputCode.toUpperCase().trim();
   const isViewerCode=c.endsWith('-V');
   const baseCode=isViewerCode?c.slice(0,-2):c;
 
   if((!isViewerCode&&c.length!==6)||(isViewerCode&&baseCode.length!==6)){
     setError('Invalid code');
+    return;
+  }
+  
+  // Editor access requires login
+  if(!isViewerCode&&!currentUser){
+    setError('You must be logged in to join as editor. Use viewer code (-V) to watch without login.');
     return;
   }
 
@@ -537,6 +604,352 @@ const exitToStart=()=>{
     setScreen('start');
   }
 };
+
+const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
+  const [filter, setFilter] = React.useState('all'); // 'all', 'active', 'ended'
+  
+  const filteredMatches = matches.filter(m => {
+    if (filter === 'active') return !m.ended;
+    if (filter === 'ended') return m.ended;
+    return true;
+  });
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return 'Unknown date';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('sv-SE', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTotalScore = (match) => {
+    let homeScore = 0;
+    let awayScore = 0;
+    
+    Object.keys(match.periodStats || {}).forEach(period => {
+      homeScore += match.periodStats[period]?.homeScore || 0;
+      awayScore += match.periodStats[period]?.awayScore || 0;
+    });
+    
+    return { homeScore, awayScore };
+  };
+
+  return (
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+      <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg`}>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-xl font-bold">My Matches</h2>
+            <button
+              onClick={onBack}
+              className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold`}
+            >
+              ← Back
+            </button>
+          </div>
+          
+          <div className="flex gap-2">
+            {['all', 'active', 'ended'].map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1 rounded text-sm font-bold capitalize ${
+                  filter === f
+                    ? 'bg-yellow-400 text-blue-900'
+                    : darkMode
+                    ? 'bg-gray-700'
+                    : 'bg-white bg-opacity-20'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto p-4">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className={`animate-spin inline-block w-12 h-12 border-4 ${darkMode ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-blue-600'} rounded-full mb-4`}></div>
+            <div className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading matches...</div>
+          </div>
+        ) : filteredMatches.length === 0 ? (
+          <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow p-8 text-center`}>
+            <div className="text-6xl mb-4">🏒</div>
+            <h3 className="text-xl font-bold mb-2">No matches yet</h3>
+            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
+              {filter === 'active' ? 'No active matches' : filter === 'ended' ? 'No ended matches' : 'Create your first match to get started!'}
+            </p>
+            <button
+              onClick={onBack}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
+            >
+              Create Match
+            </button>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {filteredMatches.map(match => {
+              const { homeScore, awayScore } = getTotalScore(match);
+              
+              return (
+                <div
+                  key={match.id}
+                  className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow`}
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2">
+                      {match.ended ? (
+                        <span className="bg-gray-500 px-2 py-1 rounded text-xs font-bold text-white">ENDED</span>
+                      ) : (
+                        <span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded text-xs font-bold text-white">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                          LIVE
+                        </span>
+                      )}
+                      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {formatDate(match.createdAt)}
+                      </span>
+                    </div>
+                    <span className={`text-xs font-mono ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {match.id}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 items-center mb-3">
+                    <div className="text-right">
+                      <div className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {match.homeName || 'Home Team'}
+                      </div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {homeScore} - {awayScore}
+                      </div>
+                    </div>
+                    
+                    <div className="text-left">
+                      <div className={`font-bold mb-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        {match.awayName || 'Away Team'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onJoinMatch(match.id)}
+                      className={`flex-1 ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 rounded-lg font-semibold text-sm`}
+                    >
+                      {match.ended ? 'View Match' : 'Rejoin Match'}
+                    </button>
+                    
+                    {!match.ended && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(match.id);
+                          alert('Match code copied!');
+                        }}
+                        className={`px-4 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} ${darkMode ? 'text-white' : 'text-gray-800'} py-2 rounded-lg font-semibold text-sm`}
+                      >
+                        📋
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+const AuthScreen = ({ darkMode, setDarkMode, onSuccess }) => {
+  const [mode, setMode] = React.useState('login'); // 'login' or 'signup'
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [teamName, setTeamName] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (!auth) {
+      setError('Authentication not available');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      if (mode === 'signup') {
+        // Sign up
+        if (!teamName.trim()) {
+          setError('Please enter a team name');
+          setLoading(false);
+          return;
+        }
+        
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Save team info to database
+        await db.ref(`users/${user.uid}`).set({
+          email: email,
+          teamName: teamName.trim(),
+          createdAt: Date.now()
+        });
+        
+        onSuccess();
+      } else {
+        // Login
+        await auth.signInWithEmailAndPassword(email, password);
+        onSuccess();
+      }
+    } catch (err) {
+      console.error('Auth error:', err);
+      
+      // User-friendly error messages
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email is already registered');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password should be at least 6 characters');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email address');
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Invalid email or password');
+      } else {
+        setError(err.message || 'Authentication failed');
+      }
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+      <div className="max-w-md w-full p-6">
+        <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
+            <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+              {mode === 'login' ? 'Login to your account' : 'Create your team account'}
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {mode === 'signup' && (
+              <div>
+                <label className="block text-sm mb-2">Team Name</label>
+                <input
+                  type="text"
+                  value={teamName}
+                  onChange={(e) => setTeamName(e.target.value)}
+                  placeholder="e.g. Södertälje SK"
+                  className={`w-full px-4 py-3 border rounded-lg ${
+                    darkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'border-gray-300'
+                  }`}
+                  required
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm mb-2">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className={`w-full px-4 py-3 border rounded-lg ${
+                  darkMode
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'border-gray-300'
+                }`}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Min 6 characters"
+                className={`w-full px-4 py-3 border rounded-lg ${
+                  darkMode
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'border-gray-300'
+                }`}
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded text-sm">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg"
+            >
+              {loading ? 'Please wait...' : mode === 'login' ? 'LOGIN' : 'CREATE ACCOUNT'}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center space-y-2">
+            <button
+              onClick={() => {
+                setMode(mode === 'login' ? 'signup' : 'login');
+                setError('');
+              }}
+              className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+            >
+              {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
+            </button>
+            
+            <div>
+              <button
+                onClick={() => {
+                  onSuccess(); // This will close auth and go back to start
+                }}
+                className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+              >
+                ← Back to Start
+              </button>
+            </div>
+            
+            <div>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
+              >
+                {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 
 const AdminPanel = ({ darkMode, setScreen }) => {
@@ -657,9 +1070,12 @@ const AdminPanel = ({ darkMode, setScreen }) => {
   );
 };
 
-
-      const updateStat=(team,stat,delta)=>{
+const updateStat=(team,stat,delta)=>{
         if(isViewer)return;
+        if(isMultiplayer&&!currentUser){
+          alert('You must be logged in to edit multiplayer matches');
+          return;
+        }
         const ns=structuredClone(periodStats);
         if(!ns[currentPeriod]) {
           ns[currentPeriod]={homeScore:0,awayScore:0,homeSaves:0,awaySaves:0};
@@ -674,6 +1090,10 @@ const AdminPanel = ({ darkMode, setScreen }) => {
 
       const updatePlayerStat=(team,playerNum,stat,delta)=>{
         if(isViewer||matchEnded)return;
+        if(isMultiplayer&&!currentUser){
+          alert('You must be logged in to edit multiplayer matches');
+          return;
+        }
         
         const period=currentPeriod;
         const newStats=structuredClone(playerStats);
@@ -725,6 +1145,10 @@ const AdminPanel = ({ darkMode, setScreen }) => {
       
       const removePlayer=(team,playerNum)=>{
         if(isViewer||matchEnded)return;
+        if(isMultiplayer&&!currentUser){
+          alert('You must be logged in to edit multiplayer matches');
+          return;
+        }
         
         const newStats=structuredClone(playerStats);
         
@@ -743,6 +1167,10 @@ const AdminPanel = ({ darkMode, setScreen }) => {
 const addPlayers=(team,numbers)=>{
   const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
   if(validNumbers.length===0)return;
+  if(isMultiplayer&&!currentUser){
+    alert('You must be logged in to edit multiplayer matches');
+    return;
+  }
   
   const newStats=structuredClone(playerStats);
   
@@ -880,8 +1308,8 @@ const handlePlayerInputChange = (value, idx) => {
         r+=`${awayName}: ${totals.awaySaves} saves, ${totals.awaySaves+totals.homeScore} shots against, ${calcSP(totals.awaySaves,totals.homeScore)}%\n`;
         return r;
       };
-      
-      const generateCSV=()=>{
+
+const generateCSV=()=>{
         let csv='';
         const d=new Date().toLocaleDateString();
         
@@ -977,7 +1405,6 @@ const handlePlayerInputChange = (value, idx) => {
         {name:'Penalty Shot',description:'Arms crossed then pointed'}
       ];
 
-
 if(showPlayerStats&&screen==='game'){
 const statColumns={
   'HG':['G','A','+','-'],
@@ -1010,7 +1437,7 @@ const renderPlayerTable=(team)=>{
     return col;
   };
   
-return(
+  return(
             <div
   className={`
     ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}
@@ -1041,7 +1468,7 @@ return(
               
 {!collapsedPlayerTables[team] && (
   <>
-<div className="overflow-x-auto">
+    <div className="overflow-x-auto">
       <table className={`w-full ${darkMode?'text-gray-200':''}`}>
         <thead className={`${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} sticky top-0 z-20`}>
           <tr>
@@ -1063,7 +1490,7 @@ return(
             const pData=players[pNum];
             const currentPeriodStats=pData?.periods?.[currentPeriod]??{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
             
-return(
+            return(
               <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} ${darkMode?'hover:bg-gray-700':'hover:bg-gray-50'} transition-colors group`}>
                 <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} ${darkMode?'group-hover:bg-gray-700':'group-hover:bg-gray-50'} z-10 transition-colors`}>{pNum}</td>
                 {columnsToShow.map(col=>{
@@ -1240,7 +1667,7 @@ return(
               </div>
             </div>
             
-<div className="max-w-7xl mx-auto p-2">
+            <div className="max-w-7xl mx-auto p-2">
                 <div
     className={`grid gap-2 ${
       playerStatsViewMode === 'sideBySide' && playerStatsMoment === 'All'
@@ -1265,9 +1692,6 @@ return(
     {renderPlayerTable('away')}
   </div>
             </div>
-
-
-
 
 {showAddPlayerModal&&(
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1359,6 +1783,25 @@ return(
         );
       }
 
+      // Show loading while checking auth
+      if(authLoading)return(
+        <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+          <div className="text-center">
+            <div className={`animate-spin inline-block w-12 h-12 border-4 ${darkMode?'border-gray-600 border-t-white':'border-gray-300 border-t-blue-600'} rounded-full mb-4`}></div>
+            <div className={`${darkMode?'text-gray-300':'text-gray-600'}`}>Loading...</div>
+          </div>
+        </div>
+      );
+
+// Show auth screen if not logged in and trying to create OR if forced
+      if(!currentUser&&(screen==='create'||screen==='created'||forceAuth))return(
+        <AuthScreen darkMode={darkMode} setDarkMode={setDarkMode} onSuccess={()=>{
+          // After successful login, clear force flag and go to start
+          setForceAuth(false);
+          setScreen('start');
+        }}/>
+      );
+
       if(showReconnectPrompt)return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
@@ -1376,23 +1819,115 @@ return(
         </div>
       );
 
-      if(screen==='start')return(
+if(screen==='start')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
-                <p className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
-                  Track your game together
-                </p>
+                {currentUser?(
+                  <div className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
+                    <p className="mb-1">Welcome back!</p>
+                    <p className="text-sm opacity-75">{currentUser.email}</p>
+                  </div>
+                ):(
+                  <p className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
+                    Track your game together
+                  </p>
+                )}
               </div>
-              <div className="space-y-4">
-                <button onClick={()=>setScreen('create')} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CREATE NEW MATCH</button>
-                <button onClick={()=>setScreen('join')} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-4 rounded-xl font-bold text-lg shadow-lg`}>JOIN MATCH</button>
-                <button onClick={continueAlone} className={`w-full ${darkMode?'text-gray-400 hover:text-gray-300':'text-gray-500 hover:text-gray-700'} py-2 text-sm`}>→ Or continue alone</button>
+              
+              <div className="space-y-3">
+                {/* Login / Create Account - only if not logged in */}
+                {!currentUser&&(
+                  <button 
+                    onClick={()=>{setForceAuth(true)}}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <span>🔐</span>
+                    <span>LOGIN / CREATE ACCOUNT</span>
+                  </button>
+                )}
+                
+                {/* My Matches - only if logged in with matches */}
+                {currentUser&&userMatches.length>0&&(
+                  <button 
+                    onClick={()=>setScreen('history')} 
+                    className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-4 rounded-xl font-bold text-lg shadow-lg`}
+                  >
+                    MY MATCHES ({userMatches.length})
+                  </button>
+                )}
+                
+               {/* Create Match */}
+                <button 
+                  onClick={()=>{
+                    if(!currentUser){
+                      setForceAuth(true);
+                    }else{
+                      setScreen('create');
+                    }
+                  }}
+                  className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2`}
+                >
+                  <span className={`${currentUser?'invisible':''}`}>🔒</span>
+                  <span>CREATE MATCH</span>
+                </button>
+                
+                {/* Join Match as Editor */}
+                <button 
+                  onClick={()=>{
+                    if(!currentUser){
+                      setForceAuth(true);
+                    }else{
+                      setScreen('join');
+                    }
+                  }}
+                  className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2`}
+                >
+                  <span className={`${currentUser?'invisible':''}`}>🔒</span>
+                  <span>JOIN MATCH (Editor)</span>
+                </button>
+                
+                {/* Join Match as Viewer - always available */}
+                <button 
+                  onClick={()=>setScreen('join')}
+                  className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
+                >
+                  JOIN AS VIEWER
+                </button>
+                
+                {/* Continue Alone - always available */}
+                <button 
+                  onClick={continueAlone} 
+                  className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
+                >
+                  CONTINUE ALONE
+                </button>
               </div>
-              <div className="mt-6 text-center">
-                <button onClick={()=>setDarkMode(!darkMode)} className={`text-sm ${darkMode?'text-gray-400':'text-gray-500'}`}>{darkMode?'☀️ Light Mode':'🌙 Dark Mode'}</button>
+              
+              {/* Bottom section with dark mode and logout */}
+              <div className="mt-6 pt-6 border-t border-opacity-20 space-y-2">
+                <button 
+                  onClick={()=>setDarkMode(!darkMode)} 
+                  className={`w-full text-sm ${darkMode?'text-gray-400 hover:text-gray-300':'text-gray-600 hover:text-gray-800'} py-2`}
+                >
+                  {darkMode?'☀️ Light Mode':'🌙 Dark Mode'}
+                </button>
+                
+                {currentUser&&(
+                  <button 
+                    onClick={async()=>{
+                      if(window.confirm('Sign out?')){
+                        await auth.signOut();
+                        setScreen('start');
+                      }
+                    }} 
+                    className={`w-full text-sm ${darkMode?'text-red-400 hover:text-red-300':'text-red-600 hover:text-red-700'} py-2 font-semibold`}
+                  >
+                    🚪 SIGN OUT
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1406,6 +1941,24 @@ if (screen === 'admin') {
   />;
 }
 
+if(screen==='history'){
+  return <MatchHistory
+    darkMode={darkMode}
+    matches={userMatches}
+    loading={loadingMatches}
+    onJoinMatch={(matchCode)=>{
+      resetGameState();
+      setGameMode('multi');
+      localStorage.setItem('gameMode','multi');
+      setMatchCode(matchCode);
+      setIsViewer(false);
+      setIsMultiplayer(true);
+      localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:false,gameMode:'multi'}));
+      setScreen('game');
+    }}
+    onBack={()=>setScreen('start')}
+  />;
+}
 
 if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -1516,19 +2069,47 @@ if(screen==='create')return(
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
               <h2 className="text-2xl font-bold mb-6">Join Match</h2>
+              
+              <div className={`${darkMode?'bg-gray-700 border-gray-600':'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6 text-sm`}>
+                <div className="font-semibold mb-2">Two ways to join:</div>
+                <div className="space-y-2">
+                  <div>
+                    <span className="font-bold">Editor code (ABC123):</span>
+                    <div className={`${darkMode?'text-gray-300':'text-gray-600'}`}>Full editing rights {!currentUser&&'(requires login)'}</div>
+                  </div>
+                  <div>
+                    <span className="font-bold">Viewer code (ABC123-V):</span>
+                    <div className={`${darkMode?'text-gray-300':'text-gray-600'}`}>Read-only live stats (no login needed)</div>
+                  </div>
+                </div>
+              </div>
+              
               <div className="mb-6">
                 <label className="block text-sm mb-2">Enter match code:</label>
-                <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={8} placeholder="ABC123" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
+                <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={8} placeholder="ABC123 or ABC123-V" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
               </div>
-              {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4 text-sm">{error}</div>}
+            {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4 text-sm">
+                <div className="mb-2">{error}</div>
+ {error.includes('logged in')&&(
+                  <button 
+                    onClick={()=>{
+                      setError('');
+                      setForceAuth(true);
+                      setScreen('start');
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold text-sm"
+                  >
+                    → Login Now
+                  </button>
+                )}
+              </div>}
               <button onClick={joinMatch} disabled={!(inputCode.length===6||(inputCode.length===8&&inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONNECT</button>
             </div>
           </div>
         </div>
       );
 
-
-      if(focusMode&&screen==='game'){
+if(focusMode&&screen==='game'){
         const ft=focusMode==='home'?
           {name:sidesSwapped?awayName:homeName,score:sidesSwapped?totals.awayScore:totals.homeScore,saves:sidesSwapped?totals.awaySaves:totals.homeSaves,team:sidesSwapped?'away':'home',oppScore:sidesSwapped?totals.homeScore:totals.awayScore}:
           {name:sidesSwapped?homeName:awayName,score:sidesSwapped?totals.homeScore:totals.awayScore,saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away',oppScore:sidesSwapped?totals.awayScore:totals.homeScore};
@@ -1676,11 +2257,10 @@ return(
         );
       }
 
-
 return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           {isViewer&&<div className="bg-yellow-500 text-gray-900 px-4 py-2 text-center font-semibold text-sm">
-             👁️ VIEWER MODE - live stats (read-only)
+             VIEWER MODE - live stats (read-only)
           </div>}
           <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
           <audio ref={audioRefs.awayGoal} src="awayGoal.mp3"/>
@@ -1691,11 +2271,12 @@ return(
           <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg sticky top-0 z-50`}>
             <div className="max-w-6xl mx-auto">
               {isMultiplayer&&<div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded-full text-xs font-bold animate-pulse"><span className="w-1.5 h-1.5 bg-white rounded-full"></span>LIVE</span>}
                   {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">MATCH ENDED</span>}
                   <span className="text-xs">👥 {connectedUsers}</span>
                   {!isViewer&&viewerCount>0&&<span className="text-xs">👁️ {viewerCount}</span>}
+                  {currentUser&&isCreator&&<span className="text-xs opacity-75">({currentUser.email})</span>}
                 </div>
                 <div className="flex items-center gap-1">
                   <button onClick={copyCode} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-2 py-1 rounded font-mono font-bold text-xs`}>{matchCode}</button>
@@ -1809,6 +2390,26 @@ return(
   <span>Admin</span>
   <span>🔒</span>
 </button>
+
+      {currentUser&&(
+        <button
+          onClick={async()=>{
+            if(window.confirm('Sign out from your account?')){
+              await auth.signOut();
+              setShowSettings(false);
+              setScreen('start');
+            }
+          }}
+          className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-semibold ${
+            darkMode
+              ? 'bg-gray-700 hover:bg-gray-600 text-white'
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+          }`}
+        >
+          <span>Sign Out</span>
+          <span>🚪</span>
+        </button>
+      )}
 
       <button onClick={resetCounters} disabled={matchEnded||isViewer} className={`w-full ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 border border-red-700 text-red-200':'bg-red-50 hover:bg-red-100 border border-red-300 text-gray-900'} py-2 rounded text-sm font-semibold`}>
         Reset All Stats
@@ -2064,8 +2665,8 @@ return(
                       {renderTeamStats('home')}
                       {renderTeamStats('away')}
                     </div>
-                    
-                    {(playerStats.home?.players||playerStats.away?.players)&&(()=>{
+
+{(playerStats.home?.players||playerStats.away?.players)&&(()=>{
                       const homePlayers=playerStats.home?.players||{};
                       const awayPlayers=playerStats.away?.players||{};
                       const hasPlayersWithData=Object.keys(homePlayers).some(pNum=>homePlayers[pNum]?.periods?.[p])||
