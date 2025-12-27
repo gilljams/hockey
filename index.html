@@ -424,7 +424,7 @@ useEffect(() => {
       
       // Check if user was in match but is now removed (kicked)
       const isCurrentlyInMatch = d.users && d.users[userId.current];
-      if(!isViewer && wasInMatch && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0){
+      if(!isViewer && isMultiplayer && wasInMatch && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0){
         // User has been kicked out
         localStorage.removeItem('multiplayerMatch');
         resetGameState();
