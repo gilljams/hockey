@@ -422,18 +422,31 @@ useEffect(() => {
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
                  setIsCreator(d.creatorId === userId.current);
       
-      // Check if user was in match but is now removed (kicked)
-      const isCurrentlyInMatch = d.users && d.users[userId.current];
-      if(!isViewer && isMultiplayer && wasInMatch && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0){
-        // User has been kicked out
-        localStorage.removeItem('multiplayerMatch');
-        resetGameState();
-        setIsMultiplayer(false);
-        setMatchCode('');
-        setScreen('start');
-        alert('You have been removed from the match');
-      }
-      if (isCurrentlyInMatch) {
+// Check if user was in match but is now removed (kicked)
+const isCurrentlyInMatch = d.users && d.users[userId.current];
+const isOwner = d.creatorId === userId.current;
+
+if (
+  !isViewer &&
+  !isOwner &&              // ⬅️ owner kan aldrig kickas
+  !matchEnded &&           // ⬅️ ingen kick efter end/restart
+  isMultiplayer &&
+  wasInMatch &&
+  !isCurrentlyInMatch &&
+  d.users &&
+  Object.keys(d.users).length > 0
+) {
+  // User has been kicked out
+  localStorage.removeItem('multiplayerMatch');
+  resetGameState();
+  setIsMultiplayer(false);
+  setMatchCode('');
+  setScreen('start');
+  alert('You have been removed from the match');
+}
+
+// Sätt wasInMatch ENDAST när vi verkligen är inne
+if (isCurrentlyInMatch) {
   setWasInMatch(true);
 }
     }
@@ -447,6 +460,7 @@ localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp
       },[isMultiplayer,matchCode,isViewer]);
 
 const reconnectToMatch=()=>{
+setWasInMatch(false);
   try{
     const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
     resetGameState();
@@ -604,15 +618,22 @@ const continueAlone=()=>{
 };
       
       const endMatch = () => {
-        if (window.confirm('End match for all users?')) {
-          if (matchRef.current) {
-            matchRef.current.update({ ended: true });
-          }
-          setMatchEnded(true);
-          localStorage.removeItem('multiplayerMatch');
-          setShowReconnectPrompt(false);
-        }
-      };
+  if (window.confirm('End match for all users?')) {
+    if (matchRef.current) {
+      matchRef.current.update({
+        ended: true,
+        users: null,
+        viewers: null,
+        locked: false
+      });
+    }
+
+    setMatchEnded(true);
+    setWasInMatch(false);          // ⬅️ superviktigt
+    localStorage.removeItem('multiplayerMatch');
+    setShowReconnectPrompt(false);
+  }
+};
 
 const leaveMatch=()=>{
   if(window.confirm('Leave multiplayer match?')){
