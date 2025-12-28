@@ -495,7 +495,7 @@ const startNewSession=()=>{
 const createMatch=()=>{
   // Check if user is logged in
   if(!currentUser){
-    alert('You must be logged in to create a match');
+    alert('You must be logged in to create a game');
     setScreen('start');
     return;
   }
@@ -518,7 +518,7 @@ const createMatch=()=>{
 
       const startMatch=()=>{
         if(!db){setError('Firebase not configured');return}
-        if(!currentUser){setError('You must be logged in to create a match');return}
+        if(!currentUser){setError('You must be logged in to create a game');return}
         
         const viewerCode=matchCode+'-V';
         db.ref(`matches/${matchCode}`).set({
@@ -566,7 +566,7 @@ const joinMatch=()=>{
       const d=s.val();
       if(d.ended){
         // NY KOD: Erbjud att joina som viewer
-if(window.confirm('This match has ended. Join as viewer to see final stats?')){
+if(window.confirm('This game has ended. Join as viewer to see final stats?')){
   resetGameState();
   setGameMode('multi');
   localStorage.setItem('gameMode','multi');
@@ -579,7 +579,7 @@ if(window.confirm('This match has ended. Join as viewer to see final stats?')){
   setScreen('game');
   if(window.gtag)gtag('event','match_joined_viewer_ended',{match_code:baseCode});
         }else{
-          setError('This match has already ended');
+          setError('This game has already ended');
         }
       }
 else{
@@ -595,7 +595,7 @@ else{
   setScreen('game');
   if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
       }
-    }else setError('No match found with that code')
+    }else setError('No game found with that code')
   }).catch(e=>setError('Failed: '+e.message))
 };
 
@@ -618,7 +618,7 @@ const continueAlone=()=>{
 };
       
       const endMatch = () => {
-  if (window.confirm('End match for all users?')) {
+  if (window.confirm('End game for all users?')) {
     if (matchRef.current) {
       matchRef.current.update({
         ended: true,
@@ -636,7 +636,7 @@ const continueAlone=()=>{
 };
 
 const leaveMatch=()=>{
-  if(window.confirm('Leave multiplayer match?')){
+  if(window.confirm('Leave multiplayer game?')){
     localStorage.removeItem('multiplayerMatch');
     resetGameState();
     setGameMode('single');
@@ -650,7 +650,7 @@ const leaveMatch=()=>{
 };
 
 const exitToStart=()=>{
-  if(window.confirm('Exit to start screen?')){
+  if(window.confirm('Exit to start screen? Your game data will be removed')){
     localStorage.removeItem('juniorLeagueGame');
     resetGameState();
     setGameMode('single');
@@ -697,7 +697,7 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
       <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg`}>
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-xl font-bold">My Matches</h2>
+            <h2 className="text-xl font-bold">My Games</h2>
             <button
               onClick={onBack}
               className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold`}
@@ -730,20 +730,20 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
         {loading ? (
           <div className="text-center py-12">
             <div className={`animate-spin inline-block w-12 h-12 border-4 ${darkMode ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-blue-600'} rounded-full mb-4`}></div>
-            <div className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading matches...</div>
+            <div className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading games...</div>
           </div>
         ) : filteredMatches.length === 0 ? (
           <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow p-8 text-center`}>
             <div className="text-6xl mb-4">🏒</div>
-            <h3 className="text-xl font-bold mb-2">No matches yet</h3>
+            <h3 className="text-xl font-bold mb-2">No games yet</h3>
             <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
-              {filter === 'active' ? 'No active matches' : filter === 'ended' ? 'No ended matches' : 'Create your first match to get started!'}
+              {filter === 'active' ? 'No active games' : filter === 'ended' ? 'No ended games' : 'Create your first game to get started!'}
             </p>
             <button
               onClick={onBack}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold"
             >
-              Create Match
+              Create Game
             </button>
           </div>
         ) : (
@@ -800,14 +800,14 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                       onClick={() => onJoinMatch(match.id)}
                       className={`flex-1 ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white py-2 rounded-lg font-semibold text-sm`}
                     >
-                      {match.ended ? 'View Match' : 'Rejoin Match'}
+                      {match.ended ? 'View Game' : 'Rejoin Game'}
                     </button>
                     
                     {!match.ended && (
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(match.id);
-                          alert('Match code copied!');
+                          alert('Game code copied!');
                         }}
                         className={`px-4 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} ${darkMode ? 'text-white' : 'text-gray-800'} py-2 rounded-lg font-semibold text-sm`}
                       >
@@ -825,7 +825,7 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
 
                   {expandedMatches[match.id] && (
                     <div className={`mt-3 pt-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} space-y-3`}>
-                      <h4 className="font-semibold">Manage Match</h4>
+                      <h4 className="font-semibold">Manage Game</h4>
                       
                       <div>
                         <div className="text-sm font-semibold mb-2">Connected Editors:</div>
@@ -876,23 +876,23 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                           <>
                             <button
                               onClick={() => {
-                                if(window.confirm('Restart this match?')){
+                                if(window.confirm('Restart this game?')){
                                   db.ref(`matches/${match.id}`).update({ended: false});
                                 }
                               }}
                               className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold text-sm"
                             >
-                              Restart Match
+                              Restart Game
                             </button>
                             <button
                               onClick={() => {
-                                if(window.confirm(`Delete match ${match.id}?`)){
+                                if(window.confirm(`Delete Game ${match.id}?`)){
                                   db.ref(`matches/${match.id}`).remove();
                                 }
                               }}
                               className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold text-sm"
                             >
-                              Delete Match
+                              Delete Game
                             </button>
                           </>
                         )}
@@ -900,13 +900,13 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                         {!match.ended && (
                           <button
                             onClick={() => {
-                              if(window.confirm('End this match for all users?')){
+                              if(window.confirm('End this game for all users?')){
                                 db.ref(`matches/${match.id}`).update({ended: true});
                               }
                             }}
                             className="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 rounded font-semibold text-sm"
                           >
-                            End Match
+                            End Game
                           </button>
                         )}
                       </div>
@@ -990,7 +990,20 @@ const AuthScreen = ({ darkMode, setDarkMode, onSuccess }) => {
     <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
       <div className="max-w-md w-full p-6">
         <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
-          <div className="text-center mb-8">
+          
+            <div>
+              <button
+                onClick={() => {
+                  onSuccess(); // This will close auth and go back to start
+                }}
+                className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+              >
+                ← Go Back
+              </button>
+            </div>
+
+
+<div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
             <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
               {mode === 'login' ? 'Login to your account' : 'Create your team account'}
@@ -1074,18 +1087,7 @@ const AuthScreen = ({ darkMode, setDarkMode, onSuccess }) => {
             >
               {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
             </button>
-            
-            <div>
-              <button
-                onClick={() => {
-                  onSuccess(); // This will close auth and go back to start
-                }}
-                className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
-              >
-                ← Back to Start
-              </button>
-            </div>
-            
+         
             <div>
               <button
                 onClick={() => setDarkMode(!darkMode)}
@@ -1120,7 +1122,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
   }, []);
 
   const deleteMatch = (id) => {
-    if (!window.confirm(`Delete match ${id}?`)) return;
+    if (!window.confirm(`Delete game ${id}?`)) return;
     db.ref(`matches/${id}`).remove();
   };
 
@@ -1132,7 +1134,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <div className={`${darkMode?'bg-gray-800':'bg-blue-600'} text-white p-4`}>
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <h2 className="font-bold text-lg">Admin – Matches</h2>
+          <h2 className="font-bold text-lg">Admin – Games</h2>
 <div className="flex gap-2">
 <button
     onClick={() => setScreen('start')}
@@ -1168,7 +1170,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
             {Object.keys(matches).length === 0 && (
               <tr>
                 <td colSpan="4" className="text-center py-6 opacity-60">
-                  No matches found
+                  No games found
                 </td>
               </tr>
             )}
@@ -1221,7 +1223,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
 const updateStat=(team,stat,delta)=>{
         if(isViewer)return;
         if(isMultiplayer&&!currentUser){
-          alert('You must be logged in to edit multiplayer matches');
+          alert('You must be logged in to edit multiplayer games');
           return;
         }
         const ns=structuredClone(periodStats);
@@ -1239,7 +1241,7 @@ const updateStat=(team,stat,delta)=>{
       const updatePlayerStat=(team,playerNum,stat,delta)=>{
         if(isViewer||matchEnded)return;
         if(isMultiplayer&&!currentUser){
-          alert('You must be logged in to edit multiplayer matches');
+          alert('You must be logged in to edit multiplayer games');
           return;
         }
         
@@ -1294,7 +1296,7 @@ const updateStat=(team,stat,delta)=>{
       const removePlayer=(team,playerNum)=>{
         if(isViewer||matchEnded)return;
         if(isMultiplayer&&!currentUser){
-          alert('You must be logged in to edit multiplayer matches');
+          alert('You must be logged in to edit multiplayer games');
           return;
         }
         
@@ -1316,7 +1318,7 @@ const addPlayers=(team,numbers)=>{
   const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
   if(validNumbers.length===0)return;
   if(isMultiplayer&&!currentUser){
-    alert('You must be logged in to edit multiplayer matches');
+    alert('You must be logged in to edit multiplayer games');
     return;
   }
   
@@ -1954,13 +1956,13 @@ return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <h3 className="text-xl font-bold mb-3">Reconnect to match</h3>
+              <h3 className="text-xl font-bold mb-3">Reconnect to game</h3>
               <p className={`${darkMode?'text-gray-300':'text-gray-600'} mb-6`}>
                 Match Code: <span className="font-mono font-bold">{savedMatchCode}</span>
               </p>
               <div className="flex gap-3">
                 <button onClick={reconnectToMatch} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Reconnect</button>
-                <button onClick={startNewSession} className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}>Start New</button>
+                <button onClick={startNewSession} className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}>Start Screen</button>
               </div>
             </div>
           </div>
@@ -2019,7 +2021,7 @@ if(screen==='start')return(
                     onClick={()=>setScreen('history')} 
                     className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                   >
-                    MY MATCHES ({userMatches.length})
+                    MY GAMES ({userMatches.length})
                   </button>
                 )}
                 
@@ -2035,10 +2037,10 @@ if(screen==='start')return(
   className={`w-full flex items-center justify-center relative ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
 >
   <span className="absolute right-4">{!currentUser && '🔒'}</span>
-  <span>CREATE MATCH</span>
+  <span>CREATE GAME</span>
 </button>
                 
-                {/* Join Match as Editor */}
+                {/* Join Game as Editor */}
 <button 
   onClick={()=>{
     if(!currentUser){
@@ -2050,7 +2052,7 @@ if(screen==='start')return(
   className={`w-full flex items-center justify-center relative ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
 >
   <span className="absolute right-4">{!currentUser && '🔒'}</span>
-  <span>JOIN MATCH</span>
+  <span>JOIN GAME</span>
 </button>
 
                 
@@ -2059,7 +2061,7 @@ if(screen==='start')return(
                   onClick={()=>setScreen('join')}
                   className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                 >
-                  JOIN MATCH AS VIEWER
+                  JOIN GAME AS VIEWER
                 </button>
                 
                 {/* Continue Alone - always available */}
@@ -2124,7 +2126,7 @@ if(screen==='create')return(
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
-              <h2 className="text-2xl font-bold mb-6">New Match</h2>
+              <h2 className="text-2xl font-bold mb-6">New Game</h2>
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm mb-2">Home Team</label>
@@ -2183,7 +2185,7 @@ if(screen==='create')return(
 </div>
                 </div>
               </div>
-              <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START MATCH</button>
+              <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START GAME</button>
             </div>
           </div>
         </div>
@@ -2194,7 +2196,7 @@ if(screen==='create')return(
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold mb-2">Match Created</h2>
+                <h2 className="text-2xl font-bold mb-2">Game Created</h2>
               </div>
               <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
                 <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>📝 Editor Code (max 5 users)</p>
@@ -2215,7 +2217,7 @@ if(screen==='create')return(
               </div>
 
               {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
-              <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO MATCH</button>
+              <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
               <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>Go Back</button>
             </div>
           </div>
@@ -2227,7 +2229,7 @@ if(screen==='create')return(
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
-              <h2 className="text-2xl font-bold mb-6">Join Match</h2>
+              <h2 className="text-2xl font-bold mb-6">Join Game</h2>
               
               <div className={`${darkMode?'bg-gray-700 border-gray-600':'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6 text-sm`}>
                 <div className="font-semibold mb-2">Two ways to join:</div>
@@ -2244,8 +2246,8 @@ if(screen==='create')return(
               </div>
               
               <div className="mb-6">
-                <label className="block text-sm mb-2">Enter match code:</label>
-                <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={8} placeholder="ABC123 or ABC123-V" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
+                <label className="block text-sm mb-2">Enter game code:</label>
+                <input type="text" value={inputCode} onChange={e=>{setInputCode(e.target.value.toUpperCase());setError('')}} maxLength={8} placeholder="ABC123" className={`w-full px-4 py-4 border rounded-lg text-center text-2xl font-bold tracking-widest ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}/>
               </div>
             {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4 text-sm">
                 <div className="mb-2">{error}</div>
@@ -2432,7 +2434,7 @@ return(
               {isMultiplayer&&<div className="mb-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded-full text-xs font-bold animate-pulse"><span className="w-1.5 h-1.5 bg-white rounded-full"></span>LIVE</span>}
-                  {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">MATCH ENDED</span>}
+                  {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">GAME ENDED</span>}
                   <span className="text-xs">👥 {connectedUsers}</span>
                   {!isViewer&&viewerCount>0&&<span className="text-xs">👁️ {viewerCount}</span>}
                   
@@ -2442,7 +2444,7 @@ return(
           {!matchEnded && isCreator && !isViewer && (
             <button onClick={endMatch}
               className="bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
-              title="End match for all users (Creator only)"
+              title="End game for all users (Creator only)"
             >
               End
             </button>
@@ -2516,7 +2518,7 @@ return(
   
   {!isViewer && (
     <div className="space-y-3">
-      <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>Match Settings</h4>
+      <h4 className={`text-sm font-semibold mb-2 pb-2 border-b ${darkMode?'border-gray-600':'border-gray-200'}`}>Game Settings</h4>
       <div>
         <label className="block text-sm mb-1">Home Team</label>
         <div className="flex gap-2">
