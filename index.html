@@ -425,24 +425,36 @@ useEffect(() => {
 // Check if user was in match but is now removed (kicked)
 const isCurrentlyInMatch = d.users && d.users[userId.current];
 const isOwner = d.creatorId === userId.current;
+const amIKicked = d.kickedUsers && d.kickedUsers[userId.current];
 
-if (
-  !isViewer &&
-  !isOwner &&              // ⬅️ owner kan aldrig kickas
-  !matchEnded &&           // ⬅️ ingen kick efter end/restart
-  isMultiplayer &&
-  wasInMatch &&
-  !isCurrentlyInMatch &&
-  d.users &&
-  Object.keys(d.users).length > 0
-) {
-  // User has been kicked out
-  localStorage.removeItem('multiplayerMatch');
-  resetGameState();
-  setIsMultiplayer(false);
-  setMatchCode('');
-  setScreen('start');
-  alert('You have been removed from the match');
+if (!isViewer && !isOwner && isMultiplayer && wasInMatch) {
+  // SCENARIO 1: Jag är kickad
+  if (amIKicked) {
+    localStorage.removeItem('multiplayerMatch');
+    resetGameState();
+    setIsMultiplayer(false);
+    setMatchCode('');
+    setWasInMatch(false);
+    setScreen('start');
+    alert('You have been removed from this match. You can join as a viewer instead using the viewer code (-V)');
+    return;
+  }
+  
+  // SCENARIO 2: Matchen är inte slut, jag var inne, men nu är jag inte det (och inte kickad)
+  if (!matchEnded && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0) {
+    // Möjligt Network-issue, visa reconect-prompt
+    localStorage.removeItem('multiplayerMatch');
+    resetGameState();
+    setIsMultiplayer(false);
+    setMatchCode('');
+    setScreen('start');
+    alert('You have been disconnected from the match');
+  }
+}
+
+// Sätt wasInMatch ENDAST när vi verkligen är inne
+if (isCurrentlyInMatch) {
+  setWasInMatch(true);
 }
 
 // Sätt wasInMatch ENDAST när vi verkligen är inne
@@ -452,12 +464,65 @@ if (isCurrentlyInMatch) {
     }
   });
   const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
-  const ur=matchRef.current.child(path);
+const ur=matchRef.current.child(path);
+
+if(isViewer){
+  // Viewers kan alltid ansluta
   ur.set(true);
-  ur.onDisconnect().remove();      
+} else {
+  // Editors: kontrollera max 5
+  matchRef.current.once('value', snapshot => {
+    const currentMatch = snapshot.val();
+    const editorCount = currentMatch?.users ? Object.keys(currentMatch.users).length : 0;
+    const isCreatorOfThisMatch = currentMatch?.creatorId === userId.current;
+    
+    if(editorCount >= 5 && !isCreatorOfThisMatch){
+      // Max editors nådd
+      setError('Game is full (max 5 editors). Please try joining as viewer instead.');
+      setIsMultiplayer(false);
+      localStorage.removeItem('multiplayerMatch');
+      setScreen('start');
+      return;
+    }
+    
+    // OK att joina
+    ur.set({
+      joinedAt: Date.now(),
+      role: 'editor'
+    });
+  });
+}
+
+ur.onDisconnect().remove();    
 localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer,gameMode:'multi'}));
         return()=>{if(matchRef.current){matchRef.current.off();ur.remove()}}
       },[isMultiplayer,matchCode,isViewer]);
+
+const kickEditor=(editorId)=>{
+  if(!isCreator||!matchRef.current){
+    alert('Only the creator can kick editors');
+    return;
+  }
+  
+  if(editorId===userId.current){
+    alert('You cannot kick yourself');
+    return;
+  }
+  
+  if(window.confirm(`Kick this editor from the game?`)){
+    matchRef.current.update({
+      [`users/${editorId}`]:null,
+      [`kickedUsers/${editorId}`]:{
+        kickedAt:Date.now(),
+        kickedBy:userId.current
+      }
+    }).catch(e=>{
+      console.error('Failed to kick editor:',e);
+      alert('Failed to kick editor');
+    });
+  }
+};
+
 
 const reconnectToMatch=()=>{
 setWasInMatch(false);
@@ -516,21 +581,44 @@ const createMatch=()=>{
 };
 
 
-      const startMatch=()=>{
-        if(!db){setError('Firebase not configured');return}
-        if(!currentUser){setError('You must be logged in to create a game');return}
-        
-        const viewerCode=matchCode+'-V';
-        db.ref(`matches/${matchCode}`).set({
-          homeName,awayName,currentPeriod:1,sidesSwapped:false,
-          periodStats:{1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}},
-          playerStats:{home:{players:{}},away:{players:{}}},
-          ended:false,createdAt:Date.now(),
-          creatorId:userId.current,
-          ownerEmail:currentUser.email,
-          users:{[userId.current]:true},
-          viewerCode:viewerCode,viewers:{}
-   }).then(()=>{
+const startMatch=()=>{
+  if(!db){setError('Firebase not configured');return}
+  if(!currentUser){setError('You must be logged in to create a game');return}
+  
+  const viewerCode=matchCode+'-V';
+  db.ref(`matches/${matchCode}`).set({
+    homeName,
+    awayName,
+    currentPeriod:1,
+    sidesSwapped:false,
+    periodStats:{
+      1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
+      2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
+      3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
+    },
+    playerStats:{home:{players:{}},away:{players:{}}},
+    ended:false,
+    createdAt:Date.now(),
+    creatorId:userId.current,
+    ownerEmail:currentUser.email,
+    locked:false,
+    
+    // ✨ NYT: Strukturerad users-lista
+    users:{
+      [userId.current]:{
+        joinedAt:Date.now(),
+        role:'editor'
+      }
+    },
+    
+    // ✨ NYT: Viewers lista
+    viewers:{},
+    
+    // ✨ NYT: Kicked users (svartlista)
+    kickedUsers:{},
+    
+    viewerCode:viewerCode
+  }).then(()=>{
     resetGameState();
     setGameMode('multi');
     localStorage.setItem('gameMode','multi');
@@ -562,9 +650,31 @@ const joinMatch=()=>{
   }
 
   db.ref(`matches/${baseCode}`).once('value').then(s=>{
-    if(s.exists()){
-      const d=s.val();
-      if(d.ended){
+if(s.exists()){
+  const d=s.val();
+  
+  // ❌ CHECK 1: Är användaren kickad?
+  if(d.kickedUsers && d.kickedUsers[userId.current]){
+    setError('You have been removed from this game. You can join as a viewer instead using the viewer code (-V)');
+    return;
+  }
+  
+  // ❌ CHECK 2: Är matchen låst OCH är du inte creator?
+  if(!isViewerCode && d.locked && d.creatorId !== userId.current){
+    setError('This game is locked to new editors');
+    return;
+  }
+  
+  // ❌ CHECK 3: Är det redan 5+ editors (exklusive creator)?
+  const editorCount = d.users ? Object.keys(d.users).length : 0;
+  const isCreatorOfThisMatch = d.creatorId === userId.current;
+  
+  if(!isViewerCode && editorCount >= 5 && !isCreatorOfThisMatch){
+    setError('This game is full (max 5 editors). You can join as a viewer instead.');
+    return;
+  }
+  
+  if(d.ended){
         // NY KOD: Erbjud att joina som viewer
 if(window.confirm('This game has ended. Join as viewer to see final stats?')){
   resetGameState();
@@ -593,8 +703,25 @@ else{
   localStorage.removeItem('juniorLeagueGame');
   localStorage.setItem('multiplayerMatch',JSON.stringify({code:baseCode,timestamp:Date.now(),isViewer:isViewerCode,gameMode:'multi'}));
   setScreen('game');
+  
+  // Lägg till user i rätt lista baserat på om det är viewer eller editor
+  if(isViewerCode){
+    // Viewer: lägg in i viewers-listan
+    db.ref(`matches/${baseCode}/viewers/${userId.current}`).set(true).catch(e => {
+      console.error('Failed to register as viewer:', e);
+    });
+  } else {
+    // Editor: lägg in i users-listan med metadata
+    db.ref(`matches/${baseCode}/users/${userId.current}`).set({
+      joinedAt: Date.now(),
+      role: 'editor'
+    }).catch(e => {
+      console.error('Failed to register as editor:', e);
+    });
+  }
+  
   if(window.gtag)gtag('event',isViewerCode?'match_joined_viewer':'match_joined_editor',{match_code:baseCode});
-      }
+}
     }else setError('No game found with that code')
   }).catch(e=>setError('Failed: '+e.message))
 };
@@ -622,14 +749,14 @@ const continueAlone=()=>{
     if (matchRef.current) {
       matchRef.current.update({
         ended: true,
-        users: null,
-        viewers: null,
+        users: {},      // Töm users-listan (istället för null)
+        viewers: {},    // Töm viewers-listan (istället för null)
         locked: false
       });
     }
 
     setMatchEnded(true);
-    setWasInMatch(false);          // ⬅️ superviktigt
+    setWasInMatch(false);
     localStorage.removeItem('multiplayerMatch');
     setShowReconnectPrompt(false);
   }
@@ -637,6 +764,14 @@ const continueAlone=()=>{
 
 const leaveMatch=()=>{
   if(window.confirm('Leave multiplayer game?')){
+    // Ta bort från users eller viewers listen innan vi lämnar
+    if(isMultiplayer && matchCode && matchRef.current){
+      const path = isViewer ? `viewers/${userId.current}` : `users/${userId.current}`;
+      matchRef.current.child(path).remove().catch(e => {
+        console.error('Failed to remove from match:', e);
+      });
+    }
+    
     localStorage.removeItem('multiplayerMatch');
     resetGameState();
     setGameMode('single');
@@ -831,21 +966,30 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                         <div className="text-sm font-semibold mb-2">Connected Editors:</div>
                         {match.users && Object.keys(match.users).length > 0 ? (
                           <div className="space-y-1 mb-3">
+
+
+
                             {Object.keys(match.users).filter(userId => userId !== match.creatorId).map(userId => (
-                              <div key={userId} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                                <span className="text-sm">{userId}</span>
-                                <button
-                                  onClick={() => {
-                                    if(window.confirm('Kick out this editor?')){
-                                      db.ref(`matches/${match.id}/users/${userId}`).remove();
-                                    }
-                                  }}
-                                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold"
-                                >
-                                  Kick
-                                </button>
-                              </div>
-                            ))}
+  <div key={userId} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+    <span className="text-sm">{userId}</span>
+    <button
+      onClick={() => {
+        if(window.confirm('Kick out this editor?')){
+          db.ref(`matches/${match.id}/users/${userId}`).remove();
+          db.ref(`matches/${match.id}/kickedUsers/${userId}`).set({
+            kickedAt: Date.now(),
+            kickedBy: currentUser.uid
+          }).catch(e => {
+            console.error('Failed to record kick:', e);
+          });
+        }
+      }}
+      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold"
+    >
+      Kick
+    </button>
+  </div>
+))}
                               
                           </div>
                         ) : (
@@ -860,30 +1004,36 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                       </div>
                       
                       <div className="flex items-center gap-2 py-2">
-                        <input
-                          type="checkbox"
-                          checked={match.locked || false}
-                          onChange={(e) => {
-                            db.ref(`matches/${match.id}`).update({locked: e.target.checked});
-                          }}
-                          className="w-4 h-4"
-                        />
-                        <label className="text-sm cursor-pointer flex-1">Lock for new editors</label>
-                      </div>
+  <input
+    type="checkbox"
+    checked={match.locked || false}
+    onChange={(e) => {
+      db.ref(`matches/${match.id}`).update({locked: e.target.checked});
+    }}
+    className="w-4 h-4"
+    disabled={match.creatorId !== currentUser?.uid || match.ended}
+  />
+  <label className="text-sm cursor-pointer flex-1">
+    {match.locked ? '🔒' : '🔓'} Lock for new editors
+  </label>
+</div>
                       
                       <div className="flex gap-2 pt-2 border-t">
                         {match.ended && (
-                          <>
-                            <button
-                              onClick={() => {
-                                if(window.confirm('Restart this game?')){
-                                  db.ref(`matches/${match.id}`).update({ended: false});
-                                }
-                              }}
-                              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold text-sm"
-                            >
-                              Restart Game
-                            </button>
+  <>
+    <button
+      onClick={() => {
+        if(window.confirm('Restart this game? All kicked editors will be able to rejoin.')){
+          db.ref(`matches/${match.id}`).update({
+            ended: false,
+            kickedUsers: {}
+          });
+        }
+      }}
+      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold text-sm"
+    >
+      Restart Game
+    </button>
                             <button
                               onClick={() => {
                                 if(window.confirm(`Delete Game ${match.id}?`)){
