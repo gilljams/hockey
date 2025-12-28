@@ -653,11 +653,11 @@ const joinMatch=()=>{
 if(s.exists()){
   const d=s.val();
   
-  // ❌ CHECK 1: Är användaren kickad?
-  if(d.kickedUsers && d.kickedUsers[userId.current]){
-    setError('You have been removed from this game. You can join as a viewer instead using the viewer code (-V)');
-    return;
-  }
+  // ❌ CHECK 1: Är användaren kickad? (bara relevant för editors, inte viewers)
+if(!isViewerCode && d.kickedUsers && d.kickedUsers[userId.current]){
+  setError('You have been removed from this game as an editor. You can join as a viewer instead using the viewer code (-V)');
+  return;
+}
   
   // ❌ CHECK 2: Är matchen låst OCH är du inte creator?
   if(!isViewerCode && d.locked && d.creatorId !== userId.current){
