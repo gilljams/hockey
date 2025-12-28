@@ -4,8 +4,8 @@
       ".read": false,
       ".write": false,
       "$uid": {
-        ".read": "auth.uid === $uid",
-        ".write": "auth.uid === $uid"
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
       }
     },
     "matches": {
@@ -13,9 +13,11 @@
       ".write": "auth != null",
       "$matchId": {
         ".read": true,
-        ".write": "auth != null && root.child($matchId).child('creatorId').val() === auth.uid",
+        ".write": "auth != null && root.child('matches').child($matchId).child('creatorId').val() === auth.uid",
         "users": {
-          ".write": "root.child($matchId).child('creatorId').val() === auth.uid || (root.child($matchId).child('locked').val() === false && auth != null)"
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && (root.child('matches').child($matchId).child('creatorId').val() === auth.uid || root.child('matches').child($matchId).child('locked').val() === false)"
+          }
         }
       }
     }
