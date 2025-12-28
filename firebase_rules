@@ -8,16 +8,108 @@
         ".write": "auth != null && auth.uid === $uid"
       }
     },
+    
     "matches": {
-      ".read": "auth != null",
-      ".write": "auth != null",
+      ".read": false,
+      ".write": false,
+      
       "$matchId": {
-        ".read": true,
-        ".write": "auth != null && root.child('matches').child($matchId).child('creatorId').val() === auth.uid",
+        "creatorId": {
+          ".read": true,
+          ".write": false
+        },
+        
+        "viewerCode": {
+          ".read": true,
+          ".write": false
+        },
+        
+        ".read": "root.child('matches').child($matchId).child('viewers').child(auth.uid).exists() || 
+                 root.child('matches').child($matchId).child('users').child(auth.uid).exists()",
+        
+        ".write": "auth != null && 
+                  root.child('matches').child($matchId).child('creatorId').val() === auth.uid",
+        
+        "locked": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
+        "ended": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
         "users": {
+          ".read": true,
+          
           "$uid": {
-            ".write": "auth != null && auth.uid === $uid && (root.child('matches').child($matchId).child('creatorId').val() === auth.uid || root.child('matches').child($matchId).child('locked').val() === false)"
+            ".write": "auth != null && auth.uid === $uid && 
+                      !root.child('matches').child($matchId).child('kickedUsers').child(auth.uid).exists() &&
+                      (root.child('matches').child($matchId).child('creatorId').val() === auth.uid ||
+                       root.child('matches').child($matchId).child('locked').val() !== true)",
+            
+            "role": {
+              ".write": "auth != null && 
+                        root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+            }
           }
+        },
+        
+        "viewers": {
+          ".read": true,
+          
+          "$uid": {
+            ".write": "auth != null || auth == null"
+          }
+        },
+        
+        "kickedUsers": {
+          ".read": "auth != null && 
+                   root.child('matches').child($matchId).child('creatorId').val() === auth.uid",
+          
+          "$uid": {
+            ".write": "auth != null && 
+                      root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+          }
+        },
+        
+        "homeName": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
+        "awayName": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
+        "periodStats": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
+        "playerStats": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
+        "currentPeriod": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
+        },
+        
+        "sidesSwapped": {
+          ".read": true,
+          ".write": "auth != null && 
+                    root.child('matches').child($matchId).child('creatorId').val() === auth.uid"
         }
       }
     }
