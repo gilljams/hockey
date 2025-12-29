@@ -2987,14 +2987,13 @@ return(
                 {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>
                   {spotifyFallback||!getSpotifyUrl(spotifyPlaylist)?(
                     <div className={`text-center py-8`}>
-                      <div className={`${darkMode?'text-gray-300':'text-gray-600'} mb-4`}>Spotify kunde inte ladda</div>
-                      <a 
+                     <a 
                         href={spotifyPlaylist} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className={`inline-block ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white px-6 py-3 rounded-lg font-semibold transition-colors`}
                       >
-                        Öppna på Spotify →
+                        Open Spotify in new window →
                       </a>
                     </div>
                   ):(
