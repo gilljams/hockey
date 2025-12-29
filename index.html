@@ -1689,7 +1689,7 @@ const generateCSV=()=>{
             if(playerNums.length===0)return;
             
             csv+=`\n${teamName}\n`;
-            csv+=`Player #,Period,G,A,OnIce+,OnIce-,FO+,FO-,SOG\n`;
+            csv+=`Player #,Period,G,A,OnIce+,OnIce-,+/-,FO+,FO-,FO%,SOG\n`;
             
             playerNums.forEach(pNum=>{
               const pData=players[pNum];
@@ -1697,10 +1697,24 @@ const generateCSV=()=>{
               Object.keys(pData.periods).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(period=>{
                 const pLabel=parseInt(period)<=3?`P${period}`:`OT`;
                 const stats=pData.periods[period];
-                csv+=`${pNum},${pLabel},${stats['G']||0},${stats['A']||0},${stats['OnIce+']||0},${stats['OnIce-']||0},${stats['FO+']||0},${stats['FO-']||0},${stats['SOG']||0}\n`;
+                const onIcePlus=stats['OnIce+']||0;
+                const onIceMinus=stats['OnIce-']||0;
+                const plusMinus=onIcePlus-onIceMinus;
+                const foPlus=stats['FO+']||0;
+                const foMinus=stats['FO-']||0;
+                const foTotal=foPlus+foMinus;
+                const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(1);
+                csv+=`${pNum},${pLabel},${stats['G']||0},${stats['A']||0},${onIcePlus},${onIceMinus},${plusMinus},${foPlus},${foMinus},${foPct},${stats['SOG']||0}\n`;
               });
               
-              csv+=`${pNum},TOTAL,${pData.total['G']},${pData.total['A']},${pData.total['OnIce+']},${pData.total['OnIce-']},${pData.total['FO+']},${pData.total['FO-']},${pData.total['SOG']}\n`;
+              const totalOnIcePlus=pData.total['OnIce+'];
+              const totalOnIceMinus=pData.total['OnIce-'];
+              const totalPlusMinus=totalOnIcePlus-totalOnIceMinus;
+              const totalFoPlus=pData.total['FO+'];
+              const totalFoMinus=pData.total['FO-'];
+              const totalFoTotal=totalFoPlus+totalFoMinus;
+              const totalFoPct=totalFoTotal===0?'-':((totalFoPlus/totalFoTotal)*100).toFixed(1);
+              csv+=`${pNum},TOTAL,${pData.total['G']},${pData.total['A']},${totalOnIcePlus},${totalOnIceMinus},${totalPlusMinus},${totalFoPlus},${totalFoMinus},${totalFoPct},${pData.total['SOG']}\n`;
             });
           });
         }
