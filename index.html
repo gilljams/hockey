@@ -3103,23 +3103,34 @@ return(
                                             <th className="text-center">A</th>
                                             <th className="text-center">+</th>
                                             <th className="text-center">-</th>
+                                            <th className="text-center">+/-</th>
                                             <th className="text-center">FO+</th>
                                             <th className="text-center">FO-</th>
+                                            <th className="text-center">FO%</th>
                                             <th className="text-center">SOG</th>
                                           </tr>
                                         </thead>
                                         <tbody>
                                           {playerNums.map(pNum=>{
                                             const pStats=players[pNum].periods[p];
+                                            const onIcePlus=pStats?.['OnIce+']||0;
+                                            const onIceMinus=pStats?.['OnIce-']||0;
+                                            const plusMinus=onIcePlus-onIceMinus;
+                                            const foPlus=pStats?.['FO+']||0;
+                                            const foMinus=pStats?.['FO-']||0;
+                                            const foTotal=foPlus+foMinus;
+                                            const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
                                             return(
                                               <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
                                                 <td className="font-bold py-1">{pNum}</td>
                                                 <td className="text-center">{pStats?.['G']||0}</td>
                                                 <td className="text-center">{pStats?.['A']||0}</td>
-                                                <td className="text-center">{pStats?.['OnIce+']||0}</td>
-                                                <td className="text-center">{pStats?.['OnIce-']||0}</td>
-                                                <td className="text-center">{pStats?.['FO+']||0}</td>
-                                                <td className="text-center">{pStats?.['FO-']||0}</td>
+                                                <td className="text-center">{onIcePlus}</td>
+                                                <td className="text-center">{onIceMinus}</td>
+                                                <td className="text-center font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
+                                                <td className="text-center">{foPlus}</td>
+                                                <td className="text-center">{foMinus}</td>
+                                                <td className="text-center font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
                                                 <td className="text-center">{pStats?.['SOG']||0}</td>
                                               </tr>
                                             );
@@ -3206,23 +3217,34 @@ return(
                                         <th className="text-center">A</th>
                                         <th className="text-center">+</th>
                                         <th className="text-center">-</th>
+                                        <th className="text-center">+/-</th>
                                         <th className="text-center">FO+</th>
                                         <th className="text-center">FO-</th>
+                                        <th className="text-center">FO%</th>
                                         <th className="text-center">SOG</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {playerNums.map(pNum=>{
                                         const pStats=players[pNum].total;
+                                        const onIcePlus=pStats?.['OnIce+']??0;
+                                        const onIceMinus=pStats?.['OnIce-']??0;
+                                        const plusMinus=onIcePlus-onIceMinus;
+                                        const foPlus=pStats?.['FO+']??0;
+                                        const foMinus=pStats?.['FO-']??0;
+                                        const foTotal=foPlus+foMinus;
+                                        const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
                                         return(
                                           <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
                                             <td className="font-bold py-1">{pNum}</td>
                                             <td className="text-center">{pStats?.['G']??0}</td>
                                             <td className="text-center">{pStats?.['A']??0}</td>
-                                            <td className="text-center">{pStats?.['OnIce+']??0}</td>
-                                            <td className="text-center">{pStats?.['OnIce-']??0}</td>
-                                            <td className="text-center">{pStats?.['FO+']??0}</td>
-                                            <td className="text-center">{pStats?.['FO-']??0}</td>
+                                            <td className="text-center">{onIcePlus}</td>
+                                            <td className="text-center">{onIceMinus}</td>
+                                            <td className="text-center font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
+                                            <td className="text-center">{foPlus}</td>
+                                            <td className="text-center">{foMinus}</td>
+                                            <td className="text-center font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
                                             <td className="text-center">{pStats?.['SOG']??0}</td>
                                           </tr>
                                         );
