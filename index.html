@@ -2611,7 +2611,36 @@ return(
                   
                 </div>
                 <div className="flex items-center gap-1">
-                  <button onClick={copyCode} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-2 py-1 rounded font-mono font-bold text-xs`}>{matchCode}</button>
+                 <div className="relative group">
+  <button className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-2 py-1 rounded font-mono font-bold text-xs transition-colors`}>
+    {matchCode} ▼
+  </button>
+  
+  <div className={`absolute right-0 mt-1 rounded shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${darkMode?'bg-gray-700':'bg-white'}`}>
+    <button
+      onClick={() => {
+        copyCode();
+      }}
+      className={`block w-full text-left px-4 py-2 text-xs font-semibold whitespace-nowrap ${darkMode?'text-white hover:bg-gray-600':'text-gray-800 hover:bg-gray-100'}`}
+    >
+      📋 Copy Editor Code
+    </button>
+    
+    <button
+      onClick={() => {
+        const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
+        navigator.clipboard.writeText(viewerLink).then(() => {
+          alert('Viewer link copied!');
+        }).catch(() => {
+          alert('Failed to copy');
+        });
+      }}
+      className={`block w-full text-left px-4 py-2 text-xs font-semibold whitespace-nowrap border-t ${darkMode?'text-white hover:bg-gray-600 border-gray-600':'text-gray-800 hover:bg-gray-100 border-gray-200'}`}
+    >
+      👁️ Copy Viewer Link
+    </button>
+  </div>
+</div>
           {!matchEnded && isCreator && !isViewer && (
             <button onClick={endMatch}
               className="bg-red-500 hover:bg-red-600 px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
