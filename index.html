@@ -77,6 +77,7 @@ try{
       const [focusMode,setFocusMode]=useState(null);
       const [spotifyLoaded,setSpotifyLoaded]=useState(false);
       const [spotifyLoading,setSpotifyLoading]=useState(false);
+      const [spotifyFallback,setSpotifyFallback]=useState(false);
       const [spotifyPlaylist,setSpotifyPlaylist]=useState('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq');
       const [keepScreenOn,setKeepScreenOn]=useState(false);
       const [wakeLock,setWakeLock]=useState(null);
@@ -2898,60 +2899,128 @@ return(
 
           <div className="max-w-6xl mx-auto p-4">
             {activeTab==='audio'&&<div>
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <button onClick={toggleIntro} className={`w-full ${introPlaying?(darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'):(darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-100 hover:bg-gray-200')} ${darkMode&&!introPlaying?'text-gray-200':'text-white'} ${!darkMode&&!introPlaying?'text-gray-800':''} py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2`}>
-                  {introPlaying?<>
-                    <div className="flex items-end gap-0.5 h-4">
-                      <div className="eq-bar w-1 bg-white rounded-full"></div>
-                      <div className="eq-bar w-1 bg-white rounded-full"></div>
-                      <div className="eq-bar w-1 bg-white rounded-full"></div>
+              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-3`}>
+                <h3 className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>Soundboard</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Intro */}
+                  <button 
+                    onClick={toggleIntro}
+                    className={`p-3 rounded-lg font-semibold transition-colors flex flex-col items-center justify-center gap-1 ${
+                      introPlaying
+                        ? (darkMode ? 'bg-green-700 text-white' : 'bg-green-600 text-white')
+                        : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800')
+                    }`}
+                  >
+                    {introPlaying ? (
+                      <>
+                        <div className="flex items-end gap-0.5 h-4">
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                        </div>
+                        <span className="text-xs">Stop</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">▶</span>
+                        <span className="text-xs">Intro</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Goal */}
+                  <button 
+                    onClick={() => playingSound === 'homeGoal' ? stopAllSounds() : playSound('homeGoal')}
+                    className={`p-3 rounded-lg font-semibold transition-colors flex flex-col items-center justify-center gap-1 ${
+                      playingSound === 'homeGoal'
+                        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+                        : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800')
+                    }`}
+                  >
+                    {playingSound === 'homeGoal' ? (
+                      <>
+                        <div className="flex items-end gap-0.5 h-4">
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                        </div>
+                        <span className="text-xs">Stop</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">🚨</span>
+                        <span className="text-xs">Goal</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Penalty */}
+                  <button 
+                    onClick={() => playingSound === 'awayPenalty' ? stopAllSounds() : playSound('awayPenalty')}
+                    className={`p-3 rounded-lg font-semibold transition-colors flex flex-col items-center justify-center gap-1 ${
+                      playingSound === 'awayPenalty'
+                        ? (darkMode ? 'bg-orange-700 text-white' : 'bg-orange-600 text-white')
+                        : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800')
+                    }`}
+                  >
+                    {playingSound === 'awayPenalty' ? (
+                      <>
+                        <div className="flex items-end gap-0.5 h-4">
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                          <div className="eq-bar w-0.5 bg-current rounded-full"></div>
+                        </div>
+                        <span className="text-xs">Stop</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-lg">🚔</span>
+                        <span className="text-xs">Penalty</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+
+             <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3`}>
+                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>
+                  {spotifyFallback||!getSpotifyUrl(spotifyPlaylist)?(
+                    <div className={`text-center py-8`}>
+                      <div className={`${darkMode?'text-gray-300':'text-gray-600'} mb-4`}>Spotify kunde inte ladda</div>
+                      <a 
+                        href={spotifyPlaylist} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className={`inline-block ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white px-6 py-3 rounded-lg font-semibold transition-colors`}
+                      >
+                        Öppna på Spotify →
+                      </a>
                     </div>
-                    <span>Pause Intro</span>
-                  </>:'Play Intro'}
-                </button>
+                  ):(
+                    <div>
+                      <iframe 
+                        style={{borderRadius:'12px'}} 
+                        src={getSpotifyUrl(spotifyPlaylist)} 
+                        width="100%" 
+                        height="352" 
+                        frameBorder="0" 
+                        allowFullScreen="" 
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                        loading="lazy"
+                        onError={() => setSpotifyFallback(true)}
+                        title="Spotify Playlist"
+                      ></iframe>
+                      <div className={`text-center mt-3 text-xs ${darkMode?'text-gray-400':'text-gray-500'}`}>
+                        <button onClick={() => setSpotifyFallback(true)} className={`${darkMode?'text-gray-400 hover:text-gray-300':'text-gray-600 hover:text-gray-800'} underline`}>
+                          Visa direktlänk istället
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>}
               </div>
-
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    {
-                      sound: 'homeGoal',
-                      label: 'Goal',
-                      bg: darkMode ? 'bg-blue-900 bg-opacity-40' : 'bg-blue-50',
-                      hover: darkMode ? 'hover:bg-blue-900 hover:bg-opacity-60' : 'hover:bg-blue-100',
-                      text: darkMode ? 'text-blue-200' : 'text-gray-800',
-                      border: darkMode ? 'border-blue-700' : 'border-blue-200'
-                    },
-                    {
-                      sound: 'awayPenalty',
-                      label: 'Penalty',
-                      bg: darkMode ? 'bg-blue-900 bg-opacity-40' : 'bg-blue-50',
-                      hover: darkMode ? 'hover:bg-blue-900 hover:bg-opacity-60' : 'hover:bg-blue-100',
-                      text: darkMode ? 'text-blue-200' : 'text-gray-800',
-                      border: darkMode ? 'border-blue-700' : 'border-blue-200'
-                    }
-                  ].map(btn => (
-                    <button
-                      key={btn.sound}
-                      onClick={() => playSound(btn.sound)}
-                      className={`${btn.bg} ${btn.hover} ${btn.text} border ${btn.border} py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2`}
-                    >
-                      {btn.label}
-                      {playingSound === btn.sound && <SoundEQ />}
-                    </button>
-                  ))}
-
-              <button onClick={stopAllSounds} className={`w-full ${darkMode?'bg-blue-900 bg-opacity-40 hover:bg-blue-900 hover:bg-opacity-60 border border-blue-700 text-blue-200':'bg-blue-50 hover:bg-blue-100 border border-blue-200 text-gray-900'} rounded-lg font-semibold transition-colors`}>
-                ◾Stop
-              </button>
- 
-               </div>
-              </div>
-
-
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3`}>
-                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>Invalid Spotify URL. Please check Settings.</div>}</div>}
-              </div>
+             
             </div>}
 
 
