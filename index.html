@@ -377,6 +377,31 @@ useEffect(() => {
   }
 }, [screen]);
 
+// Handle ?join=XXXXXX-V → open "Join game as viewer" dialog with prefilled code
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const joinCode = params.get('join');
+
+  if (!joinCode) return;
+
+  const code = joinCode.toUpperCase().trim();
+  const isViewerCode = code.endsWith('-V');
+  const baseCode = isViewerCode ? code.slice(0, -2) : code;
+
+  if (!isViewerCode || baseCode.length !== 6) return;
+
+  // Open start screen in viewer-join mode
+  setInputCode(code);
+  setGameMode('multi');
+  localStorage.setItem('gameMode', 'multi');
+  setIsViewer(true);
+  setScreen('start');
+
+  // Optional: clean URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+}, []);
+
+
 
 useEffect(() => {
   const handleBeforeUnload = (e) => {
