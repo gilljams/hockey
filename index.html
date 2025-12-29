@@ -2945,16 +2945,12 @@ return(
                 ◾Stop
               </button>
  
-
                </div>
-
               </div>
 
 
-
-
               <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3`}>
-                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-green-700 hover:bg-green-600':'bg-green-600 hover:bg-green-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>Invalid Spotify URL. Please check Settings.</div>}</div>}
+                {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>{getSpotifyUrl(spotifyPlaylist)?<iframe style={{borderRadius:'12px'}} src={getSpotifyUrl(spotifyPlaylist)} width="100%" height="352" frameBorder="0" allowFullScreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>:<div className={`text-center py-8 ${darkMode?'text-gray-300':'text-gray-600'}`}>Invalid Spotify URL. Please check Settings.</div>}</div>}
               </div>
             </div>}
 
