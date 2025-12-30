@@ -2547,8 +2547,8 @@ const tableData = periodKeys.map(p => {
                 −
               </button>
               <div className="text-center">
-                <div className="text-sm font-semibold">{periodStats[currentPeriod]?.[team+'Score'] ?? 0}</div>
-                <div className="text-xs text-gray-500">of {goals}</div>
+                <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>{periodStats[currentPeriod]?.[team+'Score'] ?? 0}</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>of {goals}</div>
               </div>
               <button 
                 onClick={() => updateStat(team, 'Score', 1)} 
@@ -2575,8 +2575,8 @@ const tableData = periodKeys.map(p => {
                 −
               </button>
               <div className="text-center">
-                <div className="text-sm font-semibold">{currentPeriodSaves}</div>
-                <div className="text-xs text-gray-500">of {saves}</div>
+                <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>{currentPeriodSaves}</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>of {saves}</div>
               </div>
               <button 
                 onClick={() => updateStat(team, 'Saves', 1)} 
@@ -2604,7 +2604,7 @@ const tableData = periodKeys.map(p => {
       <audio ref={audioRefs.intro} src="intro.mp3"/>
 
       <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-3 shadow-lg`}>
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="flex gap-2 items-center">
             <span className="text-sm font-medium">Per:</span>
             {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
@@ -2675,18 +2675,18 @@ const tableData = periodKeys.map(p => {
                 {/* Toggle Header */}
                 <button
                   onClick={() => setExpandedGoalieStats(prev => ({...prev, [teamStats.team]: !prev[teamStats.team]}))}
-                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} px-4 py-3 font-semibold text-left flex items-center justify-between transition-colors`}
+                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} px-4 py-3 font-semibold text-left flex items-center justify-between transition-colors`}
                 >
                   <span>{teamStats.name}</span>
                   <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                 </button>
                 
                 {/* Statistics Table - Collapsible */}
-                {isExpanded && (
+               {isExpanded && (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
+                    <table className={`w-full text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                       <thead>
-                        <tr className={`${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'}`}>
+                        <tr className={`${darkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>
                           <th className="text-left px-2 py-2">Stat</th>
                           {periodKeys.map(p => (
                             <th key={p} className="text-center px-1 py-2">
