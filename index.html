@@ -425,9 +425,34 @@ useEffect(() => {
 
       useEffect(()=>{
         if(!isMultiplayer||!matchCode||!db)return;
+        
+        let connectionTimeout;
+        let hasReceivedData=false;
+        
         matchRef.current=db.ref(`matches/${matchCode}`);
+        
+        // Timeout efter 10 sekunder utan data
+        connectionTimeout=setTimeout(()=>{
+          if(!hasReceivedData){
+            setError('Failed to connect to match. Check your connection and try again.');
+            console.log('Firebase connection timeout for match:', matchCode);
+            if(isMultiplayer){
+              setIsMultiplayer(false);
+              localStorage.removeItem('multiplayerMatch');
+            }
+          }
+        },10000);
+        
         matchRef.current.on('value',s=>{
           const d=s.val();
+          
+          // Vi fick data! Rensa timeout
+          if(!hasReceivedData){
+            clearTimeout(connectionTimeout);
+            hasReceivedData=true;
+            setError('');
+          }
+          
           if(d){
             setPeriodStats(normalizePeriodStats(d.periodStats));
             setCurrentPeriod(d.currentPeriod ?? 1);
@@ -441,7 +466,7 @@ useEffect(() => {
                  setIsCreator(d.creatorId === userId.current);
       
 // Check if user was in match but is now removed (kicked)
-const isCurrentlyInMatch = d.users && d.users[userId.current];
+const isCurrentlyInMatch = !!(d.users && d.users[userId.current]);
 const isOwner = d.creatorId === userId.current;
 const amIKicked = d.kickedUsers && d.kickedUsers[userId.current];
 
@@ -471,11 +496,21 @@ if (!isViewer && !isOwner && isMultiplayer && wasInMatch) {
 }
 
 // Sätt wasInMatch ENDAST när vi verkligen är inne
-if (isCurrentlyInMatch) {
-  setWasInMatch(true);
-}
+if (isCurrentlyInMatch && !wasInMatch) {
+        setWasInMatch(true);
+      }
     }
-  });
+  }, error => {
+    clearTimeout(connectionTimeout);
+    console.error('Firebase error:', error);
+    setError(`Connection error: ${error.message || 'Failed to connect to Firebase'}`);
+    
+    if(isMultiplayer && error.code && error.code.includes('PERMISSION')){
+      setIsMultiplayer(false);
+      localStorage.removeItem('multiplayerMatch');
+    }
+  }
+);
   const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
 const ur=matchRef.current.child(path);
 
@@ -526,7 +561,10 @@ kickedUsersRef.on('value', s => {
 
 localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer,gameMode:'multi'}));
 
-return()=>{if(matchRef.current){matchRef.current.off();kickedUsersRef.off();ur.remove()}}
+return()=>{
+          clearTimeout(connectionTimeout);
+          if(matchRef.current){matchRef.current.off();kickedUsersRef.off();ur.remove()}
+        }
       },[isMultiplayer,matchCode,isViewer]);
 
 const kickEditor=(editorId)=>{
