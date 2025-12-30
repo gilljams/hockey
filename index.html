@@ -140,6 +140,82 @@ try{
       const [viewerCount,setViewerCount]=useState(0);
       const [playingSound, setPlayingSound] = useState(null);
 
+
+const IconSettings = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    className="w-4 h-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M11.983 13.943a1.96 1.96 0 100-3.92 1.96 1.96 0 000 3.92z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h.01a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"
+    />
+  </svg>
+);
+
+const IconBack = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    className="w-4 h-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15 19l-7-7 7-7"
+    />
+  </svg>
+);
+
+const IconChevronDown = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    className="w-4 h-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 9l-7 7-7-7"
+    />
+  </svg>
+);
+
+const IconChevronUp = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    className="w-4 h-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 15l7-7 7 7"
+    />
+  </svg>
+);
+
+
       // Normalization functions
       const normalizePeriodStats = (stats) => {
         const normalized = {};
@@ -945,7 +1021,7 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
               onClick={onBack}
               className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold`}
             >
-              ← Back
+              <IconBack />
             </button>
           </div>
           
@@ -1254,12 +1330,13 @@ const AuthScreen = ({ darkMode, setDarkMode, onSuccess }) => {
                 onClick={() => {
                   onSuccess(); // This will close auth and go back to start
                 }}
-                className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+                
+className={`flex items-center gap-1 text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
               >
-                ← Go Back
+                  <IconBack />
+                  <span>Back</span>
               </button>
             </div>
-
 
 <div className="text-center mb-8">
             <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
@@ -1398,7 +1475,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
     onClick={() => setScreen('start')}
     className="bg-white bg-opacity-20 px-3 py-2 rounded"
   >
-    ← Back
+    <IconBack />
   </button>
 </div>
         </div>
@@ -2024,7 +2101,7 @@ return(
                     onClick={()=>setShowPlayerStats(false)}
                     className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1`}
                   >
-                    <span className="text-lg">←</span>
+                    <span className="text-lg"><IconBack /></span>
                     <span className="hidden sm:inline">Back</span>
                   </button>
                 </div>
@@ -2383,12 +2460,13 @@ if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
+              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Back</button>
               <h2 className="text-2xl font-bold mb-6">New Game</h2>
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm mb-2">Home Team</label>
-                  
+
+                 
 <div className="relative">
   <input
     ref={homeTeamInputRef}
@@ -2476,7 +2554,7 @@ if(screen==='create')return(
 
               {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
               <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
-              <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>Go Back</button>
+              <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>Back</button>
             </div>
           </div>
         </div>
@@ -2486,9 +2564,11 @@ if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <button onClick={()=>setScreen('start')} className={`mb-6 ${darkMode?'text-gray-400':'text-gray-600'}`}>← Go Back</button>
+              <button onClick={()=>setScreen('start')} className={`flex items-center gap-1 text-sm  ${darkMode?'text-gray-400':'text-gray-600'}`}><IconBack />
+                  <span>Back</span></button>
               <h2 className="text-2xl font-bold mb-6">Join Game</h2>
-              
+ 
+             
               <div className={`${darkMode?'bg-gray-700 border-gray-600':'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6 text-sm`}>
                 <div className="font-semibold mb-2">Two ways to join:</div>
                 <div className="space-y-2">
@@ -2673,7 +2753,7 @@ const tableData = periodKeys.map(p => {
             onClick={() => setFocusMode(null)} 
             className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1`}
           >
-            <span className="text-lg">←</span>
+            <span className="text-lg"><IconBack /></span>
             <span>Back</span>
           </button>
         </div>
@@ -2868,8 +2948,8 @@ return(
                 </div>
 <div className="flex gap-2">
   {!isMultiplayer&&(
-    <button onClick={exitToStart} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 rounded text-sm`}>
-      ←
+    <button onClick={exitToStart} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>
+      <IconBack />
     </button>
   )}
   {isViewer&&(
@@ -2880,8 +2960,8 @@ return(
       setIsViewer(false);
       setMatchCode('');
       setScreen('start');
-    }} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 rounded text-sm`}>
-      ←
+    }} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>
+      <IconBack />
     </button>
   )}
   {isMultiplayer && !isViewer && (
@@ -2891,12 +2971,12 @@ return(
       setIsMultiplayer(false);
       setMatchCode('');
       setScreen('start');
-    }} className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 rounded text-sm`}>
-      ←
+    }} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>
+      <IconBack />
     </button>
   )}
-  <button onClick={()=>setStatsCollapsed(!statsCollapsed)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>{statsCollapsed?'▼':'▲'}</button>
-  <button onClick={()=>setShowSettings(!showSettings)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20'} px-3 py-1 rounded text-sm`}>⚙️</button>
+  <button onClick={()=>setStatsCollapsed(!statsCollapsed)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>{statsCollapsed ? <IconChevronDown /> : <IconChevronUp />}</button>
+  <button onClick={()=>setShowSettings(!showSettings)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}><IconSettings /></button>
 </div>
               </div>
 
