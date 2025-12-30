@@ -595,27 +595,53 @@ const createMatch=()=>{
     return;
   }
   
-  // Rensa single-game data när vi går till multi
-  if(gameMode==='single'){
-    localStorage.removeItem('juniorLeagueGame');
-  }
+  // Rensa ALL single-game data när vi går till multi
+  localStorage.removeItem('juniorLeagueGame');
+  localStorage.removeItem('tempMatchCode');
   
   const code=genCode();
+  
+  // Rensa error innan vi försöker
+  setError('');
+  
+  // Uppdatera state OCH navigera
   setMatchCode(code);
   setMatchEnded(false);
   setIsViewer(false);
   setIsCreator(true);
   setGameMode('multi');
   localStorage.setItem('gameMode','multi');
+  
+  // Lagra koden temporärt så vi kan använda den direkt
+  localStorage.setItem('tempMatchCode', code);
+  
   setScreen('created');
 };
+
 
 const startMatch=()=>{
   if(!db){setError('Firebase not configured');return}
   if(!currentUser){setError('You must be logged in to create a game');return}
   
-  const viewerCode=matchCode+'-V';
-  db.ref(`matches/${matchCode}`).set({
+  // Använd matchCode från state, fallback till localStorage om nödvändigt
+  const code = matchCode || localStorage.getItem('tempMatchCode');
+  
+  if(!code){
+    setError('Match code not found. Please try again.');
+    return;
+  }
+  
+  // Säkerställ att vi är i multi-mode
+  if(gameMode!=='multi'){
+    setGameMode('multi');
+    localStorage.setItem('gameMode','multi');
+  }
+  
+  // Rensa all single-game data
+  localStorage.removeItem('juniorLeagueGame');
+  
+  const viewerCode=code+'-V';
+  db.ref(`matches/${code}`).set({
     homeName,
     awayName,
     currentPeriod:1,
@@ -654,9 +680,24 @@ const startMatch=()=>{
     setIsMultiplayer(true);
     setIsCreator(true);
     localStorage.removeItem('juniorLeagueGame');
-    localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:false,gameMode:'multi'}));
+    // Rensa ALL temp-data
+    localStorage.removeItem('tempMatchCode');
+    localStorage.removeItem('juniorLeagueGame');
+    
+    // Reset game state för att starta friskt
+    resetGameState();
+    
+    // Säkerställ korrekt state
+    setGameMode('multi');
+    setIsMultiplayer(true);
+    setIsCreator(true);
+    setMatchCode(code);
+    
+    // Spara multiplayer session
+    localStorage.setItem('multiplayerMatch',JSON.stringify({code:code,timestamp:Date.now(),isViewer:false,gameMode:'multi'}));
+    
     setScreen('game');
-    if(window.gtag)gtag('event','match_created',{match_code:matchCode});
+    if(window.gtag)gtag('event','match_created',{match_code:code});
   }).catch(e=>setError('Failed: '+e.message))
 };
       
@@ -3389,4 +3430,3 @@ return(
   </script>
 </body>
 </html>
-
