@@ -56,7 +56,6 @@ try{
       return code;
     };
 
-
     const SoundEQ = () => (
       <div className="flex items-end gap-0.5 h-4 ml-2">
         <div className="eq-bar w-1 bg-white rounded-full"></div>
@@ -102,14 +101,14 @@ try{
       const [isAdmin, setIsAdmin] = useState(false);
       const [forceAuth,setForceAuth]=useState(false);
       const [userMatches,setUserMatches]=useState([]);
-const [loadingMatches,setLoadingMatches]=useState(false);
-const [wasInMatch, setWasInMatch]=useState(false);
-const [periodStats,setPeriodStats]=useState({
+      const [loadingMatches,setLoadingMatches]=useState(false);
+      const [wasInMatch, setWasInMatch]=useState(false);
+      const [periodStats,setPeriodStats]=useState({
         1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
         3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
       });
-const [playerStats,setPlayerStats]=useState({
+      const [playerStats,setPlayerStats]=useState({
         home:{players:{}},
         away:{players:{}}
       });
@@ -121,9 +120,7 @@ const [playerStats,setPlayerStats]=useState({
       const [addPlayerTeam,setAddPlayerTeam]=useState('');
       const [addPlayerNumbers,setAddPlayerNumbers]=useState(['']);
       const [expandedPlayerStats,setExpandedPlayerStats]=useState({});
-
       const [collapsedPlayerTables,setCollapsedPlayerTables]=useState({});
-     
       const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
       const [introPlaying,setIntroPlaying]=useState(false);
       const matchRef=useRef(null);
@@ -137,10 +134,8 @@ const [playerStats,setPlayerStats]=useState({
         })()
       );
       const homeTeamInputRef = useRef(null);
-
-const DEFAULT_HOME = 'HOME TEAM';
-const DEFAULT_AWAY = 'AWAY TEAM';
-
+      const DEFAULT_HOME = 'HOME TEAM';
+      const DEFAULT_AWAY = 'AWAY TEAM';
       const [isViewer,setIsViewer]=useState(false);
       const [viewerCount,setViewerCount]=useState(0);
       const [playingSound, setPlayingSound] = useState(null);
@@ -212,14 +207,13 @@ const DEFAULT_AWAY = 'AWAY TEAM';
           setActiveTab('stats');
         }
       }, [isViewer, screen]);
-// Auth listener
 
-
+  // Auth listener
       useEffect(()=>{
-  if(!auth){
-    setAuthLoading(false);
-    return;
-  }
+        if(!auth){
+          setAuthLoading(false);
+          return;
+        }
   
   const unsubscribe=auth.onAuthStateChanged(user=>{
     setCurrentUser(user);
@@ -270,7 +264,6 @@ const DEFAULT_AWAY = 'AWAY TEAM';
       },[currentUser]);
 
       useEffect(()=>{
-
 
         // Clean up old multiplayer data
         try {
@@ -362,22 +355,20 @@ if(!savedMatch && (!lastScreen || lastScreen==='game')){
       useEffect(()=>{localStorage.setItem('externalLinkUrl',externalLinkUrl)},[externalLinkUrl]);
       useEffect(()=>{localStorage.setItem('externalLinkTitle',externalLinkTitle)},[externalLinkTitle]);
       useEffect(()=>{localStorage.setItem('defaultHomeRoster',defaultHomeRoster)},[defaultHomeRoster]);
-
       useEffect(()=>{
         if(!isMultiplayer&&screen==='game'){
           const gs={currentPeriod,homeName,awayName,sidesSwapped,periodStats,playerStats,timestamp:new Date().toISOString()};
           localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
         }
       },[currentPeriod,homeName,awayName,sidesSwapped,periodStats,playerStats,isMultiplayer,screen]);
-
-useEffect(() => {
-  if (screen === 'create') {
-    setTimeout(() => {
-      homeTeamInputRef.current?.focus();
-      homeTeamInputRef.current?.select();
-    }, 50);
-  }
-}, [screen]);
+      useEffect(() => {
+        if (screen === 'create') {
+          setTimeout(() => {
+            homeTeamInputRef.current?.focus();
+            homeTeamInputRef.current?.select();
+          }, 50);
+        }
+      }, [screen]);
 
 // Handle ?join=XXXXXX-V → open "Join game as viewer" dialog with prefilled code
 useEffect(() => {
@@ -402,8 +393,6 @@ useEffect(() => {
   // Optional: clean URL
   window.history.replaceState({}, document.title, window.location.pathname);
 }, []);
-
-
 
 useEffect(() => {
   const handleBeforeUnload = (e) => {
@@ -485,17 +474,11 @@ if (!isViewer && !isOwner && isMultiplayer && wasInMatch) {
 if (isCurrentlyInMatch) {
   setWasInMatch(true);
 }
-
-// Sätt wasInMatch ENDAST när vi verkligen är inne
-if (isCurrentlyInMatch) {
-  setWasInMatch(true);
-}
     }
   });
   const path=isViewer?`viewers/${userId.current}`:`users/${userId.current}`;
 const ur=matchRef.current.child(path);
 
-// ⬅️ DEKLARERA kickedUsersRef HÄR (före if-blocket)
 const kickedUsersRef = matchRef.current.child('kickedUsers');
 
 if(isViewer){
@@ -543,8 +526,6 @@ kickedUsersRef.on('value', s => {
 
 localStorage.setItem('multiplayerMatch',JSON.stringify({code:matchCode,timestamp:Date.now(),isViewer:isViewer,gameMode:'multi'}));
 
-
-
 return()=>{if(matchRef.current){matchRef.current.off();kickedUsersRef.off();ur.remove()}}
       },[isMultiplayer,matchCode,isViewer]);
 
@@ -572,7 +553,6 @@ const kickEditor=(editorId)=>{
     });
   }
 };
-
 
 const reconnectToMatch=()=>{
 setWasInMatch(false);
@@ -630,7 +610,6 @@ const createMatch=()=>{
   setScreen('created');
 };
 
-
 const startMatch=()=>{
   if(!db){setError('Firebase not configured');return}
   if(!currentUser){setError('You must be logged in to create a game');return}
@@ -653,7 +632,7 @@ const startMatch=()=>{
     ownerEmail:currentUser.email,
     locked:false,
     
-    // ✨ NYT: Strukturerad users-lista
+    // Strukturerad users-lista
     users:{
       [userId.current]:{
         joinedAt:Date.now(),
@@ -661,10 +640,10 @@ const startMatch=()=>{
       }
     },
     
-    // ✨ NYT: Viewers lista
+    // Viewers lista
     viewers:{},
     
-    // ✨ NYT: Kicked users (svartlista)
+    // Kicked users (svartlista)
     kickedUsers:{},
     
     viewerCode:viewerCode
@@ -703,19 +682,19 @@ const joinMatch=()=>{
 if(s.exists()){
   const d=s.val();
   
-  // ❌ CHECK 1: Är användaren kickad? (bara relevant för editors, inte viewers)
+  // Är användaren kickad? (bara relevant för editors, inte viewers)
 if(!isViewerCode && d.kickedUsers && d.kickedUsers[userId.current]){
   setError('You have been removed from this game as an editor. You can join as a viewer instead using the viewer code (-V)');
   return;
 }
   
-  // ❌ CHECK 2: Är matchen låst OCH är du inte creator?
+  // Är matchen låst OCH är du inte creator?
   if(!isViewerCode && d.locked && d.creatorId !== userId.current){
     setError('This game is locked to new editors');
     return;
   }
   
-  // ❌ CHECK 3: Är det redan 5+ editors (exklusive creator)?
+  // Är det redan 5+ editors (exklusive creator)?
   const editorCount = d.users ? Object.keys(d.users).length : 0;
   const isCreatorOfThisMatch = d.creatorId === userId.current;
   
@@ -1510,10 +1489,6 @@ const updateStat=(team,stat,delta)=>{
         if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
       };
 
-
-
-
-
 const addPlayers=(team,numbers)=>{
   const validNumbers=numbers.filter(n=>n&&n.trim()!=='');
   if(validNumbers.length===0)return;
@@ -1552,8 +1527,6 @@ const parsePlayerInput = (input) => {
     .filter(n => n !== '' && /^\d+$/.test(n));
   return [...new Set(nums)];
 };
-
-
 
 // Handle smart input parsing
 const handlePlayerInputChange = (value, idx) => {
@@ -1644,7 +1617,6 @@ const handlePlayerInputChange = (value, idx) => {
       
       const totals=calcTotals();
       const calcSP=(sv,g)=>{const sh=sv+g;return sh===0?'0.0':((sv/sh)*100).toFixed(1)};
-
 
       const genReport=()=>{
         const d=new Date().toLocaleDateString();
@@ -1777,7 +1749,7 @@ const statColumns={
   'All':['G','A','+','-','FO+','FO-','SOG']
 };
         
-        const activeColumns=statColumns[playerStatsMoment];
+const activeColumns=statColumns[playerStatsMoment];
         
 const renderPlayerTable=(team)=>{
   const teamName=team==='home'?homeName:awayName;
@@ -1977,7 +1949,6 @@ return(
                     <span className="hidden sm:inline">Back</span>
                   </button>
                 </div>
-
                 
                 <div className="flex gap-2 items-center flex-wrap">
                   <span className="text-sm font-medium"></span>
@@ -2013,7 +1984,6 @@ return(
   </select>
 </label>
 
-
                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -2022,11 +1992,8 @@ return(
                       className="w-4 h-4"
                     />
                     <span className="text-sm">Edit</span>
-                  </label>
-                  
-
+                  </label>  
                 </div>
-
                 </div>
               </div>
             </div>
@@ -2208,7 +2175,6 @@ if(screen==='start')return(
                   </button>
                 )}
 
-
                   </div>
                 ):(
                   <p className={`${darkMode?'text-gray-300':'text-gray-600'}`}>
@@ -2268,8 +2234,7 @@ if(screen==='start')return(
   <span className="absolute right-4">{!currentUser && '🔒'}</span>
   <span>JOIN GAME</span>
 </button>
-
-                
+               
                 {/* Join Match as Viewer - always available */}
                 <button 
                   onClick={()=>setScreen('join')}
@@ -2494,7 +2459,6 @@ if(focusMode&&screen==='game'){
   const homeSaves = sidesSwapped ? totals.awaySaves : totals.homeSaves;
   const awaySaves = sidesSwapped ? totals.homeSaves : totals.awaySaves;
 
-
   const renderGoalieCard = (team, name, goals, saves) => {
     const teamColor = team === 'home' ? 'blue' : 'red';
     const bgColor = darkMode ? 
@@ -2517,7 +2481,7 @@ const tableData = periodKeys.map(p => {
       return { period: p, saves: teamSaves, ga: teamGoalsAgainst, sog, svsPct };
     });
     
-// Totals
+    // Totals
     const totalSaves = saves;
     const totalGA = team === 'home' ? awayGoals : homeGoals;
     const totalGoals = team === 'home' ? homeGoals : awayGoals;
@@ -2737,9 +2701,6 @@ const tableData = periodKeys.map(p => {
     </div>
   );
 }
-
-
-
 
 return(
         <div className={`min-h-screen pb-20 ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -3428,3 +3389,4 @@ return(
   </script>
 </body>
 </html>
+
