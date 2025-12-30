@@ -2530,124 +2530,107 @@ const tableData = periodKeys.map(p => {
       <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-lg shadow-lg overflow-hidden border`}>
         {/* Topbar */}
         <div className={`${darkMode ? 'bg-blue-700' : 'bg-blue-600'} text-white px-4 py-3 font-bold`}>
-          {team === 'home' ? '🔵' : '🔴'} {name}
+          {team === 'home' ? '' : ''} {name}
         </div>
 
         {/* Content */}
         <div className="p-4">
          {/* Goals Section */}
-          <div className="mb-6">
-            <div className="flex items-baseline justify-center gap-2 mb-4">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>GOALS:</span>
-              <div className={`text-5xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{goals}</div>
-            </div>
-            
-            <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-white/30'} backdrop-blur rounded-lg p-3`}>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2 text-center`}>P{currentPeriod <= 3 ? currentPeriod : 'OT'}:</div>
-              <div className="flex items-center justify-center gap-2">
-                <button 
-                  onClick={() => updateStat(team, 'Score', -1)} 
-                  disabled={matchEnded || isViewer}
-                  className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold text-lg transition-colors`}
-                >
-                  −
-                </button>
-                <div className="text-2xl font-bold min-w-[50px] text-center">{periodStats[currentPeriod]?.[team+'Score'] ?? 0}</div>
-                <button 
-                  onClick={() => updateStat(team, 'Score', 1)} 
-                  disabled={matchEnded || isViewer}
-                  className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold text-lg transition-colors`}
-                >
-                  +
-                </button>
+          <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-4 mb-4`}>
+            <div className={`text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>GOALS</div>
+            <div className="flex items-center justify-center gap-3">
+              <button 
+                onClick={() => updateStat(team, 'Score', -1)} 
+                disabled={matchEnded || isViewer}
+                className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold transition-colors`}
+              >
+                −
+              </button>
+              <div className="text-center">
+                <div className="text-sm font-semibold">{periodStats[currentPeriod]?.[team+'Score'] ?? 0}</div>
+                <div className="text-xs text-gray-500">of {goals}</div>
               </div>
+              <button 
+                onClick={() => updateStat(team, 'Score', 1)} 
+                disabled={matchEnded || isViewer}
+                className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold transition-colors`}
+              >
+                +
+              </button>
+            </div>
+            <div className={`text-xs text-center mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr) => <span key={p}>{periodStats[p][team+'Score']}{i<arr.length-1?'-':''}</span>)})
             </div>
           </div>
 
-         {/* Saves Section */}
-          <div className={`pb-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-            <div className="flex items-baseline justify-center gap-2 mb-4">
-              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>SAVES:</span>
-              <div className={`text-5xl font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{saves}</div>
-            </div>
-            
-            <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-white/30'} backdrop-blur rounded-lg p-3`}>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2 text-center`}>P{currentPeriod <= 3 ? currentPeriod : 'OT'}:</div>
-              <div className="flex items-center justify-center gap-2">
-                <button 
-                  onClick={() => updateStat(team, 'Saves', -1)} 
-                  disabled={matchEnded || isViewer}
-                  className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold text-lg transition-colors`}
-                >
-                  −
-                </button>
-                <div className="text-2xl font-bold min-w-[50px] text-center">{currentPeriodSaves}</div>
-                <button 
-                  onClick={() => updateStat(team, 'Saves', 1)} 
-                  disabled={matchEnded || isViewer}
-                  className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-black/5 hover:bg-black/10 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold text-lg transition-colors`}
-                >
-                  +
-                </button>
+          {/* Saves Section */}
+          <div className={`${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50'} rounded-lg p-4 mb-4`}>
+            <div className={`text-xs font-semibold ${darkMode ? 'text-blue-300' : 'text-blue-700'} mb-3`}>SAVES</div>
+            <div className="flex items-center justify-center gap-3">
+              <button 
+                onClick={() => updateStat(team, 'Saves', -1)} 
+                disabled={matchEnded || isViewer}
+                className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold transition-colors`}
+              >
+                −
+              </button>
+              <div className="text-center">
+                <div className="text-sm font-semibold">{currentPeriodSaves}</div>
+                <div className="text-xs text-gray-500">of {saves}</div>
               </div>
+              <button 
+                onClick={() => updateStat(team, 'Saves', 1)} 
+                disabled={matchEnded || isViewer}
+                className={`${darkMode ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-gray-300 hover:bg-gray-400 text-gray-800'} disabled:opacity-50 w-8 h-8 rounded font-semibold transition-colors`}
+              >
+                +
+              </button>
+            </div>
+            <div className={`text-xs text-center mt-2 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+              ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr) => <span key={p}>{periodStats[p][team+'Saves']}{i<arr.length-1?'-':''}</span>)})
             </div>
           </div>
 
           {/* Stats Table */}
           <div className="mt-4">
             <button
-  onClick={() => {
-    const newState = !expandedGoalieStats[team];
-    setExpandedGoalieStats({home: newState, away: newState});
-  }}
-  className={`w-full text-left font-semibold text-sm ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
->
-  <span>Statistics</span>
-  <span>{expandedGoalieStats[team] ? '▲' : '▼'}</span>
-</button>
+              onClick={() => setExpandedGoalieStats(prev => ({...prev, [team]: !prev[team]}))}
+              className={`w-full text-left font-semibold text-sm ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
+            >
+              <span>Statistics</span>
+              <span>{expandedGoalieStats[team] ? '▲' : '▼'}</span>
+            </button>
 
             {expandedGoalieStats[team] && (
               <div className="mt-3 overflow-x-auto">
-                <table className="w-full text-xs">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      <th className="text-left px-2 py-1">Stat</th>
-                      {periodKeys.map(p => (
-                        <th key={p} className="text-center px-2 py-1">
-                          {parseInt(p) <= 3 ? `P${p}` : 'OT'}
-                        </th>
-                      ))}
-                      <th className="text-center px-2 py-1 font-bold">Total</th>
+                      <th className="text-left px-3 py-2">Stat</th>
+                      <th className="text-center px-3 py-2">Period {currentPeriod <= 3 ? currentPeriod : 'OT'}</th>
+                      <th className="text-center px-3 py-2 font-bold">Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <td className="px-2 py-1 font-semibold">SOG</td>
-                      {tableData.map(d => (
-                        <td key={d.period} className="text-center px-2 py-1">{d.sog}</td>
-                      ))}
-                      <td className="text-center px-2 py-1 font-semibold">{totalSOG}</td>
+                      <td className="px-3 py-2 font-semibold">SOG</td>
+                      <td className="text-center px-3 py-2">{tableData[currentPeriod-1]?.sog || 0}</td>
+                      <td className="text-center px-3 py-2 font-semibold">{totalSOG}</td>
                     </tr>
                     <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <td className="px-2 py-1 font-semibold">GA</td>
-                      {tableData.map(d => (
-                        <td key={d.period} className="text-center px-2 py-1">{d.ga}</td>
-                      ))}
-                      <td className="text-center px-2 py-1 font-semibold">{totalGA}</td>
+                      <td className="px-3 py-2 font-semibold">GA</td>
+                      <td className="text-center px-3 py-2">{tableData[currentPeriod-1]?.ga || 0}</td>
+                      <td className="text-center px-3 py-2 font-semibold">{totalGA}</td>
                     </tr>
                     <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <td className="px-2 py-1 font-semibold">SVS</td>
-                      {tableData.map(d => (
-                        <td key={d.period} className="text-center px-2 py-1">{d.saves}</td>
-                      ))}
-                      <td className="text-center px-2 py-1 font-semibold">{totalSaves}</td>
+                      <td className="px-3 py-2 font-semibold">SVS</td>
+                      <td className="text-center px-3 py-2">{tableData[currentPeriod-1]?.saves || 0}</td>
+                      <td className="text-center px-3 py-2 font-semibold">{totalSaves}</td>
                     </tr>
                     <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <td className="px-2 py-1 font-semibold">SVS%</td>
-                      {tableData.map(d => (
-                        <td key={d.period} className="text-center px-2 py-1 font-semibold">{d.svsPct}{d.svsPct !== '-' ? '%' : ''}</td>
-                      ))}
-                      <td className="text-center px-2 py-1 font-semibold">{totalSvsPct}{totalSvsPct !== '-' ? '%' : ''}</td>
+                      <td className="px-3 py-2 font-semibold">SVS%</td>
+                      <td className="text-center px-3 py-2 font-semibold">{tableData[currentPeriod-1]?.svsPct}{tableData[currentPeriod-1]?.svsPct !== '-' ? '%' : ''}</td>
+                      <td className="text-center px-3 py-2 font-semibold">{totalSvsPct}{totalSvsPct !== '-' ? '%' : ''}</td>
                     </tr>
                   </tbody>
                 </table>
