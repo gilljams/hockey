@@ -3090,20 +3090,26 @@ return(
     {name:sidesSwapped?homeName:awayName,score:sidesSwapped?totals.homeScore:totals.awayScore,saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away'}
   ].map((tm,idx)=>{
     const currentPeriodScore = periodStats[currentPeriod]?.[tm.team+'Score'] ?? 0;
-    const currentPeriodSaves = periodStats[currentPeriod]?.[tm.team+'Saves'] ?? 0;
     return(
     <div key={idx} className={`${darkMode?'bg-gray-700 border border-gray-600':'bg-white bg-opacity-10'} rounded-lg p-3`}>
-      <div className="text-sm font-semibold mb-2">{tm.name}</div>
+      <div className="text-sm font-semibold mb-3 text-left">{tm.name}</div>
       
       <div>
-        <div className="text-xs opacity-75 mb-1">Goals (Total: {tm.score})</div>
-        <div className={`text-xs opacity-50 mb-1 text-center`}>Period {currentPeriod}</div>
-        <div className="flex items-center justify-center gap-2 mb-2">
+        <div className="text-xs mb-2 text-center">
+          <span className="opacity-50">Period {currentPeriod}</span>
+          <span className="opacity-30 mx-1">·</span>
+          <span className="font-semibold">{currentPeriodScore} {currentPeriodScore === 1 ? 'goal' : 'goals'}</span>
+        </div>
+        <div className="flex items-center justify-center gap-3 mb-2">
           <button onClick={()=>updateStat(tm.team,'Score',-1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">−</button>
-          <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`]?'sparkle':''}`}>{currentPeriodScore}</div>
+          <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`]?'sparkle':''}`}>
+            {tm.score}
+          </div>
           <button onClick={()=>updateStat(tm.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">+</button>
         </div>
-       <div className="text-xs opacity-75 text-center">({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Score']}{i<arr.length-1?'-':''}</span>)})</div>
+        <div className="text-xs opacity-75 text-center">
+          ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Score']}{i<arr.length-1?'-':''}</span>)})
+        </div>
       </div>
     </div>
     );
@@ -3113,20 +3119,27 @@ return(
 {!statsCollapsed&&(
   <div className="grid grid-cols-2 gap-4 mb-3">
     {[
-      {name:sidesSwapped?awayName:homeName,saves:sidesSwapped?totals.awaySaves:totals.homeSaves,team:sidesSwapped?'away':'home'},
-      {name:sidesSwapped?homeName:awayName,saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away'}
+      {saves:sidesSwapped?totals.awaySaves:totals.homeSaves,team:sidesSwapped?'away':'home'},
+      {saves:sidesSwapped?totals.homeSaves:totals.awaySaves,team:sidesSwapped?'home':'away'}
     ].map((tm,idx)=>{
       const currentPeriodSaves = periodStats[currentPeriod]?.[tm.team+'Saves'] ?? 0;
       return(
       <div key={idx} className={`${darkMode?'bg-gray-700 border border-gray-600':'bg-white bg-opacity-10'} rounded-lg p-3`}>
-        <div className="text-xs opacity-75 mb-1">Saves (Total: {tm.saves})</div>
-        <div className={`text-xs opacity-50 mb-1 text-center`}>Period {currentPeriod}</div>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <button onClick={()=>updateStat(tm.team,'Saves',-1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">−</button>
-          <div className={`text-3xl font-bold w-16 text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`]?'sparkle':''}`}>{currentPeriodSaves}</div>
-          <button onClick={()=>updateStat(tm.team,'Saves',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold">+</button>
+        <div className="text-xs mb-2 text-center">
+          <span className="opacity-50">Period {currentPeriod}</span>
+          <span className="opacity-30 mx-1">·</span>
+          <span className="font-semibold">{currentPeriodSaves} {currentPeriodSaves === 1 ? 'save' : 'saves'}</span>
         </div>
-        <div className="text-xs opacity-75 text-center">({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Saves']}{i<arr.length-1?'-':''}</span>)})</div>
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <button onClick={()=>updateStat(tm.team,'Saves',-1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">−</button>
+          <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`]?'sparkle':''}`}>
+            {tm.saves}
+          </div>
+          <button onClick={()=>updateStat(tm.team,'Saves',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">+</button>
+        </div>
+        <div className="text-xs opacity-75 text-center">
+          ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Saves']}{i<arr.length-1?'-':''}</span>)})
+        </div>
       </div>
       );
     })}
