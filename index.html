@@ -2879,7 +2879,7 @@ return(
             <div className="max-w-6xl mx-auto">
               {isMultiplayer&&<div className="mb-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded-full text-xs font-bold animate-pulse"><span className="w-1.5 h-1.5 bg-white rounded-full"></span>LIVE</span>}
+                  {!matchEnded&&<span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded text-xs font-bold"><span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>LIVE</span>}
                   {matchEnded&&<span className="bg-gray-500 px-2 py-1 rounded-full text-xs font-bold">GAME ENDED</span>}
                   <span className="text-xs">👥 {connectedUsers}</span>
                   {!isViewer&&viewerCount>0&&<span className="text-xs">👁️ {viewerCount}</span>}
