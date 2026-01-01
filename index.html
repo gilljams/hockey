@@ -91,6 +91,7 @@ try{
       const [connectedUsers,setConnectedUsers]=useState(1);
       const [isMultiplayer,setIsMultiplayer]=useState(false);
       const [expandedGoalieStats,setExpandedGoalieStats]=useState({home: false, away: false});
+      const [selectedGoalieStats,setSelectedGoalieStats]=useState({home: 'total', away: 'total'});
       const [gameMode,setGameMode]=useState(localStorage.getItem('gameMode')||'single');
       const [matchEnded,setMatchEnded]=useState(false);
       const [sparkleStats,setSparkleStats]=useState({});
@@ -231,8 +232,8 @@ const IconChevronUp = () => (
       awayScore: stats?.[p]?.awayScore ?? 0,
       homeSaves: stats?.[p]?.homeSaves ?? 0,
       awaySaves: stats?.[p]?.awaySaves ?? 0,
-      homeGoalie: stats?.[p]?.homeGoalie ?? {starter:{saves:0},backup:{saves:0}},
-      awayGoalie: stats?.[p]?.awayGoalie ?? {starter:{saves:0},backup:{saves:0}}
+      homeGoalie: stats?.[p]?.homeGoalie ?? {starter:{saves:0,ga:0},backup:{saves:0,ga:0}},
+      awayGoalie: stats?.[p]?.awayGoalie ?? {starter:{saves:0,ga:0},backup:{saves:0,ga:0}}
     };
   }
   return normalized;
@@ -269,10 +270,11 @@ const IconChevronUp = () => (
       // Reset all game state
       const resetGameState = () => {
         setPeriodStats({
-  1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0},backup:{saves:0}},awayGoalie:{starter:{saves:0},backup:{saves:0}}},
-  2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0},backup:{saves:0}},awayGoalie:{starter:{saves:0},backup:{saves:0}}},
-  3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0},backup:{saves:0}},awayGoalie:{starter:{saves:0},backup:{saves:0}}}
+  1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
+  2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
+  3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}}
 });
+
 setPlayerStats({home:{players:{}},away:{players:{}}});
 setCurrentPeriod(1);
 setMatchEnded(false);
@@ -1557,6 +1559,9 @@ const AdminPanel = ({ darkMode, setScreen }) => {
   );
 };
 
+
+
+
 const updateStat=(team,stat,delta)=>{
   if(isViewer)return;
   if(isMultiplayer&&!currentUser){
@@ -1567,23 +1572,42 @@ const updateStat=(team,stat,delta)=>{
   if(!ns[currentPeriod]) {
     ns[currentPeriod]={
       homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,
-      homeGoalie:{starter:{saves:0},backup:{saves:0}},
-      awayGoalie:{starter:{saves:0},backup:{saves:0}}
+      homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},
+      awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}
     };
   }
   
-  // Om det är saves, uppdatera både legacy och goalie-specifik data
-  if(stat==='Saves'){
-    const activeGoalie=activeGoalies[team];
-    if(!ns[currentPeriod][team+'Goalie']){
-      ns[currentPeriod][team+'Goalie']={starter:{saves:0},backup:{saves:0}};
-    }
-    ns[currentPeriod][team+'Goalie'][activeGoalie].saves=Math.max(0,(ns[currentPeriod][team+'Goalie'][activeGoalie].saves||0)+delta);
+  // Initiera goalie-data om det saknas
+  if(!ns[currentPeriod].homeGoalie){
+    ns[currentPeriod].homeGoalie={starter:{saves:0,ga:0},backup:{saves:0,ga:0}};
+  }
+  if(!ns[currentPeriod].awayGoalie){
+    ns[currentPeriod].awayGoalie={starter:{saves:0,ga:0},backup:{saves:0,ga:0}};
+  }
+  
+  // Om det är saves, uppdatera både totala saves OCH den aktiva målvaktens saves
+if(stat==='Saves'){
+  const activeGoalie = activeGoalies[team];
+  
+  // Uppdatera aktiv målvakts saves
+  ns[currentPeriod][team+'Goalie'][activeGoalie].saves = Math.max(0, (ns[currentPeriod][team+'Goalie'][activeGoalie].saves || 0) + delta);
+  
+  // Räkna om totala saves (båda målvakter tillsammans)
+  const totalSaves = (ns[currentPeriod][team+'Goalie'].starter.saves || 0) + (ns[currentPeriod][team+'Goalie'].backup.saves || 0);
+  ns[currentPeriod][team+stat] = totalSaves;
+}
+  // Om det är mål (Score), lägg till GA på motståndarlagets aktiva målvakt
+  else if(stat==='Score'){
+    ns[currentPeriod][team+stat]=Math.max(0,(ns[currentPeriod][team+stat]||0)+delta);
     
-    // Räkna totala saves för legacy-fältet
-    const totalSaves=(ns[currentPeriod][team+'Goalie'].starter.saves||0)+(ns[currentPeriod][team+'Goalie'].backup.saves||0);
-    ns[currentPeriod][team+stat]=totalSaves;
-  }else{
+    // Lägg till GA på motståndarlagets aktiva målvakt
+    if(delta > 0) { // Bara vid mål, inte vid minus
+      const oppTeam = team === 'home' ? 'away' : 'home';
+      const oppActiveGoalie = activeGoalies[oppTeam];
+      ns[currentPeriod][oppTeam+'Goalie'][oppActiveGoalie].ga = (ns[currentPeriod][oppTeam+'Goalie'][oppActiveGoalie].ga || 0) + delta;
+    }
+  }
+  else{
     ns[currentPeriod][team+stat]=Math.max(0,(ns[currentPeriod][team+stat]||0)+delta);
   }
   
@@ -2634,7 +2658,7 @@ if(screen==='create')return(
 
 if(focusMode&&screen==='game'){
   const homeTeam = goalFocusSwapped ? 'away' : 'home';
-  const awayTeam = goalFocusSwapped ? 'home' : 'away';
+ const awayTeam = goalFocusSwapped ? 'home' : 'away';
   const homeName_ = goalFocusSwapped ? awayName : homeName;
   const awayName_ = goalFocusSwapped ? homeName : awayName;
   const homeGoals = goalFocusSwapped ? totals.awayScore : totals.homeScore;
@@ -2644,19 +2668,12 @@ if(focusMode&&screen==='game'){
 
 
 
-
-
-  const renderGoalieCard = (team, name, goals, saves) => {
-  const teamColor = team === 'home' ? 'blue' : 'red';
-  const bgColor = darkMode ? 
-    (team === 'home' ? 'bg-blue-900 bg-opacity-30 border-blue-700' : 'bg-red-900 bg-opacity-30 border-red-700') :
-    (team === 'home' ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200');
-  
+const renderGoalieCard = (team, name, goals, saves) => {
   const activeGoalie = activeGoalies[team];
-  const currentPeriodGoalieData = periodStats[currentPeriod]?.[team+'Goalie'] ?? {starter:{saves:0},backup:{saves:0}};
-  const currentPeriodSaves = currentPeriodGoalieData[activeGoalie]?.saves ?? 0;
+  const currentPeriodGoalieData = periodStats[currentPeriod]?.[team+'Goalie'] ?? {starter:{saves:0,ga:0},backup:{saves:0,ga:0}};
+  const currentPeriodSaves = periodStats[currentPeriod]?.[team+'Saves'] ?? 0;
   
-  // Calculate total saves per goalie
+  // Calculate total saves per goalie across all periods
   const periodKeys = Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b));
   let starterTotalSaves = 0;
   let backupTotalSaves = 0;
@@ -2671,13 +2688,25 @@ if(focusMode&&screen==='game'){
   return (
     <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'} rounded-lg shadow-lg overflow-hidden border`}>
       {/* Topbar */}
-     <div className={`${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold`}>
+      <div className={`${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold`}>
         {name}
       </div>
 
       {/* Content */}
-      <div className="p-2">
-        {/* Goalie Toggle */}
+      <div className="p-4">
+        {/* Goals Section - Read Only */}
+        <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 mb-3`}>
+          <div className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>GOALS</div>
+          <div className="text-center">
+            <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>{periodStats[currentPeriod]?.[team+'Score'] ?? 0}</div>
+            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>of {goals}</div>
+          </div>
+          <div className={`text-xs text-center mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr) => <span key={p}>{periodStats[p][team+'Score']}{i<arr.length-1?'-':''}</span>)})
+          </div>
+        </div>
+
+        {/* Goalie Toggle - moved here */}
         <div className="mb-3 flex gap-1">
           <button
             onClick={() => setActiveGoalies(prev => ({...prev, [team]: 'starter'}))}
@@ -2703,25 +2732,11 @@ if(focusMode&&screen==='game'){
           </button>
         </div>
 
-       {/* Goals Section */}
-        <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 mb-3`}>
-          <div className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>GOALS</div>
-          <div className="flex items-center justify-center gap-3">
-
-            <div className="text-center">
-              <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>{periodStats[currentPeriod]?.[team+'Score'] ?? 0}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>of {goals}</div>
-            </div>
-     
-          </div>
-          <div className={`text-xs text-center mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr) => <span key={p}>{periodStats[p][team+'Score']}{i<arr.length-1?'-':''}</span>)})
-          </div>
-        </div>
-
         {/* Saves Section */}
         <div className={`${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50'} rounded-lg p-4 mb-3`}>
-          <div className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>SAVES - {activeGoalie === 'starter' ? 'Starter' : 'Backup'}</div>
+          <div className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
+            SAVES - {activeGoalie === 'starter' ? 'Starter' : 'Backup'}
+          </div>
           <div className="flex items-center justify-center gap-3">
             <button 
               onClick={() => updateStat(team, 'Saves', -1)} 
@@ -2731,8 +2746,12 @@ if(focusMode&&screen==='game'){
               −
             </button>
             <div className="text-center">
-              <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>{currentPeriodSaves}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>of {activeGoalie === 'starter' ? starterTotalSaves : backupTotalSaves}</div>
+              <div className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>
+                {currentPeriodGoalieData[activeGoalie]?.saves ?? 0}
+              </div>
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                of {activeGoalie === 'starter' ? starterTotalSaves : backupTotalSaves}
+              </div>
             </div>
             <button 
               onClick={() => updateStat(team, 'Saves', 1)} 
@@ -2754,6 +2773,156 @@ if(focusMode&&screen==='game'){
     </div>
   );
 };
+
+
+  {/* Statistics Section */}
+        <div className="space-y-3">
+          {[
+            {team: homeTeam, name: homeName_, goals: homeGoals, saves: homeSaves},
+            {team: awayTeam, name: awayName_, goals: awayGoals, saves: awaySaves}
+         ].map(teamStats => {
+  const selectedGoalie = selectedGoalieStats[teamStats.team];
+                        
+  const periodKeys = Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b));
+            
+            // Calculate per goalie per period
+            const tableData = periodKeys.map(p => {
+              const goalieData = periodStats[p]?.[teamStats.team+'Goalie'];
+              const starterSaves = goalieData?.starter?.saves ?? 0;
+              const starterGA = goalieData?.starter?.ga ?? 0;
+              const backupSaves = goalieData?.backup?.saves ?? 0;
+              const backupGA = goalieData?.backup?.ga ?? 0;
+              
+              return { 
+                period: p, 
+                starter: {
+                  saves: starterSaves,
+                  ga: starterGA,
+                  sog: starterSaves + starterGA,
+                  svsPct: (starterSaves + starterGA) === 0 ? '-' : ((starterSaves / (starterSaves + starterGA)) * 100).toFixed(1)
+                },
+                backup: {
+                  saves: backupSaves,
+                  ga: backupGA,
+                  sog: backupSaves + backupGA,
+                  svsPct: (backupSaves + backupGA) === 0 ? '-' : ((backupSaves / (backupSaves + backupGA)) * 100).toFixed(1)
+                }
+              };
+            });
+            
+            // Calculate totals per goalie
+            let starterTotalSaves = 0, starterTotalGA = 0;
+            let backupTotalSaves = 0, backupTotalGA = 0;
+            tableData.forEach(d => {
+              starterTotalSaves += d.starter.saves;
+              starterTotalGA += d.starter.ga;
+              backupTotalSaves += d.backup.saves;
+              backupTotalGA += d.backup.ga;
+            });
+            const starterTotalSOG = starterTotalSaves + starterTotalGA;
+            const backupTotalSOG = backupTotalSaves + backupTotalGA;
+            const starterTotalSvsPct = starterTotalSOG === 0 ? '-' : ((starterTotalSaves / starterTotalSOG) * 100).toFixed(1);
+            const backupTotalSvsPct = backupTotalSOG === 0 ? '-' : ((backupTotalSaves / backupTotalSOG) * 100).toFixed(1);
+            
+            const isExpanded = expandedGoalieStats[teamStats.team];
+            
+            // Choose which goalie's data to display
+            const displayData = selectedGoalie === 'starter' 
+              ? { tableData: tableData.map(d => ({period: d.period, ...d.starter})), total: {saves: starterTotalSaves, ga: starterTotalGA, sog: starterTotalSOG, svsPct: starterTotalSvsPct} }
+              : { tableData: tableData.map(d => ({period: d.period, ...d.backup})), total: {saves: backupTotalSaves, ga: backupTotalGA, sog: backupTotalSOG, svsPct: backupTotalSvsPct} };
+            
+            return (
+              <div key={teamStats.team} className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow-lg overflow-hidden`}>
+                {/* Toggle Header */}
+                <button
+                  onClick={() => setExpandedGoalieStats(prev => ({...prev, [teamStats.team]: !prev[teamStats.team]}))}
+                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} px-4 py-3 font-semibold text-left flex items-center justify-between transition-colors`}
+                >
+                  <span>{teamStats.name}</span>
+                  <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+                
+                {/* Goalie Toggle & Statistics Table - Collapsible */}
+                {isExpanded && (
+                  <div className="p-4">
+                    
+{/* Goalie Toggle */}
+                    <div className="mb-3 flex gap-1">
+                      <button
+  onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'starter'}))}
+                        className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+                          selectedGoalie === 'starter'
+                            ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+                            : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                        }`}
+                      >
+                        Starter
+                      </button>
+                      <button
+  onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'backup'}))}
+                        className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+                          selectedGoalie === 'backup'
+                            ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+                            : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                        }`}
+                      >
+                        Backup
+                      </button>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                      <table className={`w-full text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <thead>
+                          <tr className={`${darkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>
+                            <th className="text-left px-2 py-2">Stat</th>
+                            {periodKeys.map(p => (
+                              <th key={p} className="text-center px-1 py-2">
+                                {parseInt(p) <= 3 ? `P${p}` : 'OT'}
+                              </th>
+                            ))}
+                            <th className="text-center px-2 py-2 font-bold">Tot</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">GA</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs">{d.ga}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.ga}</td>
+                          </tr>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">SOG</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs">{d.sog}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.sog}</td>
+                          </tr>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">SVS</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs">{d.saves}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.saves}</td>
+                          </tr>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">SVS%</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs font-semibold">{d.svsPct}{d.svsPct !== '-' ? '%' : ''}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.svsPct}{displayData.total.svsPct !== '-' ? '%' : ''}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
@@ -2814,33 +2983,82 @@ if(focusMode&&screen==='game'){
           {renderGoalieCard(awayTeam, awayName_, awayGoals, awaySaves)}
         </div>
         
-       {/* Statistics Section */}
+   
+
+
+
+
+    {/* Statistics Section */}
         <div className="space-y-3">
           {[
             {team: homeTeam, name: homeName_, goals: homeGoals, saves: homeSaves},
             {team: awayTeam, name: awayName_, goals: awayGoals, saves: awaySaves}
           ].map(teamStats => {
+            const selectedGoalie = selectedGoalieStats[teamStats.team];
+            
             const periodKeys = Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b));
+            
+            // Calculate per goalie per period
             const tableData = periodKeys.map(p => {
-              const ps = periodStats[p];
-              const teamSaves = ps[teamStats.team+'Saves'] || 0;
-              const teamGoalsAgainst = (teamStats.team === 'home' ? ps.awayScore : ps.homeScore) || 0;
-              const teamGoals = ps[teamStats.team+'Score'] || 0;
-              const opponentTeamSaves = (teamStats.team === 'home' ? ps.awaySaves : ps.homeSaves) || 0;
-              const sog = teamGoals + opponentTeamSaves;
-              const shotsAgainst = teamSaves + teamGoalsAgainst;
-              const svsPct = shotsAgainst === 0 ? '-' : ((teamSaves / shotsAgainst) * 100).toFixed(1);
-              return { period: p, saves: teamSaves, ga: teamGoalsAgainst, sog, svsPct };
+              const goalieData = periodStats[p]?.[teamStats.team+'Goalie'];
+              const starterSaves = goalieData?.starter?.saves ?? 0;
+              const starterGA = goalieData?.starter?.ga ?? 0;
+              const backupSaves = goalieData?.backup?.saves ?? 0;
+              const backupGA = goalieData?.backup?.ga ?? 0;
+              
+              return { 
+                period: p, 
+                starter: {
+                  saves: starterSaves,
+                  ga: starterGA,
+                  sog: starterSaves + starterGA,
+                  svsPct: (starterSaves + starterGA) === 0 ? '-' : ((starterSaves / (starterSaves + starterGA)) * 100).toFixed(1)
+                },
+                backup: {
+                  saves: backupSaves,
+                  ga: backupGA,
+                  sog: backupSaves + backupGA,
+                  svsPct: (backupSaves + backupGA) === 0 ? '-' : ((backupSaves / (backupSaves + backupGA)) * 100).toFixed(1)
+                }
+              };
             });
             
-            const totalGoals = teamStats.goals;
-            const totalGA = teamStats.team === 'home' ? awayGoals : homeGoals;
-            const totalOpponentSaves = teamStats.team === 'home' ? awaySaves : homeSaves;
-            const totalSOG = totalGoals + totalOpponentSaves;
-            const totalShotsAgainst = teamStats.saves + totalGA;
-            const totalSvsPct = totalShotsAgainst === 0 ? '-' : ((teamStats.saves / totalShotsAgainst) * 100).toFixed(1);
+            // Calculate totals per goalie
+            let starterTotalSaves = 0, starterTotalGA = 0;
+            let backupTotalSaves = 0, backupTotalGA = 0;
+            tableData.forEach(d => {
+              starterTotalSaves += d.starter.saves;
+              starterTotalGA += d.starter.ga;
+              backupTotalSaves += d.backup.saves;
+              backupTotalGA += d.backup.ga;
+            });
+            const starterTotalSOG = starterTotalSaves + starterTotalGA;
+            const backupTotalSOG = backupTotalSaves + backupTotalGA;
+            const starterTotalSvsPct = starterTotalSOG === 0 ? '-' : ((starterTotalSaves / starterTotalSOG) * 100).toFixed(1);
+            const backupTotalSvsPct = backupTotalSOG === 0 ? '-' : ((backupTotalSaves / backupTotalSOG) * 100).toFixed(1);
             
             const isExpanded = expandedGoalieStats[teamStats.team];
+            
+           // Choose which goalie's data to display
+const displayData = selectedGoalie === 'total'
+  ? { 
+      tableData: tableData.map(d => ({
+        period: d.period, 
+        saves: d.starter.saves + d.backup.saves,
+        ga: d.starter.ga + d.backup.ga,
+        sog: d.starter.sog + d.backup.sog,
+        svsPct: (d.starter.sog + d.backup.sog) === 0 ? '-' : (((d.starter.saves + d.backup.saves) / (d.starter.sog + d.backup.sog)) * 100).toFixed(1)
+      })), 
+      total: {
+        saves: starterTotalSaves + backupTotalSaves, 
+        ga: starterTotalGA + backupTotalGA, 
+        sog: starterTotalSOG + backupTotalSOG, 
+        svsPct: (starterTotalSOG + backupTotalSOG) === 0 ? '-' : (((starterTotalSaves + backupTotalSaves) / (starterTotalSOG + backupTotalSOG)) * 100).toFixed(1)
+      }
+    }
+  : selectedGoalie === 'starter'
+              ? { tableData: tableData.map(d => ({period: d.period, ...d.starter})), total: {saves: starterTotalSaves, ga: starterTotalGA, sog: starterTotalSOG, svsPct: starterTotalSvsPct} }
+              : { tableData: tableData.map(d => ({period: d.period, ...d.backup})), total: {saves: backupTotalSaves, ga: backupTotalGA, sog: backupTotalSOG, svsPct: backupTotalSvsPct} };
             
             return (
               <div key={teamStats.team} className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow-lg overflow-hidden`}>
@@ -2853,58 +3071,99 @@ if(focusMode&&screen==='game'){
                   <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                 </button>
                 
-                {/* Statistics Table - Collapsible */}
-               {isExpanded && (
-                  <div className="overflow-x-auto">
-                    <table className={`w-full text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                      <thead>
-                        <tr className={`${darkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>
-                          <th className="text-left px-2 py-2">Stat</th>
-                          {periodKeys.map(p => (
-                            <th key={p} className="text-center px-1 py-2">
-                              {parseInt(p) <= 3 ? `P${p}` : 'OT'}
-                            </th>
-                          ))}
-                          <th className="text-center px-2 py-2 font-bold">Tot</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                          <td className="px-2 py-2 font-semibold text-left">SOG</td>
-                          {tableData.map(d => (
-                            <td key={d.period} className="text-center px-1 py-2 text-xs">{d.sog}</td>
-                          ))}
-                          <td className="text-center px-2 py-2 font-semibold">{totalSOG}</td>
-                        </tr>
-                        <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                          <td className="px-2 py-2 font-semibold text-left">GA</td>
-                          {tableData.map(d => (
-                            <td key={d.period} className="text-center px-1 py-2 text-xs">{d.ga}</td>
-                          ))}
-                          <td className="text-center px-2 py-2 font-semibold">{totalGA}</td>
-                        </tr>
-                        <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                          <td className="px-2 py-2 font-semibold text-left">SVS</td>
-                          {tableData.map(d => (
-                            <td key={d.period} className="text-center px-1 py-2 text-xs">{d.saves}</td>
-                          ))}
-                          <td className="text-center px-2 py-2 font-semibold">{teamStats.saves}</td>
-                        </tr>
-                        <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                          <td className="px-2 py-2 font-semibold text-left">SVS%</td>
-                          {tableData.map(d => (
-                            <td key={d.period} className="text-center px-1 py-2 text-xs font-semibold">{d.svsPct}{d.svsPct !== '-' ? '%' : ''}</td>
-                          ))}
-                          <td className="text-center px-2 py-2 font-semibold">{totalSvsPct}{totalSvsPct !== '-' ? '%' : ''}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                {/* Goalie Toggle & Statistics Table - Collapsible */}
+                {isExpanded && (
+                  <div className="p-4">
+
+
+
+{/* Goalie Toggle */}
+<div className="mb-3 flex gap-1">
+  <button
+    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'starter'}))}
+    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+      selectedGoalie === 'starter'
+        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+    }`}
+  >
+    Starter
+  </button>
+  <button
+    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'backup'}))}
+    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+      selectedGoalie === 'backup'
+        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+    }`}
+  >
+    Backup
+  </button>
+  <button
+    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'total'}))}
+    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+      selectedGoalie === 'total'
+        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+    }`}
+  >
+    Total
+  </button>
+</div>
+                    
+                    <div className="overflow-x-auto">
+                      <table className={`w-full text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                        <thead>
+                          <tr className={`${darkMode ? 'bg-gray-700 text-gray-100' : 'bg-gray-100 text-gray-800'}`}>
+                            <th className="text-left px-2 py-2">Stat</th>
+                            {periodKeys.map(p => (
+                              <th key={p} className="text-center px-1 py-2">
+                                {parseInt(p) <= 3 ? `P${p}` : 'OT'}
+                              </th>
+                            ))}
+                            <th className="text-center px-2 py-2 font-bold">Tot</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">GA</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs">{d.ga}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.ga}</td>
+                          </tr>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">SOG</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs">{d.sog}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.sog}</td>
+                          </tr>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">SVS</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs">{d.saves}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.saves}</td>
+                          </tr>
+                          <tr className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="px-2 py-2 font-semibold text-left">SVS%</td>
+                            {displayData.tableData.map(d => (
+                              <td key={d.period} className="text-center px-1 py-2 text-xs font-semibold">{d.svsPct}{d.svsPct !== '-' ? '%' : ''}</td>
+                            ))}
+                            <td className="text-center px-2 py-2 font-semibold">{displayData.total.svsPct}{displayData.total.svsPct !== '-' ? '%' : ''}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+
+
       </div>
     </div>
   );
@@ -3305,7 +3564,7 @@ return(
           <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`]?'sparkle':''}`}>
             {tm.score}
           </div>
-          <button onClick={()=>updateStat(tm.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">+x</button>
+          <button onClick={()=>updateStat(tm.team,'Score',1)} disabled={matchEnded||isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">+</button>
         </div>
         <div className="text-xs opacity-75 text-center">
           ({Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map((p,i,arr)=><span key={p} className={parseInt(p)===currentPeriod?'font-bold underline':''}>{periodStats[p][tm.team+'Score']}{i<arr.length-1?'-':''}</span>)})
