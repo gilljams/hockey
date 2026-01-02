@@ -1057,7 +1057,6 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
           </div>
         ) : filteredMatches.length === 0 ? (
           <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow p-8 text-center`}>
-            <div className="text-6xl mb-4">🏒</div>
             <h3 className="text-xl font-bold mb-2">No games yet</h3>
             <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
               {filter === 'active' ? 'No active games' : filter === 'ended' ? 'No ended games' : 'Create your first game to get started!'}
@@ -1142,7 +1141,7 @@ const MatchHistory = ({ darkMode, matches, loading, onJoinMatch, onBack }) => {
                       onClick={() => setExpandedMatches(prev => ({...prev, [match.id]: !prev[match.id]}))}
                       className={`px-3 py-2 rounded-lg font-semibold text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}`}
                     >
-                      {expandedMatches[match.id] ? '▲' : '▼'}
+                      {expandedMatches[match.id] ? <IconChevronUp /> : <IconChevronDown />}
                     </button>
                   </div>
 
@@ -1500,7 +1499,7 @@ const AdminPanel = ({ darkMode, setScreen }) => {
                }
                className="px-3 py-2 text-center cursor-pointer select-none"
                >
-               Created {sortDir === 'asc' ? '▲' : '▼'}
+               Created {sortDir === 'asc' ? <IconChevronDown /> : <IconChevronUp />}
               </th>
               <th className="px-3 py-2 whitespace-nowrap min-w-[120px]">Actions</th>
             </tr>
@@ -2000,7 +1999,7 @@ const renderPlayerTable=(team)=>{
   className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
 >
   <span>{teamName}</span>
-  <span className="text-xl">{collapsedPlayerTables[team] ? '▼' : '▲'}</span>
+  <span className="text-xl">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
 </button>
               
 {!collapsedPlayerTables[team] && (
@@ -2805,7 +2804,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
                   className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} px-4 py-3 font-semibold text-left flex items-center justify-between transition-colors`}
                 >
                   <span>{teamStats.name}</span>
-                  <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                  <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}><IconChevronDown /></span>
                 </button>
                 
                 {/* Goalie Toggle & Statistics Table - Collapsible */}
@@ -3038,7 +3037,7 @@ const displayData = selectedGoalie === 'total'
                   className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} px-4 py-3 font-semibold text-left flex items-center justify-between transition-colors`}
                 >
                   <span>{teamStats.name}</span>
-                  <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                  <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}><IconChevronDown /></span>
                 </button>
                 
                 {/* Goalie Toggle & Statistics Table - Collapsible */}
@@ -3777,7 +3776,8 @@ return(
                             className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
                           >
                             <span>Player Statistics</span>
-                            <span>{expandedPlayerStats[p]?'▲':'▼'}</span>
+                            
+                                <span>{expandedPlayerStats[p]?<IconChevronUp />:<IconChevronDown />}</span>
                           </button>
                           
                           {expandedPlayerStats[p]&&(
@@ -3891,7 +3891,7 @@ return(
                         className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between mb-3`}
                       >
                         <span>Total Player Statistics</span>
-                        <span>{expandedPlayerStats.total?'▲':'▼'}</span>
+                        <span>{expandedPlayerStats.total?<IconChevronUp />:<IconChevronDown />}</span>
                       </button>
                       
                       {expandedPlayerStats.total&&(
