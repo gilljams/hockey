@@ -2691,12 +2691,10 @@ const renderGoalieCard = (team, name, goals, saves) => {
         {/* Saves controls - same style as main screen */}
         <div className="flex items-center justify-center gap-3 mb-2">
 
-
-
           <button 
             onClick={() => updateStat(team, 'Saves', -1)} 
             disabled={matchEnded || isViewer}
-            className="bg-blue-600 bg-opacity-90 w-10 h-10 rounded flex items-center justify-center text-white text-xl font-bold hover:bg-opacity-30"
+            className="bg-[#6187E3] bg-opacity-80 w-10 h-10 rounded flex items-center justify-center text-white text-xl font-bold hover:bg-opacity-70"
           >
             −
           </button>
@@ -2706,7 +2704,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
           <button 
             onClick={() => updateStat(team, 'Saves', 1)} 
             disabled={matchEnded || isViewer}
-            className="bg-blue-600 bg-opacity-90 w-10 h-10 rounded flex items-center justify-center text-white text-xl font-bold hover:bg-opacity-30"
+            className="bg-[#6187E3] bg-opacity-80 w-10 h-10 rounded flex items-center justify-center text-white text-xl font-bold hover:bg-opacity-70"
           >
             +
           </button>
