@@ -1595,17 +1595,23 @@ if(stat==='Saves'){
   const totalSaves = (ns[currentPeriod][team+'Goalie'].starter.saves || 0) + (ns[currentPeriod][team+'Goalie'].backup.saves || 0);
   ns[currentPeriod][team+stat] = totalSaves;
 }
-  // Om det är mål (Score), lägg till GA på motståndarlagets aktiva målvakt
-  else if(stat==='Score'){
-    ns[currentPeriod][team+stat]=Math.max(0,(ns[currentPeriod][team+stat]||0)+delta);
-    
-    // Lägg till GA på motståndarlagets aktiva målvakt
-    if(delta > 0) { // Bara vid mål, inte vid minus
-      const oppTeam = team === 'home' ? 'away' : 'home';
-      const oppActiveGoalie = activeGoalies[oppTeam];
-      ns[currentPeriod][oppTeam+'Goalie'][oppActiveGoalie].ga = (ns[currentPeriod][oppTeam+'Goalie'][oppActiveGoalie].ga || 0) + delta;
-    }
-  }
+  else if (stat === 'Score') {
+  // Uppdatera lagets score
+  ns[currentPeriod][team + stat] = Math.max(
+    0,
+    (ns[currentPeriod][team + stat] || 0) + delta
+  );
+
+  // Uppdatera GA på motståndarlagets AKTIVA målvakt (både + och -)
+  const oppTeam = team === 'home' ? 'away' : 'home';
+  const oppActiveGoalie = activeGoalies[oppTeam];
+
+  const goalie =
+    ns[currentPeriod][oppTeam + 'Goalie'][oppActiveGoalie];
+
+  goalie.ga = Math.max(0, (goalie.ga || 0) + delta);
+}
+
   else{
     ns[currentPeriod][team+stat]=Math.max(0,(ns[currentPeriod][team+stat]||0)+delta);
   }
@@ -2901,7 +2907,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
 
 
  <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-            <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-3 shadow-lg sticky top-0 z-50`}>
+            <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-2 pb-1 shadow-lg sticky top-0 z-50`}>
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex gap-2 items-center flex-wrap">
