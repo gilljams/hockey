@@ -2684,10 +2684,10 @@ const renderGoalieCard = (team, name, goals, saves) => {
       {/* Content */}
       <div className="p-4">
         {/* Period info and total saves */}
-        <div className={`text-xs mb-2 text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        <div className={`text-sm mb-2 text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           <span className="opacity-75">Period {currentPeriod}</span>
           <span className="opacity-30 mx-1">·</span>
-          <span className="font-semibold">{currentPeriodSaves} {currentPeriodSaves === 1 ? 'save' : 'saves'}</span>
+          <span className="opacity-90 font-semibold">{currentPeriodSaves} {currentPeriodSaves === 1 ? 'save' : 'saves'}</span>
         </div>
         
         {/* Saves controls - same style as main screen */}
@@ -2695,7 +2695,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
           <button 
             onClick={() => updateStat(team, 'Saves', -1)} 
             disabled={matchEnded || isViewer}
-            className={`${darkMode?'bg-white bg-opacity-20':'bg-white bg-opacity-20'} w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30 disabled:opacity-50 transition-colors`}
+            className={`${darkMode?'bg-white bg-opacity-20':'bg-gradient-to-r from-blue-500 to-blue-600 bg-opacity-20 text-white'} w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30 disabled:opacity-50 transition-colors`}
           >
             −
           </button>
@@ -2705,7 +2705,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
           <button 
             onClick={() => updateStat(team, 'Saves', 1)} 
             disabled={matchEnded || isViewer}
-            className={`${darkMode?'bg-white bg-opacity-20':'bg-white bg-opacity-20'} w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30 disabled:opacity-50 transition-colors`}
+            className={`${darkMode?'bg-white bg-opacity-20':'bg-gradient-to-r from-blue-500 to-blue-600 bg-opacity-20 text-white'} w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30 disabled:opacity-50 transition-colors`}
           >
             +
           </button>
@@ -2733,7 +2733,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
                 : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             } disabled:opacity-50`}
           >
-            Switch goalie 
+            Switch Goalie 
           </button>
         </div>
       </div>
