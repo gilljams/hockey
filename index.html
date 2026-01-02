@@ -2935,13 +2935,14 @@ const renderGoalieCard = (team, name, goals, saves) => {
 </button>
 
 
+
           </div>
           <button
             onClick={() => setFocusMode(null)} 
             className={`${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1`}
           >
             <span className="text-lg"><IconBack /></span>
-            <span>Back</span>
+            <span className="hidden sm:inline">Back</span>
           </button>
         </div>
       </div>
