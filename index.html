@@ -1926,16 +1926,27 @@ const generateCSV=()=>{
       };
 
       const refSigs=[
-        {name:'Offside',description:'Arm raised straight up'},
-        {name:'Tripping',description:'Strike leg with hand'},
-        {name:'Holding',description:'Clasping wrist'},
-        {name:'High Sticking',description:'Two hands held high'},
-        {name:'Slashing',description:'Chopping motion'},
-        {name:'Icing',description:'Arms crossed at chest'},
-        {name:'Goal',description:'Both arms pointed at goal'},
-        {name:'No Goal',description:'Arms crossed overhead'},
-        {name:'Time Out',description:'Hands forming T'},
-        {name:'Penalty Shot',description:'Arms crossed then pointed'}
+          { name: 'Boarding', description: 'Right fist striking the open left palm' },
+            { name: 'Butt-Ending', description: 'Arms crossed at the chest, right hand open and left hand closed' },
+            { name: 'Charging', description: 'Arms crossed at the chest with closed fists' },
+            { name: 'Checking from Behind', description: 'Pushing motion in front of the chest with open hands' },
+            { name: 'Checking to the Head', description: 'Right open hand placed next to the right side of the head' },
+            { name: 'Clipping', description: 'Right fist placed next to the right knee' },
+            { name: 'Cross-Checking', description: 'Both fists extended forward at chest height' },
+            { name: 'Elbowing', description: 'Right elbow striking into the open left palm' },
+            { name: 'High-Sticking', description: 'Holding an imaginary stick high' },
+            { name: 'Holding', description: 'Right hand grasping the left wrist' },
+            { name: 'Interference', description: 'Arms crossed in front of the chest' },
+            { name: 'Illegal Hit', description: 'Right palm placed on the left side of the chest' },
+            { name: 'Kneeing', description: 'Right hand tapping the knee' },
+            { name: 'Roughing', description: 'Right fist held at shoulder height to the side' },
+            { name: 'Spearing', description: 'Imaginary stick thrust forward in front of the body' },
+            { name: 'Slashing', description: 'Chopping motion across the left forearm' },
+            { name: 'Penalty Shot', description: 'Arms crossed above the head' },
+            { name: 'Tripping', description: 'Striking the lower leg with the hand' },
+            { name: 'Icing', description: 'Arms crossed at the chest with open hands' },
+            { name: 'Goal', description: 'Left arm pointing toward the goal' },
+            { name: 'Time-Out', description: 'Hands forming a T shape' }
       ];
 
 if(showPlayerStats&&screen==='game'){
@@ -3967,9 +3978,9 @@ return(
             </div>}
 
             {activeTab==='referee'&&<div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                 {refSigs.map((sig,i)=>(
-                  <div key={i} className={`${darkMode?'bg-gray-800 border border-gray-600':'bg-gray-100 border-1 border-gray-200'} rounded-sm p-4 shadow`}>
+                  <div key={i} className={`${darkMode?'bg-gray-800 border border-gray-600':'bg-gray-100 border-1 border-gray-200'} rounded-sm p-2 shadow`}>
                     <h3 className={`text-lg font-bold mb-2 ${darkMode?'text-white':''}`}>{sig.name}</h3>
                     <p className={`${darkMode?'text-gray-300':'text-gray-700'}`}>{sig.description}</p>
                   </div>
