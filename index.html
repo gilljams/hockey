@@ -2008,7 +2008,12 @@ const renderPlayerTable=(team)=>{
               
 {!collapsedPlayerTables[team] && (
   <>
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto relative">
+  {/* Fade indicator at bottom */}
+  <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-800 to-transparent pointer-events-none z-10"></div>
+  
+  <table className={`w-full ${darkMode?'text-gray-200':''}`}>
+
       <table className={`w-full ${darkMode?'text-gray-200':''}`}>
         <thead className={`${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} sticky top-[1px] z-20`}>
           <tr>
