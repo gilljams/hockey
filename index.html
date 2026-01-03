@@ -2081,11 +2081,12 @@ const renderPlayerTable=(team)=>{
       </div>
       
       {/* Scroll indicator - only show when many players */}
-      {playerNums.length > 8 && (
-        <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-center pb-1`}>
-          <span className={`text-xs font-semibold ${darkMode?'text-gray-400':'text-gray-600'}`}>⬇ Scroll ⬇</span>
-        </div>
-      )}
+{playerNums.length > 8 && (
+  <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-start pb-1 pl-2`}>
+    <span className={`text-lg ${darkMode?'text-gray-400':'text-gray-600'}`}>⬇</span>
+  </div>
+)}
+
     </div>
     
     {!isViewer&&!matchEnded&&(
