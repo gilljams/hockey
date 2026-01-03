@@ -2010,7 +2010,7 @@ const renderPlayerTable=(team)=>{
   <>
     <div className="relative">
       <div 
-        className="overflow-x-auto max-h-[60vh] overflow-y-auto"
+        className="overflow-x-auto max-h-[70vh] overflow-y-auto"
         onScroll={(e) => {
           const target = e.target;
           const isBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 10;
@@ -2097,7 +2097,6 @@ const renderPlayerTable=(team)=>{
       )}
     </div>
 
-    </div>
     
     {!isViewer&&!matchEnded&&(
       <div className="p-3 border-t">
