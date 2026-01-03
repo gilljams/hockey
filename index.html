@@ -1927,53 +1927,37 @@ const generateCSV=()=>{
         },100);
       };
 
-      const refSigs = [
-
-   { 
+  const refSigs = [
+  { 
+    name: 'Crosschecking', 
+    description: 'A forward motion with both fists clenched extending from the chest',
+    image: 'images/ref_crosschecking.png'  
+  }, 
+  { 
     name: 'Checking from behind', 
-    description: '...',
+    description: 'A forward motion of both arms, with palms of the hands facing away from the body',
     image: 'images/ref_checking_from_behind.png'  
   },
   { 
-    name: 'Crosschecking', 
-    description: '...',
-    image: 'images/ref_crosschecking.png'  
-  },
-  { 
-    name: 'Delayed Penalty', 
-    description: '...',
-    image: 'images/ref_delayed_penalty.png'  
-  },
-  { 
-    name: 'Timeout', 
-    description: '...',
-    image: 'images/ref_time_out.png'  
-  },
-  { 
-    name: 'Icing', 
-    description: '...',
-    image: 'images/ref_icing.png'  
-  },
-  { 
     name: 'Interference', 
-    description: '...',
+    description: 'Crossed arms with closed fists stationary in front of the chest',
     image: 'images/ref_interference.png'  
   },
-  { 
-    name: 'Kneeing', 
-    description: '...',
-    image: 'images/ref_kneeing.png'  
-  },
-  { 
-    name: 'Roughing', 
-    description: '...',
-    image: 'images/ref_roughing.png'  
-  },        
   { 
     name: 'Elbowing', 
     description: 'Tapping either elbow with the opposite hand',
     image: 'images/ref_elbowing.png'  
+  }, 
+  { 
+    name: 'Kneeing', 
+    description: 'Slapping either knee with the palm of the hand',
+    image: 'images/ref_kneeing.png'  
   },
+  { 
+    name: 'Roughing', 
+    description: 'Fist clenched and arm extended out of the side of the body',
+    image: 'images/ref_roughing.png'  
+  },     
   { 
     name: 'Illegal Hit', 
     description: 'Hand on opposite chest',
@@ -1983,6 +1967,21 @@ const generateCSV=()=>{
     name: 'Penalty Shot', 
     description: 'Arms crossed above head',
     image: 'images/ref_penalty_shot.png'  
+  },
+  { 
+    name: 'Delayed Penalty', 
+    description: 'Arm extended fully above head',
+    image: 'images/ref_delayed_penalty.png'  
+  },
+  { 
+    name: 'Icing', 
+    description: 'The back linesman signals an icing by fully extending either arm over the head. It is then washed out or called with this sign',
+    image: 'images/ref_icing.png'  
+  },  
+  { 
+    name: 'Timeout', 
+    description: 'Using both ands to form a T in front of the chest',
+    image: 'images/ref_time_out.png'  
   }
 ];
 
@@ -4099,4 +4098,5 @@ return(
   </script>
 </body>
 </html>
+
 
