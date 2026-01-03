@@ -3969,12 +3969,22 @@ return(
             </div>}
 
            {activeTab === 'referee' && <div>
-  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-2">
+  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 p-2">
     {refSigs.map((sig, i) => (
       <div 
         key={i} 
-        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-3 shadow-md hover:shadow-lg transition-shadow cursor-pointer relative group`}
+        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-2 shadow-md hover:shadow-lg transition-shadow cursor-pointer relative group`}
         title={`${sig.name}: ${sig.description}`}
+        onClick={() => {
+          const modal = document.getElementById('refModal');
+          const modalImg = document.getElementById('refModalImg');
+          const modalTitle = document.getElementById('refModalTitle');
+          const modalDesc = document.getElementById('refModalDesc');
+          modal.style.display = 'flex';
+          modalImg.src = sig.image;
+          modalTitle.textContent = sig.name;
+          modalDesc.textContent = sig.description;
+        }}
       >
         <div className="w-full aspect-square flex items-center justify-center">
           <img
@@ -3984,7 +3994,7 @@ return(
           />
         </div>
         
-        {/* Tooltip som visas UNDER vid hover */}
+        {/* Tooltip som visas UNDER vid hover på desktop */}
         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 hidden md:block">
           <div className="font-bold">{sig.name}</div>
           <div className="text-xs">{sig.description}</div>
@@ -3992,11 +4002,40 @@ return(
         </div>
         
         {/* Rubrik under bilden (visas alltid på mobil) */}
-        <div className={`text-center mt-2 text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-800'} md:hidden`}>
+        <div className={`text-center mt-1 text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-800'} md:hidden`}>
           {sig.name}
         </div>
       </div>
     ))}
+  </div>
+  
+  {/* Modal för förstoring */}
+  <div 
+    id="refModal" 
+    className="hidden fixed inset-0 bg-black bg-opacity-75 items-center justify-center z-50 p-4"
+    onClick={(e) => {
+      if (e.target.id === 'refModal') {
+        document.getElementById('refModal').style.display = 'none';
+      }
+    }}
+  >
+    <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full relative`}>
+      <button 
+        className="absolute top-2 right-2 text-2xl font-bold text-gray-500 hover:text-gray-700"
+        onClick={() => document.getElementById('refModal').style.display = 'none'}
+      >
+        ×
+      </button>
+      <div className="flex items-center justify-center mb-4" style={{minHeight: '300px'}}>
+        <img
+          id="refModalImg"
+          alt="Referee signal"
+          className="max-w-full max-h-96 object-contain"
+        />
+      </div>
+      <h3 id="refModalTitle" className={`text-xl font-bold mb-2 text-center ${darkMode ? 'text-white' : 'text-gray-900'}`}></h3>
+      <p id="refModalDesc" className={`text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}></p>
+    </div>
   </div>
 </div>}
 
