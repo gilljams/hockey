@@ -2077,18 +2077,21 @@ const renderPlayerTable=(team)=>{
                       className={`w-6 h-6 rounded text-xs font-bold ${darkMode?'bg-red-900 bg-opacity-40 hover:bg-opacity-60 text-red-200':'bg-red-100 hover:bg-red-200 text-red-800'}`}
                     >×</button>
                   </td>
-                )}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-</div>
-{playerNums.length > 5 && (
-  <div className={`text-center py-2 text-xs ${darkMode?'text-gray-400':'text-gray-600'}`}>
-    ↓ Scroll for more players ↓
-  </div>
-)}
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Scroll indicator - only show when many players */}
+      {playerNums.length > 8 && (
+        <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-center pb-1`}>
+          <span className={`text-xs font-semibold ${darkMode?'text-gray-400':'text-gray-600'}`}>⬇ Scroll ⬇</span>
+        </div>
+      )}
+    </div>
 
     
     {!isViewer&&!matchEnded&&(
