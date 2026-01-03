@@ -2009,7 +2009,14 @@ const renderPlayerTable=(team)=>{
 {!collapsedPlayerTables[team] && (
   <>
     <div className="relative">
-      <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+      <div 
+        className="overflow-x-auto max-h-[60vh] overflow-y-auto"
+        onScroll={(e) => {
+          const target = e.target;
+          const isBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 10;
+          setScrolledToBottom(prev => ({...prev, [team]: isBottom}));
+        }}
+      >
         <table className={`w-full ${darkMode?'text-gray-200':''}`}>
           <thead className={`${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} sticky top-0 z-20`}>
             <tr>
@@ -2080,15 +2087,15 @@ const renderPlayerTable=(team)=>{
         </table>
       </div>
       
-      {/* Scroll indicator - only show when many players */}
-{playerNums.length > 8 && (
-  <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-center pb-2`}>
-    <div className="opacity-30">
-      <IconChevronDown />
+      {/* Scroll indicator - only show when many players AND not scrolled to bottom */}
+      {playerNums.length > 8 && !scrolledToBottom[team] && (
+        <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-center pb-2`}>
+          <div className="opacity-30">
+            <IconChevronDown />
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-
 
     </div>
     
