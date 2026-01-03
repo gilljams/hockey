@@ -2083,7 +2083,13 @@ const renderPlayerTable=(team)=>{
           })}
         </tbody>
       </table>
-    </div>
+</div>
+{playerNums.length > 5 && (
+  <div className={`text-center py-2 text-xs ${darkMode?'text-gray-400':'text-gray-600'}`}>
+    ↓ Scroll for more players ↓
+  </div>
+)}
+
     
     {!isViewer&&!matchEnded&&(
       <div className="p-3 border-t">
