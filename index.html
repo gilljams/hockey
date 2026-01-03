@@ -2082,10 +2082,13 @@ const renderPlayerTable=(team)=>{
       
       {/* Scroll indicator - only show when many players */}
 {playerNums.length > 8 && (
-  <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-start pb-1 pl-2`}>
-    <span className={`text-lg ${darkMode?'text-gray-400':'text-gray-600'}`}>⬇</span>
+  <div className={`absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t ${darkMode?'from-gray-800':'from-white'} to-transparent pointer-events-none flex items-end justify-center pb-2`}>
+    <div className="opacity-30">
+      <IconChevronDown />
+    </div>
   </div>
 )}
+
 
     </div>
     
