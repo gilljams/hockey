@@ -2584,68 +2584,82 @@ if(screen==='create')return(
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
               
-<button onClick={()=>setScreen('start')} className={`flex items-center gap-1 text-sm  ${darkMode?'text-gray-400':'text-gray-600'}`}><IconBack />
-  <span>Back</span></button>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setScreen('start')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                  }`}
+                  aria-label="Close"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
               <h2 className="text-2xl font-bold mb-6">New Game</h2>
               <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm mb-2">Home Team</label>
-
-                 
-<div className="relative">
-  <input
-    ref={homeTeamInputRef}
-    type="text"
-    value={homeName}
-    onChange={e => setHomeName(e.target.value)}
-    className={`w-full px-4 py-3 pr-10 border rounded-lg
-      ${darkMode
-        ? 'bg-gray-700 border-gray-600 text-white'
-        : 'border-gray-300'
-      }`}
-  />
-
-  {homeName === DEFAULT_HOME && (
-    <button
-      type="button"
-      onClick={() => setHomeName('')}
-      className="absolute right-3 top-1/2 -translate-y-1/2
-                 text-gray-400 hover:text-gray-600"
-      aria-label="Clear home team"
-    >
-      ×
-    </button>
-  )}
+                
+<div>
+  <label className="block text-sm mb-2">Home Team</label>
+  <div className="relative">
+    <input
+      type="text"
+      value={homeName}
+      onChange={e => setHomeName(e.target.value)}
+      placeholder="Enter home team name"
+      className={`w-full px-4 py-3 pr-10 border rounded-lg
+        ${darkMode
+          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+          : 'border-gray-300 placeholder-gray-400'
+        }`}
+    />
+    {homeName && (
+      <button
+        type="button"
+        onClick={() => setHomeName('')}
+        className="absolute right-3 top-1/2 -translate-y-1/2
+                   text-gray-400 hover:text-gray-600 text-xl font-light"
+        aria-label="Clear home team"
+      >
+        ×
+      </button>
+    )}
+  </div>
 </div>
-                </div>
-                <div>
-                  <label className="block text-sm mb-2">Away Team</label>
-                  <div className="relative">
-  <input
-    type="text"
-    value={awayName}
-    onChange={e => setAwayName(e.target.value)}
-    className={`w-full px-4 py-3 pr-10 border rounded-lg
-      ${darkMode
-        ? 'bg-gray-700 border-gray-600 text-white'
-        : 'border-gray-300'
-      }`}
-  />
 
-  {awayName && (
-    <button
-      type="button"
-      onClick={() => setAwayName('')}
-      className="absolute right-3 top-1/2 -translate-y-1/2
-                 text-gray-400 hover:text-gray-600"
-      aria-label="Clear away team"
-    >
-      ×
-    </button>
-  )}
+<div>
+  <label className="block text-sm mb-2">Away Team</label>
+  <div className="relative">
+    <input
+      type="text"
+      value={awayName}
+      onChange={e => setAwayName(e.target.value)}
+      placeholder="Enter away team name"
+      className={`w-full px-4 py-3 pr-10 border rounded-lg
+        ${darkMode
+          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+          : 'border-gray-300 placeholder-gray-400'
+        }`}
+    />
+    {awayName && (
+      <button
+        type="button"
+        onClick={() => setAwayName('')}
+        className="absolute right-3 top-1/2 -translate-y-1/2
+                   text-gray-400 hover:text-gray-600 text-xl font-light"
+        aria-label="Clear away team"
+      >
+        ×
+      </button>
+    )}
+  </div>
 </div>
-                </div>
+
+
               </div>
               <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START GAME</button>
             </div>
@@ -2653,38 +2667,57 @@ if(screen==='create')return(
         </div>
       );
 
-      if(screen==='created')return(
-        <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-          <div className="max-w-md w-full p-6">
-            <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold mb-2">Game Created</h2>
-              </div>
-              <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
-                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>📝 Editor Code (max 5 users)</p>
-                <div className="flex flex-col sm:flex-row items-stretch gap-3 mb-4">
-                  <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                    <div className={`text-3xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
-                  </div>
-                  <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">Copy</button>
-                </div>
-                
-                <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>👁️ Viewer Code (read-only)</p>
-                <div className="flex flex-col sm:flex-row items-stretch gap-3">
-                  <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 text-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                    <div className={`text-2xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}-V</div>
-                  </div>
-                  <button onClick={()=>navigator.clipboard.writeText(matchCode+'-V').then(()=>alert('Code copied!')).catch(()=>alert('Failed to copy'))} className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-4 rounded-lg font-semibold whitespace-nowrap">Copy</button>
-                </div>
-              </div>
 
-              {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
-              <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
-              <button onClick={()=>setScreen('start')} className={`w-full mt-3 ${darkMode?'text-gray-400':'text-gray-600'} py-2`}>Back</button>
+      if(screen==='created')return(
+  <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+    <div className="max-w-md w-full p-6">
+      <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
+        
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => setScreen('start')}
+            className={`p-2 rounded-lg transition-colors ${
+              darkMode 
+                ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' 
+                : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+            }`}
+            aria-label="Close"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold mb-2 -mt-2">Game Created</h2>
+        </div>
+        
+        <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
+          <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>📝 Editor Code (max 5 users)</p>
+          <div className="flex items-stretch gap-3 mb-6">
+            <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 flex items-center justify-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
+              <div className={`text-3xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
             </div>
+            <button onClick={copyCode} className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-lg font-semibold whitespace-nowrap">Copy</button>
+          </div>
+          
+          <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>👁️ Viewer Code (read-only)</p>
+          <div className="flex items-stretch gap-3">
+            <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-6 flex items-center justify-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
+              <div className={`text-2xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}-V</div>
+            </div>
+            <button onClick={()=>navigator.clipboard.writeText(matchCode+'-V').then(()=>alert('Code copied!')).catch(()=>alert('Failed to copy'))} className="bg-gray-600 hover:bg-gray-700 text-white px-6 rounded-lg font-semibold whitespace-nowrap">Copy</button>
           </div>
         </div>
-      );
+        
+        {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
+        
+        <button onClick={startMatch} className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
+      </div>
+    </div>
+  </div>
+);
 
       if(screen==='join')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
