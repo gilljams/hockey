@@ -2693,18 +2693,18 @@ if(screen==='create')return(
           <h2 className="text-2xl font-bold mb-2 -mt-2">Game Created</h2>
         </div>
         
-        <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-6 mb-6`}>
+        <div className={`${darkMode?'bg-gray-700':'bg-blue-50'} rounded-xl p-4 mb-4`}>
           <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>Editor Code (max 5 users)</p>
           <div className="flex items-stretch gap-3 mb-6">
-            <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-4 flex items-center justify-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
-              <div className={`text-xl font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
+            <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-3 px-3 flex items-center justify-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
+              <div className={`text-lg font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}</div>
             </div>
             <button onClick={copyCode} className="bg-gray-600 hover:bg-gray-700 text-white px-5 rounded-lg font-semibold whitespace-nowrap">Copy</button>
           </div>
           
           <p className={`text-sm font-semibold mb-3 ${darkMode?'text-gray-300':'text-gray-600'}`}>Viewer Code (read-only)</p>
           <div className="flex items-stretch gap-3">
-            <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-4 px-4 flex items-center justify-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
+            <div className={`flex-1 ${darkMode?'bg-gray-800':'bg-white'} rounded-lg py-3 px-3 flex items-center justify-center border-2 ${darkMode?'border-gray-600':'border-gray-200'}`}>
               <div className={`text-lg font-bold tracking-widest ${darkMode?'text-white':'text-gray-900'}`}>{matchCode}-V</div>
             </div>
             <button onClick={()=>navigator.clipboard.writeText(matchCode+'-V').then(()=>alert('Code copied!')).catch(()=>alert('Failed to copy'))} className="bg-gray-600 hover:bg-gray-700 text-white px-5 rounded-lg font-semibold whitespace-nowrap">Copy</button>
