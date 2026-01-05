@@ -1443,17 +1443,17 @@ const exitToStart=()=>{
             );
 };
 
-            const AdminPanel = ({darkMode, setScreen}) => {
+const AdminPanel = ({darkMode, setScreen}) => {
 
   const [sortDir, setSortDir] = React.useState('desc');
-            const [matches, setMatches] = React.useState({ });
+  const [matches, setMatches] = React.useState({ });
 
   React.useEffect(() => {
     if (!db) return;
 
-            const ref = db.ref('matches');
+    const ref = db.ref('matches');
     ref.on('value', snap => {
-              setMatches(snap.val() || {});
+      setMatches(snap.val() || {});
     });
 
     return () => ref.off();
@@ -1461,101 +1461,104 @@ const exitToStart=()=>{
 
   const deleteMatch = (id) => {
     if (!window.confirm(`Delete game ${id}?`)) return;
-            db.ref(`matches/${id}`).remove();
+    db.ref(`matches/${id}`).remove();
   };
 
   const toggleEnded = (id, ended) => {
-              db.ref(`matches/${id}`).update({ ended: !ended });
+    db.ref(`matches/${id}`).update({ ended: !ended });
   };
 
-            return (
-            <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-blue-600'} text-white p-4`}>
-                <div className="max-w-5xl mx-auto flex justify-between items-center">
-                  <h2 className="font-bold text-lg">Admin – Games</h2>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setScreen('start')}
-                      className="bg-white bg-opacity-20 px-3 py-2 rounded"
-                    >
-                      <IconBack />
-                    </button>
-                  </div>
-                </div>
-              </div>
+  return (
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-blue-600'} text-white p-4 sticky top-0 z-10`}>
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <h2 className="font-bold text-lg">Admin – Games</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setScreen('start')}
+              className="bg-white bg-opacity-20 px-3 py-2 rounded"
+            >
+              <IconBack />
+            </button>
+          </div>
+        </div>
+      </div>
 
-              <div className="max-w-5xl mx-auto p-4 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className={darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-200'}>
-                    <tr>
-                      <th className="px-3 py-2 text-left">Match ID</th>
+      <div className="max-w-6xl mx-auto p-4">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-200'}`}>
+              <tr>
+                <th className="px-3 py-3 text-left">Match ID</th>
+                <th className="px-3 py-3 text-left">Owner Email</th>
+                <th className="px-3 py-3 text-left">Home</th>
+                <th className="px-3 py-3 text-left">Away</th>
+                <th className="px-3 py-3">Status</th>
+                <th
+                  onClick={() =>
+                    setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
+                  }
+                  className="px-3 py-3 text-center cursor-pointer select-none"
+                >
+                  Created {sortDir === 'asc' ? <IconChevronDown /> : <IconChevronUp />}
+                </th>
+                <th className="px-3 py-3 whitespace-nowrap min-w-[120px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(matches).length === 0 && (
+                <tr>
+                  <td colSpan="7" className="text-center py-6 opacity-60">
+                    No games found
+                  </td>
+                </tr>
+              )}
 
-                      <th className="px-3 py-2 text-left">Home</th>
-                      <th className="px-3 py-2 text-left">Away</th>
-                      <th className="px-3 py-2">Status</th>
-                      <th
-                        onClick={() =>
-                          setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
-                        }
-                        className="px-3 py-2 text-center cursor-pointer select-none"
+              {Object.entries(matches)
+                .sort((a, b) => {
+                  const tA = a[1].createdAt || 0;
+                  const tB = b[1].createdAt || 0;
+                  return sortDir === 'asc' ? tA - tB : tB - tA;
+                })
+                .map(([id, m]) => (
+                  <tr
+                    key={id}
+                    className={`border-t ${darkMode ? 'border-gray-700 text-gray-200' : 'border-gray-300'}`}
+                  >
+                    <td className={`px-3 py-2 font-mono ${darkMode ? 'text-gray-200' : ''}`}>{id}</td>
+                    <td className={`px-3 py-2 ${darkMode ? 'text-gray-200' : ''}`}>{m.ownerEmail || '—'}</td>
+                    <td className={`px-3 py-2 ${darkMode ? 'text-gray-200' : ''}`}>{m.homeName || '—'}</td>
+                    <td className={`px-3 py-2 ${darkMode ? 'text-gray-200' : ''}`}>{m.awayName || '—'}</td>
+                    <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-200' : ''}`}>
+                      {m.ended ? 'Ended' : 'Active'}
+                    </td>
+                    <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-200' : ''}`}>
+                      {m.createdAt
+                        ? new Date(m.createdAt).toLocaleString()
+                        : '—'}
+                    </td>
+                    <td className="px-3 py-2 text-center space-x-2 whitespace-nowrap">
+                      <button
+                        onClick={() => toggleEnded(id, m.ended)}
+                        className="px-2 py-1 rounded bg-yellow-500 text-white"
                       >
-                        Created {sortDir === 'asc' ? <IconChevronDown /> : <IconChevronUp />}
-                      </th>
-                      <th className="px-3 py-2 whitespace-nowrap min-w-[120px]">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.keys(matches).length === 0 && (
-                      <tr>
-                        <td colSpan="4" className="text-center py-6 opacity-60">
-                          No games found
-                        </td>
-                      </tr>
-                    )}
-
-                    {Object.entries(matches)
-                      .sort((a, b) => {
-                        const tA = a[1].createdAt || 0;
-                        const tB = b[1].createdAt || 0;
-                        return sortDir === 'asc' ? tA - tB : tB - tA;
-                      })
-                      .map(([id, m]) => (
-                        <tr
-                          key={id}
-                          className={`border-t ${darkMode ? 'border-gray-700 text-gray-200' : 'border-gray-300'}`}
-                        >
-                          <td className={`px-3 py-2 font-mono ${darkMode ? 'text-gray-200' : ''}`}>{id}</td>
-                          <td className={`px-3 py-2 ${darkMode ? 'text-gray-200' : ''}`}>{m.homeName || '—'}</td>
-                          <td className={`px-3 py-2 ${darkMode ? 'text-gray-200' : ''}`}>{m.awayName || '—'}</td>
-                          <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-200' : ''}`}>
-                            {m.ended ? 'Ended' : 'Active'}
-                          </td>
-                          <td className={`px-3 py-2 text-center ${darkMode ? 'text-gray-200' : ''}`}>
-                            {m.createdAt
-                              ? new Date(m.createdAt).toLocaleString()
-                              : '—'}
-                          </td>
-                          <td className="px-3 py-2 text-center space-x-2 whitespace-nowrap">
-                            <button
-                              onClick={() => toggleEnded(id, m.ended)}
-                              className="px-2 py-1 rounded bg-yellow-500 text-white"
-                            >
-                              {m.ended ? '▶' : '⏹'}
-                            </button>
-                            <button
-                              onClick={() => deleteMatch(id)}
-                              className="px-2 py-1 rounded bg-red-600 text-white"
-                            >
-                              🗑
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            );
+                        {m.ended ? '▶' : '⏹'}
+                      </button>
+                      <button
+                        onClick={() => deleteMatch(id)}
+                        className="px-2 py-1 rounded bg-red-600 text-white"
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 
