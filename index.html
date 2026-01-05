@@ -1328,18 +1328,25 @@ const exitToStart=()=>{
               <div className="max-w-md w-full p-6">
                 <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
-                  <div>
-                    <button
-                      onClick={() => {
-                        onSuccess(); // This will close auth and go back to start
-                      }}
 
-                      className={`flex items-center gap-1 text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => onSuccess()}
+                      className={`p-2 rounded-lg transition-colors ${
+                        darkMode 
+                          ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' 
+                          : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                      }`}
+                      aria-label="Close"
                     >
-                      <IconBack />
-                      <span>Back</span>
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
                     </button>
                   </div>
+
+
 
                   <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
@@ -1413,24 +1420,22 @@ const exitToStart=()=>{
                   </form>
 
                   <div className="mt-6 text-center space-y-2">
-                    <button
-                      onClick={() => {
-                        setMode(mode === 'login' ? 'signup' : 'login');
-                        setError('');
-                      }}
-                      className={`text-sm ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
-                    >
-                      {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Login'}
-                    </button>
+                    <div className="text-sm text-center">
+  <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
+    {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+  </span>
+  <button
+    onClick={() => {
+      setMode(mode === 'login' ? 'signup' : 'login');
+      setError('');
+    }}
+    className={`font-semibold ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} hover:underline`}
+  >
+    {mode === 'login' ? 'Sign up' : 'Login'}
+  </button>
+</div>
 
-                    <div>
-                      <button
-                        onClick={() => setDarkMode(!darkMode)}
-                        className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}
-                      >
-                        {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-                      </button>
-                    </div>
+                
                   </div>
                 </div>
               </div>
@@ -2531,7 +2536,7 @@ if(screen==='start')return(
                 </button>
               </div>
               
-{/* Bottom section with dark mode, admin and logout */}
+{/* Bottom section with admin and logout */}
               <div className="mt-6 pt-6 border-t border-opacity-20 space-y-2">
                 {currentUser && isAdmin && (
                   <button 
@@ -2541,12 +2546,7 @@ if(screen==='start')return(
                     🔒 Admin Panel
                   </button>
                 )}
-                <button 
-                  onClick={()=>setDarkMode(!darkMode)} 
-                  className={`w-full text-sm ${darkMode?'text-gray-400 hover:text-gray-300':'text-gray-600 hover:text-gray-800'} py-2`}
-                >
-                  {darkMode?'☀️ Light Mode':'🌙 Dark Mode'}
-                </button>
+               
               </div>
             </div>
           </div>
@@ -2690,9 +2690,22 @@ if(screen==='create')return(
         <div className={`min-h-screen flex items-center justify-center ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-2xl shadow-2xl p-8`}>
-              <button onClick={()=>setScreen('start')} className={`flex items-center gap-1 text-sm  ${darkMode?'text-gray-400':'text-gray-600'}`}><IconBack />
-                  <span>Back</span></button>
-              <h2 className="text-2xl font-bold mb-6">Join Game</h2>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setScreen('start')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                  }`}
+                  aria-label="Close"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <h2 className="text-2xl font-bold mb-6 -mt-2">Join Game</h2>
  
              
               <div className={`${darkMode?'bg-gray-700 border-gray-600':'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6 text-sm`}>
@@ -2716,16 +2729,21 @@ if(screen==='create')return(
             {error&&<div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4 text-sm">
                 <div className="mb-2">{error}</div>
  {error.includes('logged in')&&(
-                  <button 
-                    onClick={()=>{
-                      setError('');
-                      setForceAuth(true);
-                      setScreen('start');
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold text-sm"
-                  >
-                    → Login Now
-                  </button>
+                  <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setScreen('start')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    darkMode 
+                      ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300' 
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                  }`}
+                  aria-label="Close"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
                 )}
               </div>}
               <button onClick={joinMatch} disabled={!(inputCode.length===6||(inputCode.length===8&&inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONNECT</button>
@@ -4133,8 +4151,3 @@ return(
   </script>
 </body>
 </html>
-
-
-
-
-
