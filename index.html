@@ -241,33 +241,40 @@ const IconChevronUp = () => (
   return normalized;
 };
 
-      const normalizePlayerStats = (stats) => {
-        const normalized = {
-          home: { players: {} },
-          away: { players: {} }
-        };
-        
-        ['home', 'away'].forEach(team => {
-          const players = stats?.[team]?.players ?? {};
-          Object.keys(players).forEach(playerNum => {
-            const player = players[playerNum];
-            normalized[team].players[playerNum] = {
-              periods: player?.periods ?? {},
-              total: {
-                'G': player?.total?.['G'] ?? 0,
-                'A': player?.total?.['A'] ?? 0,
-                'OnIce+': player?.total?.['OnIce+'] ?? 0,
-                'OnIce-': player?.total?.['OnIce-'] ?? 0,
-                'FO+': player?.total?.['FO+'] ?? 0,
-                'FO-': player?.total?.['FO-'] ?? 0,
-                'SOG': player?.total?.['SOG'] ?? 0
-              }
-            };
-          });
-        });
-        
-        return normalized;
+
+
+const normalizePlayerStats = (stats) => {
+  const normalized = {
+    home: { players: {} },
+    away: { players: {} }
+  };
+  
+  ['home', 'away'].forEach(team => {
+    const players = stats?.[team]?.players ?? {};
+    Object.keys(players).forEach(playerNum => {
+      const player = players[playerNum];
+      normalized[team].players[playerNum] = {
+        periods: player?.periods ?? {},
+        total: {
+          'G': player?.total?.['G'] ?? 0,
+          'A': player?.total?.['A'] ?? 0,
+          'OnIce+': player?.total?.['OnIce+'] ?? 0,
+          'OnIce-': player?.total?.['OnIce-'] ?? 0,
+          'FO+': player?.total?.['FO+'] ?? 0,
+          'FO-': player?.total?.['FO-'] ?? 0,
+          'SOG': player?.total?.['SOG'] ?? 0,
+          "2'": player?.total?.["2'"] ?? 0,
+          "5'": player?.total?.["5'"] ?? 0,
+          "10'": player?.total?.["10'"] ?? 0,
+          "20'": player?.total?.["20'"] ?? 0,
+          'PIM': player?.total?.['PIM'] ?? 0
+        }
       };
+    });
+  });
+  
+  return normalized;
+};
 
       // Reset all game state
       const resetGameState = () => {
@@ -4084,8 +4091,7 @@ return(
   <td className="text-center px-2 py-2">{foTotal}</td>
   <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
   <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
-  <td className="text-center px-2 py-2">{pim}</td>
-
+  <td className="text-center px-2 py-2">{pStats?.['PIM'] ?? 0}</td>
 </tr>
                                         );
                                       })}
