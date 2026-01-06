@@ -4073,6 +4073,8 @@ return(
                                         const foMinus=pStats?.['FO-']??0;
                                         const foTotal=foPlus+foMinus;
                                         const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
+                                                                                                              const pim=pStats?.['PIM']??0;
+
                                         return(
                                           <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'} text-sm`}>
   <td className="font-bold px-2 py-2">{pNum}</td>
@@ -4082,7 +4084,8 @@ return(
   <td className="text-center px-2 py-2">{foTotal}</td>
   <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
   <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
-  <td className="text-center px-2 py-2">{pStats?.['PIM']||0}</td>
+  <td className="text-center px-2 py-2">{pim}</td>
+
 </tr>
                                         );
                                       })}
@@ -4192,4 +4195,3 @@ return(
   </script>
 </body>
 </html>
-
