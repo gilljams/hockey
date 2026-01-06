@@ -3943,17 +3943,15 @@ return(
                                       <table className="w-full text-xs">
                                         <thead>
                                           <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
-                                            <th className="text-left">#</th>
-                                            <th className="text-center">G</th>
-                                            <th className="text-center">A</th>
-                                            <th className="text-center">+</th>
-                                            <th className="text-center">-</th>
-                                            <th className="text-center">+/-</th>
-                                            <th className="text-center">FO+</th>
-                                            <th className="text-center">FO-</th>
-                                            <th className="text-center">FO%</th>
-                                            <th className="text-center">SOG</th>
-                                          </tr>
+  <th className="text-left">#</th>
+  <th className="text-center">G</th>
+  <th className="text-center">A</th>
+  <th className="text-center">+/-</th>
+  <th className="text-center">FO</th>
+  <th className="text-center">FO%</th>
+  <th className="text-center">SOG</th>
+  <th className="text-center">PIM</th>
+</tr>
                                         </thead>
                                         <tbody>
                                           {playerNums.map(pNum=>{
@@ -3967,17 +3965,15 @@ return(
                                             const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
                                             return(
                                               <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                                                <td className="font-bold py-1">{pNum}</td>
-                                                <td className="text-center">{pStats?.['G']||0}</td>
-                                                <td className="text-center">{pStats?.['A']||0}</td>
-                                                <td className="text-center">{onIcePlus}</td>
-                                                <td className="text-center">{onIceMinus}</td>
-                                                <td className="text-center font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
-                                                <td className="text-center">{foPlus}</td>
-                                                <td className="text-center">{foMinus}</td>
-                                                <td className="text-center font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
-                                                <td className="text-center">{pStats?.['SOG']||0}</td>
-                                              </tr>
+  <td className="font-bold py-1">{pNum}</td>
+  <td className="text-center">{pStats?.['G']||0}</td>
+  <td className="text-center">{pStats?.['A']||0}</td>
+  <td className="text-center font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
+  <td className="text-center">{foTotal}</td>
+  <td className="text-center font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
+  <td className="text-center">{pStats?.['SOG']||0}</td>
+  <td className="text-center">{pStats?.['PIM']||0}</td>
+</tr>
                                             );
                                           })}
                                         </tbody>
@@ -4057,17 +4053,15 @@ return(
                                   <table className="w-full text-xs">
                                     <thead>
                                       <tr className={`${darkMode?'text-gray-400':'text-gray-600'}`}>
-                                        <th className="text-left">#</th>
-                                        <th className="text-center">G</th>
-                                        <th className="text-center">A</th>
-                                        <th className="text-center">+</th>
-                                        <th className="text-center">-</th>
-                                        <th className="text-center">+/-</th>
-                                        <th className="text-center">FO+</th>
-                                        <th className="text-center">FO-</th>
-                                        <th className="text-center">FO%</th>
-                                        <th className="text-center">SOG</th>
-                                      </tr>
+  <th className="text-left">#</th>
+  <th className="text-center">G</th>
+  <th className="text-center">A</th>
+  <th className="text-center">+/-</th>
+  <th className="text-center">FO</th>
+  <th className="text-center">FO%</th>
+  <th className="text-center">SOG</th>
+  <th className="text-center">PIM</th>
+</tr>
                                     </thead>
                                     <tbody>
                                       {playerNums.map(pNum=>{
@@ -4081,17 +4075,15 @@ return(
                                         const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
                                         return(
                                           <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'}`}>
-                                            <td className="font-bold py-1">{pNum}</td>
-                                            <td className="text-center">{pStats?.['G']??0}</td>
-                                            <td className="text-center">{pStats?.['A']??0}</td>
-                                            <td className="text-center">{onIcePlus}</td>
-                                            <td className="text-center">{onIceMinus}</td>
-                                            <td className="text-center font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
-                                            <td className="text-center">{foPlus}</td>
-                                            <td className="text-center">{foMinus}</td>
-                                            <td className="text-center font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
-                                            <td className="text-center">{pStats?.['SOG']??0}</td>
-                                          </tr>
+  <td className="font-bold py-1">{pNum}</td>
+  <td className="text-center">{pStats?.['G']||0}</td>
+  <td className="text-center">{pStats?.['A']||0}</td>
+  <td className="text-center font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
+  <td className="text-center">{foTotal}</td>
+  <td className="text-center font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
+  <td className="text-center">{pStats?.['SOG']||0}</td>
+  <td className="text-center">{pStats?.['PIM']||0}</td>
+</tr>
                                         );
                                       })}
                                     </tbody>
