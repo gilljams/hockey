@@ -3983,6 +3983,32 @@ return(
 </tr>
                                             );
                                           })}
+                                          {/* TOTAL ROW */}
+                                          {(() => {
+                                            let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
+                                            playerNums.forEach(pNum => {
+                                              const pStats = players[pNum].periods[p];
+                                              totalG += pStats?.['G'] || 0;
+                                              totalA += pStats?.['A'] || 0;
+                                              totalFOPlus += pStats?.['FO+'] || 0;
+                                              totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
+                                              totalSOG += pStats?.['SOG'] || 0;
+                                              totalPIM += pStats?.['PIM'] || 0;
+                                            });
+                                            const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
+                                            return (
+                                              <tr className={`border-t-2 ${darkMode?'border-gray-500 bg-gray-600':'border-gray-400 bg-gray-100'} text-sm font-bold`}>
+                                                <td className="px-2 py-2">TOT</td>
+                                                <td className="text-center px-2 py-2">{totalG}</td>
+                                                <td className="text-center px-2 py-2">{totalA}</td>
+                                                <td className="text-center px-2 py-2">-</td>
+                                                <td className="text-center px-2 py-2">{totalFO}</td>
+                                                <td className="text-center px-2 py-2">{teamFOPct}{teamFOPct!=='-'?'%':''}</td>
+                                                <td className="text-center px-2 py-2">{totalSOG}</td>
+                                                <td className="text-center px-2 py-2">{totalPIM}</td>
+                                              </tr>
+                                            );
+                                          })()}
                                         </tbody>
                                       </table>
                                     </div>
@@ -4080,7 +4106,7 @@ return(
                                         const foMinus=pStats?.['FO-']??0;
                                         const foTotal=foPlus+foMinus;
                                         const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
-                                                                                                              const pim=pStats?.['PIM']??0;
+                                        const pim=pStats?.['PIM']??0;
 
                                         return(
                                           <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'} text-sm`}>
@@ -4095,6 +4121,32 @@ return(
 </tr>
                                         );
                                       })}
+                                      {/* TOTAL ROW */}
+                                      {(() => {
+                                        let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
+                                        playerNums.forEach(pNum => {
+                                          const pStats = players[pNum].total;
+                                          totalG += pStats?.['G'] || 0;
+                                          totalA += pStats?.['A'] || 0;
+                                          totalFOPlus += pStats?.['FO+'] || 0;
+                                          totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
+                                          totalSOG += pStats?.['SOG'] || 0;
+                                          totalPIM += pStats?.['PIM'] || 0;
+                                        });
+                                        const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
+                                        return (
+                                          <tr className={`border-t-2 ${darkMode?'border-gray-500 bg-gray-600':'border-gray-400 bg-gray-100'} text-sm font-bold`}>
+                                            <td className="px-2 py-2">TOT</td>
+                                            <td className="text-center px-2 py-2">{totalG}</td>
+                                            <td className="text-center px-2 py-2">{totalA}</td>
+                                            <td className="text-center px-2 py-2">-</td>
+                                            <td className="text-center px-2 py-2">{totalFO}</td>
+                                            <td className="text-center px-2 py-2">{teamFOPct}{teamFOPct!=='-'?'%':''}</td>
+                                            <td className="text-center px-2 py-2">{totalSOG}</td>
+                                            <td className="text-center px-2 py-2">{totalPIM}</td>
+                                          </tr>
+                                        );
+                                      })()}
                                     </tbody>
                                   </table>
                                 </div>
