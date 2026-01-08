@@ -114,27 +114,13 @@
             3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
       });
             const [playerStats,setPlayerStats]=useState({
-  home:{players:{ }},
-  away:{players:{ }}
-});
-const [goals,setGoals]=useState({
-  home:[],
-  away:[]
-});
-const [showPlayerStats,setShowPlayerStats]=useState(false);
+              home:{players:{ }},
+            away:{players:{ }}
+      });
+            const [showPlayerStats,setShowPlayerStats]=useState(false);
             const [playerStatsEditMode,setPlayerStatsEditMode]=useState(false);
-const [playerStatsViewMode,setPlayerStatsViewMode]=useState('sideBySide');
-const [playerStatsMoment,setPlayerStatsMoment]=useState('FO/SOG');
-const [recordingGoal,setRecordingGoal]=useState(null);
-const [editingGoalId,setEditingGoalId]=useState(null);
-const [goalFormData,setGoalFormData]=useState({
-  situation:'EQ',
-  gameTime:'',
-  scorer:'',
-  assists:[],
-  onIcePlus:[],
-  onIceMinus:[]
-});
+            const [playerStatsViewMode,setPlayerStatsViewMode]=useState('sideBySide');
+            const [playerStatsMoment,setPlayerStatsMoment]=useState('FO/SOG');
             const [showAddPlayerModal,setShowAddPlayerModal]=useState(false);
             const [addPlayerTeam,setAddPlayerTeam]=useState('');
             const [addPlayerNumbers,setAddPlayerNumbers]=useState(['']);
@@ -158,8 +144,6 @@ const [goalFormData,setGoalFormData]=useState({
             const [isViewer,setIsViewer]=useState(false);
             const [viewerCount,setViewerCount]=useState(0);
             const [playingSound, setPlayingSound] = useState(null);
-
-
 
 
 const IconSettings = () => (
@@ -294,22 +278,21 @@ const normalizePlayerStats = (stats) => {
 
       // Reset all game state
       const resetGameState = () => {
-  setPeriodStats({
-    1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
-    2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
-    3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}}
-  });
+        setPeriodStats({
+  1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
+  2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
+  3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}}
+});
 
-  setPlayerStats({home:{players:{}},away:{players:{}}});
-  setGoals({home:[],away:[]});
-  setCurrentPeriod(1);
-  setMatchEnded(false);
-  setGoalFocusSwapped(false);
-  setActiveGoalies({home:'starter',away:'starter'});
-  setIsCreator(false);
-  setSparkleStats({});
-  setExpandedPlayerStats({});
-};
+setPlayerStats({home:{players:{}},away:{players:{}}});
+setCurrentPeriod(1);
+setMatchEnded(false);
+setGoalFocusSwapped(false);
+setActiveGoalies({home:'starter',away:'starter'});
+        setIsCreator(false);
+        setSparkleStats({});
+        setExpandedPlayerStats({});
+      };
 
       useEffect(() => {
         if (isViewer && screen === 'game') {
@@ -435,16 +418,15 @@ const normalizePlayerStats = (stats) => {
             if(saved){
     try {
       const gs=JSON.parse(saved);
-if(gs.currentPeriod && gs.periodStats && gs.homeName) {
-  setCurrentPeriod(gs.currentPeriod);
-  setHomeName(gs.homeName);
-  setAwayName(gs.awayName);
-  setPeriodStats(normalizePeriodStats(gs.periodStats));
-  if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
-  if(gs.goals) setGoals(gs.goals);
-  setGameMode('single');
-  setScreen('game');
-} else {
+            if(gs.currentPeriod && gs.periodStats && gs.homeName) {
+              setCurrentPeriod(gs.currentPeriod);
+            setHomeName(gs.homeName);
+            setAwayName(gs.awayName);
+            setPeriodStats(normalizePeriodStats(gs.periodStats));
+            if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
+            setGameMode('single');
+            setScreen('game');
+      } else {
               localStorage.removeItem('juniorLeagueGame');
       }
     } catch(e) {
@@ -465,11 +447,11 @@ if(gs.currentPeriod && gs.periodStats && gs.homeName) {
       useEffect(()=>{localStorage.setItem('externalLinkTitle', externalLinkTitle)},[externalLinkTitle]);
       useEffect(()=>{localStorage.setItem('defaultHomeRoster', defaultHomeRoster)},[defaultHomeRoster]);
       useEffect(()=>{
-  if(!isMultiplayer&&screen==='game'){
-    const gs={currentPeriod, homeName, awayName, periodStats, playerStats, goals, timestamp:new Date().toISOString()};
-    localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
-  }
-},[currentPeriod,homeName,awayName,periodStats,playerStats,goals,isMultiplayer,screen]);
+        if(!isMultiplayer&&screen==='game'){
+          const gs={currentPeriod, homeName, awayName, periodStats, playerStats, timestamp:new Date().toISOString()};
+            localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
+        }
+      },[currentPeriod,homeName,awayName,periodStats,playerStats,isMultiplayer,screen]);
       useEffect(() => {
         if (screen === 'create') {
               setTimeout(() => {
@@ -563,13 +545,12 @@ useEffect(() => {
           }
           
           if(d){
-  setPeriodStats(normalizePeriodStats(d.periodStats));
-  setCurrentPeriod(d.currentPeriod ?? 1);
-  setHomeName(d.homeName ?? 'HOME TEAM');
-  setAwayName(d.awayName ?? 'AWAY TEAM');
-  setMatchEnded(d.ended ?? false);
-  setPlayerStats(normalizePlayerStats(d.playerStats));
-  setGoals(d.goals ?? {home:[],away:[]});
+            setPeriodStats(normalizePeriodStats(d.periodStats));
+            setCurrentPeriod(d.currentPeriod ?? 1);
+            setHomeName(d.homeName ?? 'HOME TEAM');
+            setAwayName(d.awayName ?? 'AWAY TEAM');
+            setMatchEnded(d.ended ?? false);
+            setPlayerStats(normalizePlayerStats(d.playerStats));
             setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
                  setIsCreator(d.creatorId === userId.current);
@@ -798,7 +779,6 @@ const startMatch=()=>{
       3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
     },
     playerStats:{home:{players:{}},away:{players:{}}},
-    goals:{home:[],away:[]},
     ended:false,
     createdAt:Date.now(),
     creatorId:userId.current,
@@ -1729,421 +1709,8 @@ const updateStat=(team,stat,delta)=>{
   if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
 };
 
-
-
-// Parse comma/space separated input into array
-
-// Goal management functions
-const saveGoal = () => {
-  if(isViewer || matchEnded) return;
-  if(isMultiplayer && !currentUser) {
-    alert('You must be logged in to edit multiplayer games');
-    return;
-  }
-
-  const team = recordingGoal;
-  if(!team) return;
-
-  // Validate that we have at least a scorer
-  if(!goalFormData.scorer) {
-    alert('Please select a goal scorer');
-    return;
-  }
-
-  const goalId = editingGoalId || `goal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const goalData = {
-    id: goalId,
-    period: currentPeriod,
-    timestamp: Date.now(),
-    gameTime: goalFormData.gameTime || '',
-    situation: goalFormData.situation || 'EQ',
-    scorer: goalFormData.scorer,
-    assists: goalFormData.assists.filter(a => a),
-    onIcePlus: goalFormData.onIcePlus,
-    onIceMinus: goalFormData.onIceMinus
-  };
-
-  // Update goals
-  const newGoals = structuredClone(goals);
-  
-  // Ensure team array exists
-  if(!newGoals[team]) {
-    newGoals[team] = [];
-  }
-  
-  if(editingGoalId) {
-    // Edit existing goal
-    const idx = newGoals[team].findIndex(g => g.id === editingGoalId);
-    if(idx !== -1) {
-      // Remove old goal's stats first
-      recalculateStatsFromGoals(newGoals[team].filter(g => g.id !== editingGoalId), team);
-      newGoals[team][idx] = goalData;
-    }
-  } else {
-    // Add new goal
-    newGoals[team].push(goalData);
-  }
-
-setGoals(newGoals);
-
-  // Recalculate ALL stats from ALL goals for ALL periods
-  const newPlayerStats = structuredClone(playerStats);
-  
-  // Reset ALL goal-related stats for ALL periods
-  ['home', 'away'].forEach(t => {
-    Object.keys(newPlayerStats[t].players).forEach(pNum => {
-      const player = newPlayerStats[t].players[pNum];
-      Object.keys(player.periods).forEach(p => {
-        player.periods[p]['G'] = 0;
-        player.periods[p]['A'] = 0;
-        player.periods[p]['OnIce+'] = 0;
-        player.periods[p]['OnIce-'] = 0;
-        player.periods[p]['SOG'] = 0;
-      });
-    });
-  });
-  
-  // Recalculate from ALL goals for BOTH teams
-  ['home', 'away'].forEach(t => {
-    const allGoalsForTeam = newGoals[t];
-    if(allGoalsForTeam && allGoalsForTeam.length > 0) {
-      recalculateStatsFromGoalsWithState(allGoalsForTeam, t, newPlayerStats);
-    }
-  });
-  
-  setPlayerStats(newPlayerStats);
-
-  // NOTE: Team score is NOT automatically updated - must be done manually on main screen
-  // This keeps team-level and player-level tracking independent
-
-  // Reset form
-  setRecordingGoal(null);
-  setEditingGoalId(null);
-  setGoalFormData({
-    situation:'EQ',
-    gameTime:'',
-    scorer:'',
-    assists:[],
-    onIcePlus:[],
-    onIceMinus:[]
-  });
-
-  if(isMultiplayer && matchRef.current) {
-    matchRef.current.update({
-      goals: newGoals,
-      playerStats: newPlayerStats
-    });
-  }
-};
-
-const deleteGoal = (team, goalId) => {
-  if(isViewer || matchEnded) return;
-  if(!window.confirm('Delete this goal? All associated stats will be removed.')) return;
-
-  const newGoals = structuredClone(goals);
-  const goal = newGoals[team].find(g => g.id === goalId);
-  
-  if(!goal) return;
-
-  // Remove goal
-  newGoals[team] = newGoals[team].filter(g => g.id !== goalId);
-  setGoals(newGoals);
-
-  // Remove stats associated with this goal
-  const newPlayerStats = structuredClone(playerStats);
-  
-  // Remove scorer stats
-  if(goal.scorer && newPlayerStats[team]?.players?.[goal.scorer]) {
-    const p = newPlayerStats[team].players[goal.scorer];
-    if(p.periods[goal.period]) {
-      p.periods[goal.period]['G'] = Math.max(0, (p.periods[goal.period]['G'] || 0) - 1);
-      p.periods[goal.period]['SOG'] = Math.max(0, (p.periods[goal.period]['SOG'] || 0) - 1);
-    }
-    // Recalculate total
-    p.total['G'] = 0;
-    p.total['SOG'] = 0;
-    Object.keys(p.periods).forEach(per => {
-      p.total['G'] += p.periods[per]['G'] || 0;
-      p.total['SOG'] += p.periods[per]['SOG'] || 0;
-    });
-  }
-
-  // Remove assist stats
-  goal.assists.forEach(assistNum => {
-    if(assistNum && newPlayerStats[team]?.players?.[assistNum]) {
-      const p = newPlayerStats[team].players[assistNum];
-      if(p.periods[goal.period]) {
-        p.periods[goal.period]['A'] = Math.max(0, (p.periods[goal.period]['A'] || 0) - 1);
-      }
-      // Recalculate total
-      p.total['A'] = 0;
-      Object.keys(p.periods).forEach(per => {
-        p.total['A'] += p.periods[per]['A'] || 0;
-      });
-    }
-  });
-
-  // Remove OnIce+ stats
-  goal.onIcePlus.forEach(playerNum => {
-    if(playerNum && newPlayerStats[team]?.players?.[playerNum]) {
-      const p = newPlayerStats[team].players[playerNum];
-      if(p.periods[goal.period]) {
-        p.periods[goal.period]['OnIce+'] = Math.max(0, (p.periods[goal.period]['OnIce+'] || 0) - 1);
-      }
-      // Recalculate total
-      p.total['OnIce+'] = 0;
-      Object.keys(p.periods).forEach(per => {
-        p.total['OnIce+'] += p.periods[per]['OnIce+'] || 0;
-      });
-    }
-  });
-
-  // Remove OnIce- stats
-  const oppTeam = team === 'home' ? 'away' : 'home';
-  goal.onIceMinus.forEach(playerNum => {
-    if(playerNum && newPlayerStats[oppTeam]?.players?.[playerNum]) {
-      const p = newPlayerStats[oppTeam].players[playerNum];
-      if(p.periods[goal.period]) {
-        p.periods[goal.period]['OnIce-'] = Math.max(0, (p.periods[goal.period]['OnIce-'] || 0) - 1);
-      }
-      // Recalculate total
-      p.total['OnIce-'] = 0;
-      Object.keys(p.periods).forEach(per => {
-        p.total['OnIce-'] += p.periods[per]['OnIce-'] || 0;
-      });
-    }
-  });
-
-  setPlayerStats(newPlayerStats);
-
-  // NOTE: Team score is NOT automatically updated - must be done manually on main screen
-
-  if(isMultiplayer && matchRef.current) {
-    matchRef.current.update({goals: newGoals, playerStats: newPlayerStats});
-  }
-};
-
-const editGoal = (team, goalId) => {
-  const goal = goals[team]?.find(g => g.id === goalId);
-  if(!goal) return;
-
-  setRecordingGoal(team);
-  setEditingGoalId(goalId);
-  setGoalFormData({
-    situation: goal.situation || 'EQ',
-    gameTime: goal.gameTime || '',
-    scorer: goal.scorer || '',
-    assists: goal.assists || [],
-    onIcePlus: goal.onIcePlus || [],
-    onIceMinus: goal.onIceMinus || []
-  });
-};
-
-const recalculateStatsFromGoals = (teamGoals, team) => {
-  const newPlayerStats = structuredClone(playerStats);
-  const oppTeam = team === 'home' ? 'away' : 'home';
-  
-  teamGoals.forEach(goal => {
-    // Scorer gets G and SOG
-    if(goal.scorer) {
-      if(!newPlayerStats[team].players[goal.scorer]) {
-        newPlayerStats[team].players[goal.scorer] = {
-          periods: {},
-          total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-        };
-      }
-      if(!newPlayerStats[team].players[goal.scorer].periods[goal.period]) {
-        newPlayerStats[team].players[goal.scorer].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-      }
-      newPlayerStats[team].players[goal.scorer].periods[goal.period]['G']++;
-      newPlayerStats[team].players[goal.scorer].periods[goal.period]['SOG']++;
-    }
-
-    // Assists
-    goal.assists.forEach(assistNum => {
-      if(assistNum) {
-        if(!newPlayerStats[team].players[assistNum]) {
-          newPlayerStats[team].players[assistNum] = {
-            periods: {},
-            total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-          };
-        }
-        if(!newPlayerStats[team].players[assistNum].periods[goal.period]) {
-          newPlayerStats[team].players[assistNum].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-        }
-        newPlayerStats[team].players[assistNum].periods[goal.period]['A']++;
-      }
-    });
-
-    // OnIce+
-    goal.onIcePlus.forEach(playerNum => {
-      if(playerNum) {
-        if(!newPlayerStats[team].players[playerNum]) {
-          newPlayerStats[team].players[playerNum] = {
-            periods: {},
-            total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-          };
-        }
-        if(!newPlayerStats[team].players[playerNum].periods[goal.period]) {
-          newPlayerStats[team].players[playerNum].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-        }
-        newPlayerStats[team].players[playerNum].periods[goal.period]['OnIce+']++;
-      }
-    });
-
-    // OnIce-
-    const oppTeam = team === 'home' ? 'away' : 'home';
-    goal.onIceMinus.forEach(playerNum => {
-      if(playerNum) {
-        if(!newPlayerStats[oppTeam].players[playerNum]) {
-          newPlayerStats[oppTeam].players[playerNum] = {
-            periods: {},
-            total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-          };
-        }
-        if(!newPlayerStats[oppTeam].players[playerNum].periods[goal.period]) {
-          newPlayerStats[oppTeam].players[playerNum].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-        }
-        newPlayerStats[oppTeam].players[playerNum].periods[goal.period]['OnIce-']++;
-      }
-    });
-  });
-
- 
-
- // Recalculate totals (only for goal-related stats, preserve FO and PEN stats)
-  ['home', 'away'].forEach(t => {
-    Object.keys(newPlayerStats[t].players).forEach(pNum => {
-      const player = newPlayerStats[t].players[pNum];
-      // Reset only goal-related stats, keep FO and PEN stats
-      player.total['G'] = 0;
-      player.total['A'] = 0;
-      player.total['OnIce+'] = 0;
-      player.total['OnIce-'] = 0;
-      player.total['SOG'] = 0;
-      
-      Object.keys(player.periods).forEach(per => {
-        player.total['G'] += player.periods[per]['G'] || 0;
-        player.total['A'] += player.periods[per]['A'] || 0;
-        player.total['OnIce+'] += player.periods[per]['OnIce+'] || 0;
-        player.total['OnIce-'] += player.periods[per]['OnIce-'] || 0;
-        player.total['SOG'] += player.periods[per]['SOG'] || 0;
-      });
-    });
-  });
-
-  setPlayerStats(newPlayerStats);
-};
-
-
-
-const recalculateStatsFromGoalsWithState = (teamGoals, team, statsToUpdate) => {
-  const oppTeam = team === 'home' ? 'away' : 'home';
-  
-  teamGoals.forEach(goal => {
-    // Scorer gets G and SOG
-    if(goal.scorer) {
-      if(!statsToUpdate[team].players[goal.scorer]) {
-        statsToUpdate[team].players[goal.scorer] = {
-          periods: {},
-          total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-        };
-      }
-      if(!statsToUpdate[team].players[goal.scorer].periods[goal.period]) {
-        statsToUpdate[team].players[goal.scorer].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-      }
-      statsToUpdate[team].players[goal.scorer].periods[goal.period]['G']++;
-      statsToUpdate[team].players[goal.scorer].periods[goal.period]['SOG']++;
-    }
-
-    // Assists
-    goal.assists.forEach(assistNum => {
-      if(assistNum) {
-        if(!statsToUpdate[team].players[assistNum]) {
-          statsToUpdate[team].players[assistNum] = {
-            periods: {},
-            total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-          };
-        }
-        if(!statsToUpdate[team].players[assistNum].periods[goal.period]) {
-          statsToUpdate[team].players[assistNum].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-        }
-        statsToUpdate[team].players[assistNum].periods[goal.period]['A']++;
-      }
-    });
-
-    // OnIce+
-    goal.onIcePlus.forEach(playerNum => {
-      if(playerNum) {
-        if(!statsToUpdate[team].players[playerNum]) {
-          statsToUpdate[team].players[playerNum] = {
-            periods: {},
-            total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-          };
-        }
-        if(!statsToUpdate[team].players[playerNum].periods[goal.period]) {
-          statsToUpdate[team].players[playerNum].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-        }
-        statsToUpdate[team].players[playerNum].periods[goal.period]['OnIce+']++;
-      }
-    });
-
-    // OnIce-
-    goal.onIceMinus.forEach(playerNum => {
-      if(playerNum) {
-        if(!statsToUpdate[oppTeam].players[playerNum]) {
-          statsToUpdate[oppTeam].players[playerNum] = {
-            periods: {},
-            total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-          };
-        }
-        if(!statsToUpdate[oppTeam].players[playerNum].periods[goal.period]) {
-          statsToUpdate[oppTeam].players[playerNum].periods[goal.period] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-        }
-        statsToUpdate[oppTeam].players[playerNum].periods[goal.period]['OnIce-']++;
-      }
-    });
-  });
-
-  // Recalculate totals
-  ['home', 'away'].forEach(t => {
-    Object.keys(statsToUpdate[t].players).forEach(pNum => {
-      const player = statsToUpdate[t].players[pNum];
-      player.total['G'] = 0;
-      player.total['A'] = 0;
-      player.total['OnIce+'] = 0;
-      player.total['OnIce-'] = 0;
-      player.total['SOG'] = 0;
-      
-      Object.keys(player.periods).forEach(per => {
-        player.total['G'] += player.periods[per]['G'] || 0;
-        player.total['A'] += player.periods[per]['A'] || 0;
-        player.total['OnIce+'] += player.periods[per]['OnIce+'] || 0;
-        player.total['OnIce-'] += player.periods[per]['OnIce-'] || 0;
-        player.total['SOG'] += player.periods[per]['SOG'] || 0;
-      });
-    });
-  });
-};
-
-
-const cancelGoalRecording = () => {
-  setRecordingGoal(null);
-  setEditingGoalId(null);
-  setGoalFormData({
-    situation:'EQ',
-    gameTime:'',
-    scorer:'',
-    assists:[],
-    onIcePlus:[],
-    onIceMinus:[]
-  });
-};
-
 // Parse comma/space separated input into array
 const parsePlayerInput = (input) => {
-
-
   // Split by comma or space, filter empty, remove duplicates
   const nums = input
             .split(/[,\s]+/)
@@ -2456,33 +2023,27 @@ const statColumns={
         
 const activeColumns=statColumns[playerStatsMoment];
         
-
-
 const renderPlayerTable=(team)=>{
   const teamName=team==='home'?homeName:awayName;
   const players=playerStats?.[team]?.players??{};
   const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
   
-  // Check if we're in HG or AG mode
-  const isGoalMode = playerStatsMoment === 'HG' || playerStatsMoment === 'AG';
-  const isScoringTeam = (playerStatsMoment === 'HG' && team === 'home') || (playerStatsMoment === 'AG' && team === 'away');
-  const isOpponentTeam = (playerStatsMoment === 'HG' && team === 'away') || (playerStatsMoment === 'AG' && team === 'home');
-  
   // Determine which columns to show based on mode and team
   let columnsToShow = activeColumns;
-  if (playerStatsMoment === 'HG') {
-    columnsToShow = team === 'home' ? ['G', 'A', '+', 'SOG'] : ['-'];
-  } else if (playerStatsMoment === 'AG') {
-    columnsToShow = team === 'away' ? ['G', 'A', '+', 'SOG'] : ['-'];
-  }
+if (playerStatsMoment === 'HG') {
+  columnsToShow = team === 'home' ? ['G', 'A', '+'] : ['-'];
+} else if (playerStatsMoment === 'AG') {
+  columnsToShow = team === 'away' ? ['G', 'A', '+'] : ['-'];
+}
+// PEN mode shows all penalty columns for both teams (no special logic needed)
   
   // Map display column names to actual stat names
   const getActualStatName = (col) => {
-    if (col === '+') return 'OnIce+';
-    if (col === '-') return 'OnIce-';
-    // Penalty columns and PIM keep their names
-    return col;
-  };
+  if (col === '+') return 'OnIce+';
+  if (col === '-') return 'OnIce-';
+  // Penalty columns and PIM keep their names
+  return col;
+};
   
   return(
             <div
@@ -2505,7 +2066,6 @@ const renderPlayerTable=(team)=>{
   `}
 >
 
-
 <button 
   onClick={() => setCollapsedPlayerTables(prev => ({...prev, [team]: !prev[team]}))}
   className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
@@ -2513,286 +2073,42 @@ const renderPlayerTable=(team)=>{
   <span>{teamName}</span>
   <span className="text-xl">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
 </button>
-
-
-{/* Recent Goals & Add Goal - Only show for HG/AG modes and only for scoring team */}
-{!collapsedPlayerTables[team] && (playerStatsMoment === 'HG' || playerStatsMoment === 'AG') && isScoringTeam && (
-  <div className={`p-3 border-b ${darkMode?'border-gray-700':'border-gray-200'}`}>
-    {/* Recent Goals */}
-    {goals[team] && goals[team].filter(g => g.period === currentPeriod).length > 0 && (
-      <div className="mb-3">
-        <h4 className={`text-xs font-semibold mb-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>
-          Recent Goals (Period {currentPeriod})
-        </h4>
-        <div className="space-y-2">
-          {goals[team]
-            .filter(g => g.period === currentPeriod)
-            .sort((a, b) => b.timestamp - a.timestamp)
-            .map(goal => {
-              const assistText = goal.assists.length > 0 ? ` (A: ${goal.assists.join(', ')})` : '';
-              const timeText = goal.gameTime ? `${goal.gameTime} - ` : '';
-              return (
-                <div key={goal.id} className={`${darkMode?'bg-gray-700':'bg-gray-100'} rounded p-2 text-sm flex items-center justify-between`}>
-                  <div>
-                    <span className={`font-bold ${darkMode?'text-white':'text-gray-900'}`}>
-                      {timeText}{goal.situation} - #{goal.scorer}{assistText}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => editGoal(team, goal.id)}
-                      disabled={isViewer || matchEnded}
-                      className={`px-2 py-1 rounded text-xs font-semibold ${darkMode?'bg-blue-700 hover:bg-blue-600 text-white':'bg-blue-600 hover:bg-blue-700 text-white'}`}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => deleteGoal(team, goal.id)}
-                      disabled={isViewer || matchEnded}
-                      className={`px-2 py-1 rounded text-xs font-semibold ${darkMode?'bg-red-700 hover:bg-red-600 text-white':'bg-red-600 hover:bg-red-700 text-white'}`}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
-      </div>
-    )}
-    
-    {/* Info text about score tracking */}
-    {!recordingGoal && (
-      <div className={`text-xs ${darkMode?'text-gray-400':'text-gray-600'} mb-2 text-center italic`}>
-        💡 Goal registration tracks player stats only!
-      </div>
-    )}
-    
-    {/* Add Goal Button */}
-    {!recordingGoal && !isViewer && !matchEnded && (
-      <button
-        onClick={() => setRecordingGoal(team)}
-        className={`w-full ${darkMode?'bg-blue-700 hover:bg-blue-600':'bg-blue-600 hover:bg-blue-700'} text-white py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
-      >
-        <span>+ Add Goal</span>
-      </button>
-    )}
-    
-    {/* Info text when not recording */}
-    {!recordingGoal && goals[team] && goals[team].filter(g => g.period === currentPeriod).length === 0 && (
-      <div className={`text-center py-4 text-sm ${darkMode?'text-gray-400':'text-gray-500'}`}>
-        No goals recorded for Period {currentPeriod} yet
-      </div>
-    )}
-  </div>
-)}
-
-
-
-
               
 {!collapsedPlayerTables[team] && (
   <>
-    {/* Goal Recording Form - show once at the top when recording */}
-    {recordingGoal && isScoringTeam && (
-      <div>
-        {/* Yellow warning bar */}
-        <div className="bg-yellow-400 text-gray-900 px-4 py-2 font-bold text-sm">
-          {editingGoalId ? 'EDIT MODE' : 'NEW GOAL'} - Period {currentPeriod}
-        </div>
-        
-        <div className="p-3 space-y-3">
-          {/* Situation dropdown */}
-          <div>
-            <label className={`block text-xs font-semibold mb-1 ${darkMode?'text-gray-400':'text-gray-600'}`}>
-              Situation
-            </label>
-            <select
-              value={goalFormData.situation}
-              onChange={(e) => setGoalFormData(prev => ({...prev, situation: e.target.value}))}
-              className={`w-full px-3 py-2 border rounded ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
-            >
-              <option value="EQ">EQ - Even Strength</option>
-              <option value="PP">PP - Power Play</option>
-              <option value="PP2">PP2 - 5 on 3</option>
-              <option value="SH">SH - Shorthanded</option>
-              <option value="SH2">SH2 - 3 on 5</option>
-              <option value="EN">EN - Empty Net</option>
-            </select>
-          </div>
-          
-          {/* Game time */}
-          <div>
-            <label className={`block text-xs font-semibold mb-1 ${darkMode?'text-gray-400':'text-gray-600'}`}>
-              Game Time (optional)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 12:34"
-              value={goalFormData.gameTime}
-              onChange={(e) => setGoalFormData(prev => ({...prev, gameTime: e.target.value}))}
-              className={`w-full px-3 py-2 border rounded ${darkMode?'bg-gray-700 border-gray-600 text-white':'border-gray-300'}`}
-            />
-          </div>
-        </div>
-      </div>
-    )}
-    
-    {/* Only show table when NOT in goal mode OR when actively recording a goal */}
-    {(!isGoalMode || recordingGoal) && (
-      <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-        <table className={`w-full ${darkMode?'text-gray-200':''}`}>
-
-
+    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+      <table className={`w-full ${darkMode?'text-gray-200':''}`}>
         <thead className={`${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} sticky top-[1px] z-20`}>
-  <tr>
-    <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} z-10`}>#</th>
-    {recordingGoal ? (
-      // Goal recording mode headers
-      isScoringTeam ? (
-        <>
-          <th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>G</th>
-          <th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>A</th>
-          <th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>+</th>
-          <th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>SOG</th>
-        </>
-      ) : (
-        <th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>-</th>
-      )
-    ) : (
-      // Normal mode headers
-      <>
-        {columnsToShow.map(col=>(
-          <th key={col} className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>{col}</th>
-        ))}
-        {playerStatsEditMode&&<th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}></th>}
-      </>
-    )}
-  </tr>
-</thead>
-
-
- <tbody>
-  {playerNums.length===0?(
-    <tr>
-      <td colSpan={recordingGoal ? (isScoringTeam ? 5 : 2) : (columnsToShow.length+(playerStatsEditMode?2:1))} className={`text-center py-8 ${darkMode?'text-gray-400':'text-gray-500'}`}>
-        No players added yet
-      </td>
-    </tr>
-  ):playerNums.map(pNum=>{
-    // Goal recording mode
-    if(recordingGoal) {
-      if(isScoringTeam) {
-        // Scoring team: G, A, +, SOG columns
-        const isScorer = goalFormData.scorer === pNum;
-        const isAssist = goalFormData.assists.includes(pNum);
-        const isOnIcePlus = goalFormData.onIcePlus.includes(pNum);
-        const autoSOG = isScorer ? 1 : 0;
-        
-        return (
-          <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} ${darkMode?'hover:bg-gray-700':'hover:bg-gray-50'} transition-colors group`}>
-            <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} ${darkMode?'group-hover:bg-gray-700':'group-hover:bg-gray-50'} z-10 transition-colors`}>{pNum}</td>
-            
-            {/* G - Only one can be scorer */}
-            <td className="px-2 py-2 text-center">
-              <input
-                type="checkbox"
-                checked={isScorer}
-                onChange={(e) => {
-                  if(e.target.checked) {
-                    setGoalFormData(prev => ({...prev, scorer: pNum}));
-                  } else {
-                    setGoalFormData(prev => ({...prev, scorer: ''}));
-                  }
-                }}
-                className="w-4 h-4"
-              />
-            </td>
-            
-            {/* A - Multiple assists possible */}
-            <td className="px-2 py-2 text-center">
-              <input
-                type="checkbox"
-                checked={isAssist}
-                onChange={(e) => {
-                  if(e.target.checked) {
-                    setGoalFormData(prev => ({...prev, assists: [...prev.assists, pNum]}));
-                  } else {
-                    setGoalFormData(prev => ({...prev, assists: prev.assists.filter(a => a !== pNum)}));
-                  }
-                }}
-                className="w-4 h-4"
-              />
-            </td>
-            
-            {/* + (OnIce+) */}
-            <td className="px-2 py-2 text-center">
-              <input
-                type="checkbox"
-                checked={isOnIcePlus}
-                onChange={(e) => {
-                  if(e.target.checked) {
-                    setGoalFormData(prev => ({...prev, onIcePlus: [...prev.onIcePlus, pNum]}));
-                  } else {
-                    setGoalFormData(prev => ({...prev, onIcePlus: prev.onIcePlus.filter(p => p !== pNum)}));
-                  }
-                }}
-                className="w-4 h-4"
-              />
-            </td>
-            
-            {/* SOG - Auto calculated, read-only */}
-            <td className={`px-2 py-2 text-center text-xs ${darkMode?'text-gray-400':'text-gray-500'}`}>
-              {autoSOG}
-            </td>
+          <tr>
+            <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} z-10`}>#</th>
+            {columnsToShow.map(col=>(
+              <th key={col} className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>{col}</th>
+            ))}
+            {playerStatsEditMode&&<th className={`px-2 py-2 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}></th>}
           </tr>
-        );
-      } else {
-        // Opponent team: only - (OnIce-) column
-        const isOnIceMinus = goalFormData.onIceMinus.includes(pNum);
-        
-        return (
-          <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} ${darkMode?'hover:bg-gray-700':'hover:bg-gray-50'} transition-colors group`}>
-            <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} ${darkMode?'group-hover:bg-gray-700':'group-hover:bg-gray-50'} z-10 transition-colors`}>{pNum}</td>
+        </thead>
+        <tbody>
+          {playerNums.length===0?(
+            <tr>
+              <td colSpan={columnsToShow.length+(playerStatsEditMode?2:1)} className={`text-center py-8 ${darkMode?'text-gray-400':'text-gray-500'}`}>
+                No players added yet
+              </td>
+            </tr>
+          ):playerNums.map(pNum=>{
+            const pData=players[pNum];
+            const currentPeriodStats=pData?.periods?.[currentPeriod]??{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
             
-            {/* - (OnIce-) */}
-            <td className="px-2 py-2 text-center">
-              <input
-                type="checkbox"
-                checked={isOnIceMinus}
-                onChange={(e) => {
-                  if(e.target.checked) {
-                    setGoalFormData(prev => ({...prev, onIceMinus: [...prev.onIceMinus, pNum]}));
-                  } else {
-                    setGoalFormData(prev => ({...prev, onIceMinus: prev.onIceMinus.filter(p => p !== pNum)}));
-                  }
-                }}
-                className="w-4 h-4"
-              />
-            </td>
-          </tr>
-        );
-      }
-    }
-    
-    // Normal display mode
-    const pData=players[pNum];
-    const currentPeriodStats=pData?.periods?.[currentPeriod]??{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0};
-            
-          return(
+            return(
               <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} ${darkMode?'hover:bg-gray-700':'hover:bg-gray-50'} transition-colors group`}>
                 <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} ${darkMode?'group-hover:bg-gray-700':'group-hover:bg-gray-50'} z-10 transition-colors`}>{pNum}</td>
                 {columnsToShow.map(col=>{
   const actualStat = getActualStatName(col);
-const isPIM = col === 'PIM';
-// SOG is only goal-related in HG/AG modes, editable in FO/SOG mode
-const isGoalRelated = ['G', 'A', 'OnIce+', 'OnIce-'].includes(actualStat) || 
-                      (actualStat === 'SOG' && (playerStatsMoment === 'HG' || playerStatsMoment === 'AG'));
+  const isPIM = col === 'PIM';
   
   return (
     <td key={col} className="px-2 py-2">
       <div className="flex items-center justify-center gap-1">
-        {playerStatsEditMode && !isPIM && !isGoalRelated && (
+        {playerStatsEditMode && !isPIM && (
           <button
             onClick={()=>updatePlayerStat(team,pNum,actualStat,-1)}
             disabled={matchEnded||isViewer}
@@ -2800,14 +2116,14 @@ const isGoalRelated = ['G', 'A', 'OnIce+', 'OnIce-'].includes(actualStat) ||
           >−</button>
         )}
         <div
-          onClick={isPIM || isGoalRelated ? undefined : ()=>updatePlayerStat(team,pNum,actualStat,1)}
+          onClick={isPIM ? undefined : ()=>updatePlayerStat(team,pNum,actualStat,1)}
           className={`min-w-[2rem] h-6 px-2 rounded text-xs font-bold flex items-center justify-center ${
-            isPIM || isGoalRelated
+            isPIM 
               ? (darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-600 cursor-default')
               : (matchEnded||isViewer)
                 ? (darkMode ? 'bg-blue-900 bg-opacity-40 text-blue-200 cursor-not-allowed' : 'bg-blue-100 text-blue-800 cursor-not-allowed')
                 : (darkMode ? 'bg-blue-900 bg-opacity-40 hover:bg-opacity-60 text-blue-200 cursor-pointer' : 'bg-blue-100 hover:bg-blue-200 text-blue-800 cursor-pointer')
-          } ${!isPIM && !isGoalRelated && sparkleStats[`${team}${pNum}${actualStat}${currentPeriod}`]?'sparkle':''}`}
+          } ${!isPIM && sparkleStats[`${team}${pNum}${actualStat}${currentPeriod}`]?'sparkle':''}`}
         >
           {currentPeriodStats[actualStat]||0}
         </div>
@@ -2837,10 +2153,9 @@ const isGoalRelated = ['G', 'A', 'OnIce+', 'OnIce-'].includes(actualStat) ||
           })}
         </tbody>
       </table>
-      </div>
-    )}
+    </div>
     
-    {!isViewer&&!matchEnded&&!isGoalMode&&(
+    {!isViewer&&!matchEnded&&(
       <div className="p-3 border-t">
         <button
           onClick={()=>{setAddPlayerTeam(team);setShowAddPlayerModal(true)}}
@@ -2915,12 +2230,13 @@ return(
                 </div>
                 
                 <div className="flex gap-2 items-center flex-wrap">
-  
+                  
 {[
   {key:'HG',label:window.innerWidth >= 640 ? 'Home Goal' : 'HG'},
   {key:'AG',label:window.innerWidth >= 640 ? 'Away Goal' : 'AG'},
   {key:'FO/SOG',label:'FO/SOG'},
-  {key:'PEN',label:'PEN'}
+  {key:'PEN',label:'PEN'},
+  {key:'All',label:'All'}
 ].map(m=>(
   <button
     key={m.key}
@@ -2976,51 +2292,19 @@ return(
     (playerStatsMoment === 'HG' || playerStatsMoment === 'AG' || playerStatsMoment === 'FO/SOG')
       ? {
           gridTemplateColumns:
-            // In goal recording mode, show both teams side by side
-            recordingGoal
-              ? (playerStatsMoment === 'HG' ? '2fr 1fr' : '1fr 2fr')
-              // Not recording, only show relevant team
-              : playerStatsMoment === 'FO/SOG'
-              ? '1fr 1fr'
-              : '1fr'
+            playerStatsMoment === 'HG'
+              ? '2fr 1fr'   // HOME bred, AWAY smal
+              : playerStatsMoment === 'AG'
+              ? '1fr 2fr'   // AWAY bred, HOME smal
+              : '1fr 1fr'   // FO/SOG - 50/50
         }
       : undefined
   }
 >
-    {/* In HG/AG mode, only show opponent team when recording goal */}
-    {(playerStatsMoment === 'HG' || playerStatsMoment === 'AG') ? (
-      <>
-        {(playerStatsMoment === 'HG' || recordingGoal) && renderPlayerTable('home')}
-        {(playerStatsMoment === 'AG' || recordingGoal) && renderPlayerTable('away')}
-      </>
-    ) : (
-      <>
-        {renderPlayerTable('home')}
-        {renderPlayerTable('away')}
-      </>
-    )}
+    {renderPlayerTable('home')}
+    {renderPlayerTable('away')}
   </div>
             </div>
-
-{/* Sticky Save/Cancel buttons when recording goal */}
-{recordingGoal && (
-  <div className={`fixed bottom-0 left-0 right-0 ${darkMode?'bg-gray-800 border-t border-gray-700':'bg-white border-t border-gray-200'} p-4 shadow-lg z-50`}>
-    <div className="max-w-7xl mx-auto flex gap-3">
-      <button
-        onClick={cancelGoalRecording}
-        className={`flex-1 ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}
-      >
-        Cancel
-      </button>
-      <button
-        onClick={saveGoal}
-        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
-      >
-        {editingGoalId ? 'Update' : 'Save'}
-      </button>
-    </div>
-  </div>
-)}
 
 {showAddPlayerModal&&(
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
