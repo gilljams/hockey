@@ -2506,7 +2506,13 @@ const renderPlayerTable=(team)=>{
 >
 
 
-
+<button 
+  onClick={() => setCollapsedPlayerTables(prev => ({...prev, [team]: !prev[team]}))}
+  className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
+>
+  <span>{teamName}</span>
+  <span className="text-xl">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
+</button>
 
 
 {/* Recent Goals & Add Goal - Only show for HG/AG modes and only for scoring team */}
@@ -2582,13 +2588,7 @@ const renderPlayerTable=(team)=>{
 )}
 
 
-<button 
-  onClick={() => setCollapsedPlayerTables(prev => ({...prev, [team]: !prev[team]}))}
-  className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
->
-  <span>{teamName}</span>
-  <span className="text-xl">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
-</button>
+
 
               
 {!collapsedPlayerTables[team] && (
