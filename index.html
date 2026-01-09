@@ -2497,8 +2497,11 @@ return(
           // Update player stats
           const newStats=structuredClone(playerStats);
           
-          // Process all selected players
-          [...goalScorers,...goalAssists,...goalPlusPlayers,...goalMinusPlayers,...goalSOGPlayers].forEach(playerId=>{
+         // Get unique player IDs
+          const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...goalMinusPlayers,...goalSOGPlayers]);
+          
+          // Process each unique player once
+          allPlayerIds.forEach(playerId=>{
             const [team,pNum]=playerId.split('-');
             
             if(!newStats[team])newStats[team]={players:{}};
@@ -2513,7 +2516,7 @@ return(
               newStats[team].players[pNum].periods[currentPeriod]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
             }
             
-            // Add stats
+            // Add stats (each player processed exactly once)
             if(goalScorers.includes(playerId)){
               newStats[team].players[pNum].periods[currentPeriod]['G']+=1;
             }
@@ -2530,7 +2533,7 @@ return(
               newStats[team].players[pNum].periods[currentPeriod]['SOG']+=1;
             }
           });
-          
+                   
           // Recalculate totals
           Object.keys(newStats).forEach(team=>{
             Object.keys(newStats[team].players).forEach(pNum=>{
