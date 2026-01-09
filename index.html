@@ -131,6 +131,11 @@
             const [goalSituation,setGoalSituation]=useState('EQ');
             const [goalTime,setGoalTime]=useState('');
             const [goalEvents,setGoalEvents]=useState([]);
+            const [goalScorers,setGoalScorers]=useState([]);
+            const [goalAssists,setGoalAssists]=useState([]);
+            const [goalPlusPlayers,setGoalPlusPlayers]=useState([]);
+            const [goalMinusPlayers,setGoalMinusPlayers]=useState([]);
+            const [goalSOGPlayers,setGoalSOGPlayers]=useState([]);
             const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
             const [introPlaying,setIntroPlaying]=useState(false);
             const matchRef=useRef(null);
@@ -2021,10 +2026,9 @@ if(showPlayerStats&&screen==='game'){
 const statColumns={
   'Goal':['G','A','+','-'],
   'FO/SOG':['FO+','FO-','SOG'],
-  'Penalty':["2'","5'","10'","20'"],
-  'All':['G','A','+','-','FO+','FO-','SOG','PIM']
+  'Penalty':["2'","5'","10'","20'"]
 };
-        
+             
 const activeColumns=statColumns[playerStatsMoment];
         
 const renderPlayerTable=(team)=>{
@@ -2099,7 +2103,61 @@ const renderPlayerTable=(team)=>{
                 {columnsToShow.map(col=>{
   const actualStat = getActualStatName(col);
   const isPIM = col === 'PIM';
+  const isGoalMode = playerStatsMoment === 'Goal' && goalWizardStep === 2;
   
+  // Goal wizard checkbox mode
+  if (isGoalMode && !isPIM) {
+    const isChecked = 
+      (col === 'G' && goalScorers.includes(`${team}-${pNum}`)) ||
+      (col === 'A' && goalAssists.includes(`${team}-${pNum}`)) ||
+      (col === '+' && goalPlusPlayers.includes(`${team}-${pNum}`)) ||
+      (col === '-' && goalMinusPlayers.includes(`${team}-${pNum}`)) ||
+      (col === 'SOG' && goalSOGPlayers.includes(`${team}-${pNum}`));
+    
+    const toggleCheckbox = () => {
+      const playerId = `${team}-${pNum}`;
+      if (col === 'G') {
+        setGoalScorers(prev => 
+          prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+        );
+        // Auto-check SOG when G is checked
+        if (!goalSOGPlayers.includes(playerId)) {
+          setGoalSOGPlayers(prev => [...prev, playerId]);
+        }
+      } else if (col === 'A') {
+        setGoalAssists(prev => 
+          prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+        );
+      } else if (col === '+') {
+        setGoalPlusPlayers(prev => 
+          prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+        );
+      } else if (col === '-') {
+        setGoalMinusPlayers(prev => 
+          prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+        );
+      } else if (col === 'SOG') {
+        setGoalSOGPlayers(prev => 
+          prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+        );
+      }
+    };
+    
+    return (
+      <td key={col} className="px-2 py-2">
+        <div className="flex items-center justify-center">
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={toggleCheckbox}
+            className="w-5 h-5 cursor-pointer"
+          />
+        </div>
+      </td>
+    );
+  }
+  
+  // Normal mode (original code)
   return (
     <td key={col} className="px-2 py-2">
       <div className="flex items-center justify-center gap-1">
@@ -2228,8 +2286,7 @@ return(
                   
 {[
   {key:'FO/SOG',label:'FO/SOG'},
-  {key:'Penalty',label:'Penalty'},
-  {key:'All',label:'All'}
+  {key:'Penalty',label:'Penalty'}
 ].map(m=>(
   <button
     key={m.key}
@@ -2400,7 +2457,7 @@ return(
       Recording goal for: {recordingGoal==='home'?homeName:awayName} ({goalSituation}) {goalTime && `at ${goalTime}`}
     </div>
     
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid gap-2" style={{gridTemplateColumns:'2fr 1fr'}}>
       {renderPlayerTable(recordingGoal==='home'?'home':'away')}
       {renderPlayerTable(recordingGoal==='home'?'away':'home')}
     </div>
@@ -2416,19 +2473,90 @@ return(
       </button>
       <button
         onClick={()=>{
+          if(isViewer)return;
+          if(isMultiplayer&&!currentUser){
+            alert('You must be logged in to edit multiplayer games');
+            return;
+          }
+          
+          // Save goal event
           const newEvent={
             team:recordingGoal,
             situation:goalSituation,
             time:goalTime,
             period:currentPeriod,
-            timestamp:Date.now()
+            timestamp:Date.now(),
+            scorers:goalScorers,
+            assists:goalAssists,
+            plus:goalPlusPlayers,
+            minus:goalMinusPlayers,
+            sog:goalSOGPlayers
           };
           setGoalEvents([...goalEvents,newEvent]);
-          setGoalWizardStep(0);
+          
+          // Update player stats
+          const newStats=structuredClone(playerStats);
+          
+          // Process all selected players
+          [...goalScorers,...goalAssists,...goalPlusPlayers,...goalMinusPlayers,...goalSOGPlayers].forEach(playerId=>{
+            const [team,pNum]=playerId.split('-');
+            
+            if(!newStats[team])newStats[team]={players:{}};
+            if(!newStats[team].players)newStats[team].players={};
+            if(!newStats[team].players[pNum]){
+              newStats[team].players[pNum]={
+                periods:{},
+                total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
+              };
+            }
+            if(!newStats[team].players[pNum].periods[currentPeriod]){
+              newStats[team].players[pNum].periods[currentPeriod]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
+            }
+            
+            // Add stats
+            if(goalScorers.includes(playerId)){
+              newStats[team].players[pNum].periods[currentPeriod]['G']+=1;
+            }
+            if(goalAssists.includes(playerId)){
+              newStats[team].players[pNum].periods[currentPeriod]['A']+=1;
+            }
+            if(goalPlusPlayers.includes(playerId)){
+              newStats[team].players[pNum].periods[currentPeriod]['OnIce+']+=1;
+            }
+            if(goalMinusPlayers.includes(playerId)){
+              newStats[team].players[pNum].periods[currentPeriod]['OnIce-']+=1;
+            }
+            if(goalSOGPlayers.includes(playerId)){
+              newStats[team].players[pNum].periods[currentPeriod]['SOG']+=1;
+            }
+          });
+          
+          // Recalculate totals
+          Object.keys(newStats).forEach(team=>{
+            Object.keys(newStats[team].players).forEach(pNum=>{
+              const player=newStats[team].players[pNum];
+              ['G','A','OnIce+','OnIce-','SOG'].forEach(stat=>{
+                player.total[stat]=0;
+                Object.keys(player.periods).forEach(p=>{
+                  player.total[stat]+=player.periods[p][stat]||0;
+                });
+              });
+            });
+          });
+          
+          setPlayerStats(newStats);
+          if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
+          
+          // Reset and stay in Goal mode
+          setGoalWizardStep(1);
           setRecordingGoal(null);
           setGoalSituation('EQ');
           setGoalTime('');
-          setPlayerStatsMoment('FO/SOG');
+          setGoalScorers([]);
+          setGoalAssists([]);
+          setGoalPlusPlayers([]);
+          setGoalMinusPlayers([]);
+          setGoalSOGPlayers([]);
         }}
         className={darkMode?'bg-green-700 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold':'bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold'}
       >
