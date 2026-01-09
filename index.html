@@ -136,6 +136,7 @@
             const [goalPlusPlayers,setGoalPlusPlayers]=useState([]);
             const [goalMinusPlayers,setGoalMinusPlayers]=useState([]);
             const [goalSOGPlayers,setGoalSOGPlayers]=useState([]);
+            const [editingGoalIndex,setEditingGoalIndex]=useState(null);
             const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
             const [introPlaying,setIntroPlaying]=useState(false);
             const matchRef=useRef(null);
@@ -1655,7 +1656,17 @@ const updateStat=(team,stat,delta)=>{
 };
 
 
-
+// Sync goalEvents when they change
+useEffect(()=>{
+  if(isMultiplayer && matchRef.current && !matchEnded){
+    matchRef.current.update({goalEvents:goalEvents});
+  } else if(!isMultiplayer && screen==='game'){
+    // Save to localStorage for single-player
+    const gs=JSON.parse(localStorage.getItem('juniorLeagueGame')||'{}');
+    gs.goalEvents=goalEvents;
+    localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
+  }
+},[goalEvents,isMultiplayer,matchEnded,screen]);
 
       const updatePlayerStat=(team,playerNum,stat,delta)=>{
   if(isViewer||matchEnded)return;
@@ -2383,10 +2394,19 @@ return(
                   <div className="flex gap-1">
                     <button
                       onClick={()=>{
-                        // TODO: Implement edit
-                        alert('Edit functionality coming in next step');
+                        const event=goalEvents[idx];
+                        setEditingGoalIndex(idx);
+                        setRecordingGoal(event.team);
+                        setGoalSituation(event.situation);
+                        setGoalTime(event.time||'');
+                        setGoalScorers(event.scorers||[]);
+                        setGoalAssists(event.assists||[]);
+                        setGoalPlusPlayers(event.plus||[]);
+                        setGoalMinusPlayers(event.minus||[]);
+                        setGoalSOGPlayers(event.sog||[]);
+                        setGoalWizardStep(1);
                       }}
-                      className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                      className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}                    
                     >
                       Edit
                     </button>
@@ -2415,7 +2435,7 @@ return(
   <div className="max-w-2xl mx-auto p-4">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6':'bg-white rounded-lg shadow-lg p-6'}>
      <h3 className={darkMode?'text-lg font-bold mb-4 text-center text-white':'text-lg font-bold mb-4 text-center text-gray-900'}>
-        Goal Wizard - Step 1
+        {editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'New Goal'}
       </h3>
       
       <div className="mb-4">
@@ -2538,20 +2558,30 @@ return(
             return;
           }
           
-          // Save goal event
+         // Save or update goal event
           const newEvent={
             team:recordingGoal,
             situation:goalSituation,
             time:goalTime,
             period:currentPeriod,
-            timestamp:Date.now(),
+            timestamp:editingGoalIndex !== null ? goalEvents[editingGoalIndex].timestamp : Date.now(),
             scorers:goalScorers,
             assists:goalAssists,
             plus:goalPlusPlayers,
             minus:goalMinusPlayers,
             sog:goalSOGPlayers
           };
-          setGoalEvents([...goalEvents,newEvent]);
+          
+          let updatedEvents;
+          if(editingGoalIndex !== null){
+            // Editing existing goal - replace it
+            updatedEvents = goalEvents.map((ev,i)=>i===editingGoalIndex?newEvent:ev);
+          } else {
+            // New goal - add to end
+            updatedEvents = [...goalEvents,newEvent];
+          }
+          setGoalEvents(updatedEvents);
+          
           
           // Update player stats
           const newStats=structuredClone(playerStats);
@@ -2619,6 +2649,7 @@ return(
           setGoalPlusPlayers([]);
           setGoalMinusPlayers([]);
           setGoalSOGPlayers([]);
+          setEditingGoalIndex(null);
         }}
         className={darkMode?'bg-green-700 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold':'bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold'}
       >
