@@ -126,6 +126,11 @@
             const [addPlayerNumbers,setAddPlayerNumbers]=useState(['']);
             const [expandedPlayerStats,setExpandedPlayerStats]=useState({ });
             const [collapsedPlayerTables,setCollapsedPlayerTables]=useState({ });
+            const [goalWizardStep,setGoalWizardStep]=useState(0);
+            const [recordingGoal,setRecordingGoal]=useState(null);
+            const [goalSituation,setGoalSituation]=useState('EQ');
+            const [goalTime,setGoalTime]=useState('');
+            const [goalEvents,setGoalEvents]=useState([]);
             const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
             const [introPlaying,setIntroPlaying]=useState(false);
             const matchRef=useRef(null);
@@ -2014,10 +2019,9 @@ const generateCSV=()=>{
 
 if(showPlayerStats&&screen==='game'){
 const statColumns={
-  'HG':['G','A','+','-'],
-  'AG':['G','A','+','-'],
+  'Goal':['G','A','+','-'],
   'FO/SOG':['FO+','FO-','SOG'],
-  'PEN':["2'","5'","10'","20'"],
+  'Penalty':["2'","5'","10'","20'"],
   'All':['G','A','+','-','FO+','FO-','SOG','PIM']
 };
         
@@ -2030,12 +2034,16 @@ const renderPlayerTable=(team)=>{
   
   // Determine which columns to show based on mode and team
   let columnsToShow = activeColumns;
-if (playerStatsMoment === 'HG') {
-  columnsToShow = team === 'home' ? ['G', 'A', '+'] : ['-'];
-} else if (playerStatsMoment === 'AG') {
-  columnsToShow = team === 'away' ? ['G', 'A', '+'] : ['-'];
-}
-// PEN mode shows all penalty columns for both teams (no special logic needed)
+  
+  // Goal wizard mode: scoring team får fler kolumner, opponent får bara -
+  if (playerStatsMoment === 'Goal' && goalWizardStep === 2 && recordingGoal) {
+    if (team === recordingGoal) {
+      columnsToShow = ['G', 'A', '+', 'SOG'];
+    } else {
+      columnsToShow = ['-'];
+    }
+  }
+  // Penalty mode shows all penalty columns for both teams (no special logic needed)
   
   // Map display column names to actual stat names
   const getActualStatName = (col) => {
@@ -2050,19 +2058,6 @@ if (playerStatsMoment === 'HG') {
   className={`
     ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}
     rounded-lg shadow-lg overflow-hidden
-    ${
-      (playerStatsMoment === 'HG' && team === 'away') ||
-      (playerStatsMoment === 'AG' && team === 'home')
-        ? 'text-sm'
-        : ''
-    }
-    ${
-      playerStatsViewMode === 'stacked' &&
-      ((playerStatsMoment === 'HG' && team === 'away') ||
-       (playerStatsMoment === 'AG' && team === 'home'))
-        ? 'max-w-lg'
-        : ''
-    }
   `}
 >
 
@@ -2232,20 +2227,34 @@ return(
                 <div className="flex gap-2 items-center flex-wrap">
                   
 {[
-  {key:'HG',label:window.innerWidth >= 640 ? 'Home Goal' : 'HG'},
-  {key:'AG',label:window.innerWidth >= 640 ? 'Away Goal' : 'AG'},
   {key:'FO/SOG',label:'FO/SOG'},
-  {key:'PEN',label:'PEN'},
+  {key:'Penalty',label:'Penalty'},
   {key:'All',label:'All'}
 ].map(m=>(
   <button
     key={m.key}
-    onClick={()=>setPlayerStatsMoment(m.key)}
+    onClick={()=>{
+      setPlayerStatsMoment(m.key);
+      setGoalWizardStep(0);
+      setRecordingGoal(null);
+    }}
     className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment===m.key?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
   >
     {m.label}
   </button>
 ))}
+
+<button
+  onClick={()=>{
+    setPlayerStatsMoment('Goal');
+    setGoalWizardStep(1);
+    setRecordingGoal(null);
+  }}
+  className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment==='Goal'?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
+>
+  Goal
+</button>
+
 
 
                 <div className="flex gap-2 items-center flex-wrap">
@@ -2276,27 +2285,174 @@ return(
                 </div>
                 </div>
               </div>
+
+
+
             </div>
             
             <div className="max-w-7xl mx-auto p-2">
 
+{playerStatsMoment==='Goal' && goalWizardStep===1 && (
+  <div className="max-w-2xl mx-auto p-4">
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6':'bg-white rounded-lg shadow-lg p-6'}>
+      <h3 className={darkMode?'text-xl font-bold mb-6 text-center text-white':'text-xl font-bold mb-6 text-center text-gray-900'}>
+        Goal Wizard - Step 1
+      </h3>
+      
+      <div className="mb-6">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Who scored?
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={()=>setRecordingGoal('home')}
+            className={recordingGoal==='home'
+              ?(darkMode?'bg-blue-700 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg':'bg-blue-600 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg')
+              :(darkMode?'bg-blue-900 bg-opacity-40 hover:bg-blue-700 text-white py-6 rounded-lg font-bold text-lg':'bg-blue-200 hover:bg-blue-600 hover:text-white text-gray-800 py-6 rounded-lg font-bold text-lg')
+            }
+            className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white py-6 rounded-lg font-bold text-lg':'bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-lg font-bold text-lg'}
+          >
+            {homeName}
+          </button>
+          <button
+            onClick={()=>setRecordingGoal('away')}
+            className={recordingGoal==='away'
+              ?(darkMode?'bg-red-700 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg':'bg-red-600 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg')
+              :(darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-700 text-white py-6 rounded-lg font-bold text-lg':'bg-red-200 hover:bg-red-600 hover:text-white text-gray-800 py-6 rounded-lg font-bold text-lg')
+            }
+            className={darkMode?'bg-red-700 hover:bg-red-600 text-white py-6 rounded-lg font-bold text-lg':'bg-red-600 hover:bg-red-700 text-white py-6 rounded-lg font-bold text-lg'}
+          >
+            {awayName}
+          </button>
+        </div>
+      </div>
 
+      <div className="mb-6">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Situation
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {['EQ','PP','PP2','SH','SH2','EN'].map(sit=>(
+            <button
+              key={sit}
+              onClick={()=>setGoalSituation(sit)}
+              className={goalSituation===sit
+                ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
+                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+              }
+            >
+              {sit}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Game Time (optional)
+        </label>
+        <input
+          type="text"
+          value={goalTime}
+          onChange={(e)=>setGoalTime(e.target.value)}
+          placeholder="e.g. 12:34"
+          className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+        />
+      </div>
+
+<div className="flex gap-2">
+        <button
+          onClick={()=>{
+            setGoalWizardStep(0);
+            setRecordingGoal(null);
+            setGoalSituation('EQ');
+            setGoalTime('');
+            setPlayerStatsMoment('FO/SOG');
+          }}
+          className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded font-semibold'}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={()=>{
+            if(!recordingGoal){
+              alert('Please select which team scored');
+              return;
+            }
+            setGoalWizardStep(2);
+          }}
+          disabled={!recordingGoal}
+          className={recordingGoal
+            ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-3 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold text-white')
+            :(darkMode?'flex-1 bg-gray-600 py-3 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-3 rounded font-bold text-gray-400 cursor-not-allowed')
+          }
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{playerStatsMoment==='Goal' && goalWizardStep===2 && recordingGoal && (
+  <div className="p-2">
+    <div className={darkMode?'bg-gray-800 border-b border-gray-700 p-3 mb-2 rounded text-center font-bold text-white':'bg-blue-100 p-3 mb-2 rounded text-center font-bold'}>
+      Recording goal for: {recordingGoal==='home'?homeName:awayName} ({goalSituation}) {goalTime && `at ${goalTime}`}
+    </div>
+    
+    <div className="grid grid-cols-2 gap-2">
+      {renderPlayerTable(recordingGoal==='home'?'home':'away')}
+      {renderPlayerTable(recordingGoal==='home'?'away':'home')}
+    </div>
+  
+    <div className="mt-4 text-center space-x-2">
+      <button
+        onClick={()=>{
+          setGoalWizardStep(1);
+        }}
+        className={darkMode?'bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold':'bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-bold'}
+      >
+        ← Back
+      </button>
+      <button
+        onClick={()=>{
+          const newEvent={
+            team:recordingGoal,
+            situation:goalSituation,
+            time:goalTime,
+            period:currentPeriod,
+            timestamp:Date.now()
+          };
+          setGoalEvents([...goalEvents,newEvent]);
+          setGoalWizardStep(0);
+          setRecordingGoal(null);
+          setGoalSituation('EQ');
+          setGoalTime('');
+          setPlayerStatsMoment('FO/SOG');
+        }}
+        className={darkMode?'bg-green-700 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold':'bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold'}
+      >
+        Done - Save Goal
+      </button>
+    </div>
+  </div>
+)}
+
+{(playerStatsMoment!=='Goal' || goalWizardStep===0) && (
                 <div
   className={`grid gap-2 ${
-    playerStatsViewMode === 'sideBySide' && (playerStatsMoment === 'All' || playerStatsMoment === 'PEN')
+    playerStatsViewMode === 'sideBySide' && (playerStatsMoment === 'All' || playerStatsMoment === 'Penalty')
       ? 'md:grid-cols-2'
       : ''
   }`}
   style={
     playerStatsViewMode === 'sideBySide' &&
-    (playerStatsMoment === 'HG' || playerStatsMoment === 'AG' || playerStatsMoment === 'FO/SOG')
+    (playerStatsMoment === 'Goal' || playerStatsMoment === 'FO/SOG')
       ? {
           gridTemplateColumns:
-            playerStatsMoment === 'HG'
-              ? '2fr 1fr'   // HOME bred, AWAY smal
-              : playerStatsMoment === 'AG'
-              ? '1fr 2fr'   // AWAY bred, HOME smal
-              : '1fr 1fr'   // FO/SOG - 50/50
+            playerStatsMoment === 'Goal'
+              ? '1fr 1fr'
+              : '1fr 1fr'
         }
       : undefined
   }
@@ -2304,8 +2460,8 @@ return(
     {renderPlayerTable('home')}
     {renderPlayerTable('away')}
   </div>
+)}
             </div>
-
 {showAddPlayerModal&&(
   <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div className={`${darkMode?'bg-gray-800 text-white':'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
