@@ -2347,43 +2347,102 @@ return(
 
             </div>
             
-            <div className="max-w-7xl mx-auto p-2">
+           <div className="max-w-7xl mx-auto p-2">
+
+{playerStatsMoment==='Goal' && goalEvents.length>0 && (
+  <div className="max-w-4xl mx-auto mb-4 p-2">
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
+      <button
+        onClick={()=>setExpandedPlayerStats(prev=>({...prev,goalSummary:!prev.goalSummary}))}
+        className={darkMode?'w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 font-bold flex items-center justify-between':'w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 font-bold flex items-center justify-between'}
+      >
+        <span>Registered Goals ({goalEvents.length})</span>
+        <span>{expandedPlayerStats.goalSummary?<IconChevronUp />:<IconChevronDown />}</span>
+      </button>
+      
+      {expandedPlayerStats.goalSummary && (
+        <div className="p-3">
+          <div className="space-y-2">
+            {goalEvents.map((event,idx)=>(
+              <div key={idx} className={darkMode?'bg-gray-700 border border-gray-600 rounded p-3':'bg-gray-50 border border-gray-200 rounded p-3'}>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="font-bold mb-1">
+                      Goal #{idx+1}: {event.team==='home'?homeName:awayName}
+                    </div>
+                    <div className={darkMode?'text-sm text-gray-300':'text-sm text-gray-600'}>
+                      <div>Period {event.period} • {event.situation} {event.time&&`• ${event.time}`}</div>
+                      {event.scorers.length>0 && (
+                        <div>G: {event.scorers.map(id=>id.split('-')[1]).join(', ')}</div>
+                      )}
+                      {event.assists.length>0 && (
+                        <div>A: {event.assists.map(id=>id.split('-')[1]).join(', ')}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={()=>{
+                        // TODO: Implement edit
+                        alert('Edit functionality coming in next step');
+                      }}
+                      className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={()=>{
+                        if(window.confirm('Delete this goal?')){
+                          setGoalEvents(prev=>prev.filter((_,i)=>i!==idx));
+                        }
+                      }}
+                      className={darkMode?'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                    >
+                      Del
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
 {playerStatsMoment==='Goal' && goalWizardStep===1 && (
   <div className="max-w-2xl mx-auto p-4">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6':'bg-white rounded-lg shadow-lg p-6'}>
-      <h3 className={darkMode?'text-xl font-bold mb-6 text-center text-white':'text-xl font-bold mb-6 text-center text-gray-900'}>
+     <h3 className={darkMode?'text-lg font-bold mb-4 text-center text-white':'text-lg font-bold mb-4 text-center text-gray-900'}>
         Goal Wizard - Step 1
       </h3>
       
-      <div className="mb-6">
-        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
-          Who scored?
-        </label>
+      <div className="mb-4">
+        <label className={darkMode?'block text-xs font-semibold mb-2 text-gray-300':'block text-xs font-semibold mb-2 text-gray-700'}>
+         Who scored?
+</label>
         <div className="grid grid-cols-2 gap-3">
-          <button
+         <button
             onClick={()=>setRecordingGoal('home')}
             className={recordingGoal==='home'
-              ?(darkMode?'bg-blue-700 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg':'bg-blue-600 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg')
-              :(darkMode?'bg-blue-900 bg-opacity-40 hover:bg-blue-700 text-white py-6 rounded-lg font-bold text-lg':'bg-blue-200 hover:bg-blue-600 hover:text-white text-gray-800 py-6 rounded-lg font-bold text-lg')
+              ?(darkMode?'bg-blue-700 border-2 border-yellow-400 text-white py-3 rounded-lg font-bold':'bg-blue-600 border-2 border-yellow-400 text-white py-3 rounded-lg font-bold')
+              :(darkMode?'bg-blue-900 bg-opacity-40 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold':'bg-blue-200 hover:bg-blue-600 hover:text-white text-gray-800 py-3 rounded-lg font-semibold')
             }
-            className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white py-6 rounded-lg font-bold text-lg':'bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-lg font-bold text-lg'}
           >
             {homeName}
           </button>
           <button
             onClick={()=>setRecordingGoal('away')}
             className={recordingGoal==='away'
-              ?(darkMode?'bg-red-700 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg':'bg-red-600 border-4 border-yellow-400 text-white py-6 rounded-lg font-bold text-lg')
-              :(darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-700 text-white py-6 rounded-lg font-bold text-lg':'bg-red-200 hover:bg-red-600 hover:text-white text-gray-800 py-6 rounded-lg font-bold text-lg')
+              ?(darkMode?'bg-red-700 border-2 border-yellow-400 text-white py-3 rounded-lg font-bold':'bg-red-600 border-2 border-yellow-400 text-white py-3 rounded-lg font-bold')
+              :(darkMode?'bg-red-900 bg-opacity-40 hover:bg-red-700 text-white py-3 rounded-lg font-semibold':'bg-red-200 hover:bg-red-600 hover:text-white text-gray-800 py-3 rounded-lg font-semibold')
             }
-            className={darkMode?'bg-red-700 hover:bg-red-600 text-white py-6 rounded-lg font-bold text-lg':'bg-red-600 hover:bg-red-700 text-white py-6 rounded-lg font-bold text-lg'}
           >
             {awayName}
           </button>
         </div>
       </div>
-
       <div className="mb-6">
         <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
           Situation
