@@ -2134,6 +2134,7 @@ const renderPlayerTable=(team)=>{
         // Auto-check SOG when G is checked
         if (!goalSOGPlayers.includes(playerId)) {
           setGoalSOGPlayers(prev => [...prev, playerId]);
+          setGoalPlusPlayers(prev => [...prev, playerId]);
         }
       } else if (col === 'A') {
         setGoalAssists(prev => 
