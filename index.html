@@ -1723,9 +1723,29 @@ const updateStat=(team,stat,delta)=>{
   if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
 };
 
+const removePlayer = (team, playerNum) => {
+  if (isViewer || matchEnded) return;
+  if (isMultiplayer && !currentUser) {
+    alert('You must be logged in to edit multiplayer games');
+    return;
+  }
+  
+  if (!window.confirm(`Remove player #${playerNum}?`)) return;
+  
+  const newStats = structuredClone(playerStats);
+  
+  if (newStats[team]?.players?.[playerNum]) {
+    delete newStats[team].players[playerNum];
+  }
+  
+  setPlayerStats(newStats);
+  if (isMultiplayer && matchRef.current) {
+    matchRef.current.update({ playerStats: newStats });
+  }
+};
+
 // Parse comma/space separated input into array
-const parsePlayerInput = (input) => {
-  // Split by comma or space, filter empty, remove duplicates
+const parsePlayerInput = (input) => {  // Split by comma or space, filter empty, remove duplicates
   const nums = input
             .split(/[,\s]+/)
     .map(n => n.trim())
@@ -2075,13 +2095,13 @@ const renderPlayerTable=(team)=>{
   className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold text-sm text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
 >
   <span className="truncate flex-1 text-left">
-    {teamName}
-    {playerStatsMoment === 'Goal' && goalWizardStep === 2 && (
-      <span className="ml-2 font-normal opacity-75">
-        {editingGoalIndex !== null ? '(edit)' : `(${totals[team+'Score']} goals)`}
-      </span>
-    )}
-  </span>
+  {teamName}
+  {playerStatsMoment === 'Goal' && goalWizardStep === 2 && (
+    <span className="ml-2 font-normal opacity-75">
+      {editingGoalIndex !== null ? '(edit)' : `(${goalEvents.filter(e => e.team === team).length} goals)`}
+    </span>
+  )}
+</span>
   <span className="text-lg flex-shrink-0 ml-2">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
 </button>
               
@@ -2448,17 +2468,24 @@ return(
 
 <div className="flex gap-2">
         <button
-          onClick={()=>{
-            setGoalWizardStep(0);
-            setRecordingGoal(null);
-            setGoalSituation('EQ');
-            setGoalTime('');
-            setPlayerStatsMoment('FO/SOG');
-          }}
-          className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded font-semibold'}
-        >
-          Cancel
-        </button>
+  onClick={()=>{
+    setGoalWizardStep(1);
+    setRecordingGoal(null);
+    setGoalSituation('EQ');
+    setGoalTime('');
+    setEditingGoalIndex(null);
+    setGoalScorers([]);
+    setGoalAssists([]);
+    setGoalPlusPlayers([]);
+    setGoalMinusPlayers([]);
+    setGoalSOGPlayers([]);
+     setEditingGoalIndex(null);
+
+  }}
+  className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded font-semibold'}
+>
+  Cancel
+</button>
         <button
   onClick={()=>{
     if(!recordingGoal){
@@ -2490,9 +2517,14 @@ return(
   
     <div className="mt-3 flex gap-2">
       <button
-        onClick={()=>{
-          setGoalWizardStep(1);
-        }}
+  onClick={()=>{
+    setGoalWizardStep(1);
+    setGoalScorers([]);
+    setGoalAssists([]);
+    setGoalPlusPlayers([]);
+    setGoalMinusPlayers([]);
+    setGoalSOGPlayers([]);
+  }}
         className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2.5 rounded-lg font-semibold':'flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-semibold'}
       >
         Back
