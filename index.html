@@ -2072,10 +2072,10 @@ const renderPlayerTable=(team)=>{
 
 <button 
   onClick={() => setCollapsedPlayerTables(prev => ({...prev, [team]: !prev[team]}))}
-  className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
+  className={`${darkMode?'bg-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold text-sm text-center w-full flex items-center justify-between hover:opacity-90 transition-opacity`}
 >
-  <span>{teamName}</span>
-  <span className="text-xl">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
+  <span className="truncate flex-1 text-left">{teamName}</span>
+  <span className="text-lg flex-shrink-0 ml-2">{collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}</span>
 </button>
               
 {!collapsedPlayerTables[team] && (
@@ -2453,48 +2453,45 @@ return(
           Cancel
         </button>
         <button
-          onClick={()=>{
-            if(!recordingGoal){
-              alert('Please select which team scored');
-              return;
-            }
-            setGoalWizardStep(2);
-          }}
-          disabled={!recordingGoal}
-          className={recordingGoal
-            ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-3 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold text-white')
-            :(darkMode?'flex-1 bg-gray-600 py-3 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-3 rounded font-bold text-gray-400 cursor-not-allowed')
-          }
-        >
-          Next →
-        </button>
+  onClick={()=>{
+    if(!recordingGoal){
+      alert('Please select which team scored');
+      return;
+    }
+    setGoalWizardStep(2);
+  }}
+  disabled={!recordingGoal}
+  className={recordingGoal
+    ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-3 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold text-white')
+    :(darkMode?'flex-1 bg-gray-600 py-3 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-3 rounded font-bold text-gray-400 cursor-not-allowed')
+  }
+>
+  Add players
+</button>
       </div>
     </div>
   </div>
 )}
 
 {playerStatsMoment==='Goal' && goalWizardStep===2 && recordingGoal && (
-  <div className="p-2">
-    <div className={darkMode?'bg-gray-800 border-b border-gray-700 p-3 mb-2 rounded text-center font-bold text-white':'bg-blue-100 p-3 mb-2 rounded text-center font-bold'}>
-      Recording goal for: {recordingGoal==='home'?homeName:awayName} ({goalSituation}) {goalTime && `at ${goalTime}`}
-    </div>
+  <div className="p-2 pb-20">
     
-    <div className="grid gap-2" style={{gridTemplateColumns:'2fr 1fr'}}>
+<div className="grid gap-2" style={{gridTemplateColumns:'2fr 1fr'}}>
       {renderPlayerTable(recordingGoal==='home'?'home':'away')}
       {renderPlayerTable(recordingGoal==='home'?'away':'home')}
     </div>
   
-    <div className="mt-4 text-center space-x-2">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-300 dark:border-gray-700 p-3 flex gap-2 z-50">
       <button
         onClick={()=>{
           setGoalWizardStep(1);
         }}
-        className={darkMode?'bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold':'bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-bold'}
+        className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold text-sm':'flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg font-semibold text-sm'}
       >
         ← Back
       </button>
       <button
-    onClick={()=>{
+        onClick={()=>{
   if(isViewer)return;
   if(isMultiplayer&&!currentUser){
     alert('You must be logged in to edit multiplayer games');
@@ -2639,16 +2636,16 @@ const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...
           setGoalMinusPlayers([]);
           setGoalSOGPlayers([]);
           setEditingGoalIndex(null);
-        }}
-        className={darkMode?'bg-green-700 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold':'bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-bold'}
+       }}
+        className={darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold text-sm':'flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm'}
       >
-        Done - Save Goal
+        Save Goal
      </button>
     </div>
   </div>
 )}
 
-{playerStatsMoment==='Goal' && goalEvents.length>0 && (
+{playerStatsMoment==='Goal' && goalWizardStep!==2 && goalEvents.length>0 && (
   <div className="max-w-4xl mx-auto mt-4 p-2">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
