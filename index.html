@@ -1799,15 +1799,16 @@ const handlePlayerInputChange = (value, idx) => {
       };
       
       const resetCounters=()=>{
-        if(window.confirm('Reset all stats?')){
-          const ns={1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
-          setPeriodStats(ns);
-          setCurrentPeriod(1);
-          setPlayerStats({home:{players:{}},away:{players:{}}});
-          if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}}});
-          else localStorage.removeItem('juniorLeagueGame')
-        }
-      };
+  if(window.confirm('Reset all stats?')){
+    const ns={1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}};
+    setPeriodStats(ns);
+    setCurrentPeriod(1);
+    setPlayerStats({home:{players:{}},away:{players:{}}});
+    setGoalEvents([]);
+    if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}},goalEvents:[]});
+    else localStorage.removeItem('juniorLeagueGame')
+  }
+};
 
       const calcTotals=()=>{
         let hs=0,as=0,hsv=0,asv=0;
@@ -2121,19 +2122,23 @@ const renderPlayerTable=(team)=>{
     const toggleCheckbox = () => {
       const playerId = `${team}-${pNum}`;
      if (col === 'G') {
-        const isAdding = !goalScorers.includes(playerId);
-        setGoalScorers(prev => 
-          isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
-        );
-        // Auto-check SOG when G is checked
-        if (isAdding && !goalSOGPlayers.includes(playerId)) {
-          setGoalSOGPlayers(prev => [...prev, playerId]);
-        }
-        // Auto-check + when G is checked
-        if (isAdding && !goalPlusPlayers.includes(playerId)) {
-          setGoalPlusPlayers(prev => [...prev, playerId]);
-        }
-      } else if (col === 'A') {
+  const isAdding = !goalScorers.includes(playerId);
+  setGoalScorers(prev => 
+    isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+  );
+  // Auto-check SOG when G is checked
+  if (isAdding && !goalSOGPlayers.includes(playerId)) {
+    setGoalSOGPlayers(prev => [...prev, playerId]);
+  }
+  // Auto-uncheck SOG when G is unchecked
+  if (!isAdding && goalSOGPlayers.includes(playerId)) {
+    setGoalSOGPlayers(prev => prev.filter(id => id !== playerId));
+  }
+  // Auto-check + when G is checked
+  if (isAdding && !goalPlusPlayers.includes(playerId)) {
+    setGoalPlusPlayers(prev => [...prev, playerId]);
+  }
+} else if (col === 'A') {
         const isAdding = !goalAssists.includes(playerId);
         setGoalAssists(prev => 
           isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
@@ -2489,37 +2494,39 @@ return(
         ← Back
       </button>
       <button
-        onClick={()=>{
-          if(isViewer)return;
-          if(isMultiplayer&&!currentUser){
-            alert('You must be logged in to edit multiplayer games');
-            return;
-          }
-          
-         // Save or update goal event
-          const newEvent={
-            team:recordingGoal,
-            situation:goalSituation,
-            time:goalTime,
-            period:currentPeriod,
-            timestamp:editingGoalIndex !== null ? goalEvents[editingGoalIndex].timestamp : Date.now(),
-            scorers:goalScorers,
-            assists:goalAssists,
-            plus:goalPlusPlayers,
-            minus:goalMinusPlayers,
-            sog:goalSOGPlayers
-          };
-          
-          let updatedEvents;
-          if(editingGoalIndex !== null){
-            // Editing existing goal - replace it
-            updatedEvents = goalEvents.map((ev,i)=>i===editingGoalIndex?newEvent:ev);
-          } else {
-            // New goal - add to end
-            updatedEvents = [...goalEvents, newEvent];
-
-          }
-          setGoalEvents(updatedEvents);
+    onClick={()=>{
+  if(isViewer)return;
+  if(isMultiplayer&&!currentUser){
+    alert('You must be logged in to edit multiplayer games');
+    return;
+  }
+  
+  // Save or update goal event
+  const newEvent={
+    team:recordingGoal,
+    situation:goalSituation,
+    time:goalTime,
+    period:currentPeriod,
+    timestamp:editingGoalIndex !== null ? goalEvents[editingGoalIndex].timestamp : Date.now(),
+    scorers:goalScorers,
+    assists:goalAssists,
+    plus:goalPlusPlayers,
+    minus:goalMinusPlayers,
+    sog:goalSOGPlayers
+  };
+  
+  let updatedEvents;
+  const isEditing = editingGoalIndex !== null;
+  const oldEvent = isEditing ? goalEvents[editingGoalIndex] : null;
+  
+  if(isEditing){
+    // Editing existing goal - replace it
+    updatedEvents = goalEvents.map((ev,i)=>i===editingGoalIndex?newEvent:ev);
+  } else {
+    // New goal - add to end
+    updatedEvents = [...goalEvents, newEvent];
+  }
+  setGoalEvents(updatedEvents);
 
 if (isMultiplayer && matchRef.current) {
   matchRef.current.child('goalEvents').set(updatedEvents);
@@ -2532,10 +2539,44 @@ if (isMultiplayer && matchRef.current) {
           
           
           // Update player stats
-          const newStats=structuredClone(playerStats);
-          
-         // Get unique player IDs
-          const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...goalMinusPlayers,...goalSOGPlayers]);
+const newStats=structuredClone(playerStats);
+
+// If editing, first remove old stats
+if (isEditing && oldEvent) {
+  const oldPlayerIds = new Set([
+    ...(oldEvent.scorers || []),
+    ...(oldEvent.assists || []),
+    ...(oldEvent.plus || []),
+    ...(oldEvent.minus || []),
+    ...(oldEvent.sog || [])
+  ]);
+  
+  oldPlayerIds.forEach(playerId => {
+    const [team, pNum] = playerId.split('-');
+    
+    if (!newStats[team]?.players?.[pNum]?.periods?.[oldEvent.period]) return;
+    
+    // Subtract old stats
+    if (oldEvent.scorers?.includes(playerId)) {
+      newStats[team].players[pNum].periods[oldEvent.period]['G'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['G'] || 0) - 1);
+    }
+    if (oldEvent.assists?.includes(playerId)) {
+      newStats[team].players[pNum].periods[oldEvent.period]['A'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['A'] || 0) - 1);
+    }
+    if (oldEvent.plus?.includes(playerId)) {
+      newStats[team].players[pNum].periods[oldEvent.period]['OnIce+'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['OnIce+'] || 0) - 1);
+    }
+    if (oldEvent.minus?.includes(playerId)) {
+      newStats[team].players[pNum].periods[oldEvent.period]['OnIce-'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['OnIce-'] || 0) - 1);
+    }
+    if (oldEvent.sog?.includes(playerId)) {
+      newStats[team].players[pNum].periods[oldEvent.period]['SOG'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['SOG'] || 0) - 1);
+    }
+  });
+}
+
+// Get unique player IDs (for new/updated event)
+const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...goalMinusPlayers,...goalSOGPlayers]);
           
           // Process each unique player once
           allPlayerIds.forEach(playerId=>{
@@ -2636,12 +2677,12 @@ if (isMultiplayer && matchRef.current) {
                     </div>
                     <div className={darkMode?'text-sm text-gray-300':'text-sm text-gray-600'}>
                       <div>Period {event.period} • {event.situation} {event.time&&`• ${event.time}`}</div>
-                      {event.scorers.length>0 && (
-                        <div>G: {event.scorers.map(id=>id.split('-')[1]).join(', ')}</div>
-                      )}
-                      {event.assists.length>0 && (
-                        <div>A: {event.assists.map(id=>id.split('-')[1]).join(', ')}</div>
-                      )}
+                      {event.scorers && event.scorers.length>0 && (
+  <div>G: {event.scorers.map(id=>id.split('-')[1]).join(', ')}</div>
+)}
+{event.assists && event.assists.length>0 && (
+  <div>A: {event.assists.map(id=>id.split('-')[1]).join(', ')}</div>
+)}
                     </div>
                   </div>
                   <div className="flex gap-1">
@@ -2663,12 +2704,82 @@ if (isMultiplayer && matchRef.current) {
                     >
                       Edit
                     </button>
-                    <button
-                      onClick={()=>{
-                        if(window.confirm('Delete this goal?')){
-                          setGoalEvents(prev=>prev.filter((_,i)=>i!==idx));
-                        }
-                      }}
+                   <button
+  onClick={()=>{
+    if (!window.confirm('Delete this goal?')) return;
+    if (isViewer) return;
+    if (isMultiplayer && !currentUser) {
+      alert('You must be logged in to edit multiplayer games');
+      return;
+    }
+
+    const eventToDelete = goalEvents[idx];
+    const updatedEvents = goalEvents.filter((_, i) => i !== idx);
+    
+    setGoalEvents(updatedEvents);
+    
+    if (isMultiplayer && matchRef.current) {
+      matchRef.current.update({ goalEvents: updatedEvents });
+    } else if (!isMultiplayer && screen === 'game') {
+      const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+      gs.goalEvents = updatedEvents;
+      localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+    }
+
+    // Remove player stats from the deleted goal
+    const newStats = structuredClone(playerStats);
+    const deletePeriod = eventToDelete.period;
+    
+    const allPlayerIds = new Set([
+      ...(eventToDelete.scorers || []),
+      ...(eventToDelete.assists || []),
+      ...(eventToDelete.plus || []),
+      ...(eventToDelete.minus || []),
+      ...(eventToDelete.sog || [])
+    ]);
+    
+    allPlayerIds.forEach(playerId => {
+      const [team, pNum] = playerId.split('-');
+      
+      if (!newStats[team]?.players?.[pNum]?.periods?.[deletePeriod]) return;
+      
+      // Subtract stats
+      if (eventToDelete.scorers?.includes(playerId)) {
+        newStats[team].players[pNum].periods[deletePeriod]['G'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['G'] || 0) - 1);
+      }
+      if (eventToDelete.assists?.includes(playerId)) {
+        newStats[team].players[pNum].periods[deletePeriod]['A'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['A'] || 0) - 1);
+      }
+      if (eventToDelete.plus?.includes(playerId)) {
+        newStats[team].players[pNum].periods[deletePeriod]['OnIce+'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['OnIce+'] || 0) - 1);
+      }
+      if (eventToDelete.minus?.includes(playerId)) {
+        newStats[team].players[pNum].periods[deletePeriod]['OnIce-'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['OnIce-'] || 0) - 1);
+      }
+      if (eventToDelete.sog?.includes(playerId)) {
+        newStats[team].players[pNum].periods[deletePeriod]['SOG'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['SOG'] || 0) - 1);
+      }
+    });
+    
+    // Recalculate totals
+    Object.keys(newStats).forEach(team => {
+      Object.keys(newStats[team].players).forEach(pNum => {
+        const player = newStats[team].players[pNum];
+        ['G', 'A', 'OnIce+', 'OnIce-', 'SOG'].forEach(stat => {
+          player.total[stat] = 0;
+          Object.keys(player.periods).forEach(p => {
+            player.total[stat] += player.periods[p][stat] || 0;
+          });
+        });
+      });
+    });
+    
+    setPlayerStats(newStats);
+    if (isMultiplayer && matchRef.current) {
+      matchRef.current.update({ playerStats: newStats });
+    }
+  }}
+
                       className={darkMode?'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
                     >
                       Del
@@ -4377,7 +4488,9 @@ return(
   <td className="font-bold px-2 py-2">{pNum}</td>
   <td className="text-center px-2 py-2">{pStats?.['G']||0}</td>
   <td className="text-center px-2 py-2">{pStats?.['A']||0}</td>
-  <td className="text-center px-2 py-2 font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
+  <td className="text-center px-2 py-2 font-semibold">
+  {plusMinus === 0 ? '0' : `${plusMinus > 0 ? '+' : ''}${plusMinus}`}
+</td>
   <td className="text-center px-2 py-2">{foTotal}</td>
   <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
   <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
