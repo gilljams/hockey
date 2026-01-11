@@ -2485,7 +2485,7 @@ return(
         </span>
       </button>
       
-      {/* Form Content */}
+    {/* Form Content */}
       {!penaltyFormCollapsed && (
         <div className="p-6" style={{animation: 'fadeIn 0.3s ease-in'}}>
       
@@ -3026,7 +3026,8 @@ setTimeout(() => {
 )}
 
 {playerStatsMoment==='Goal' && goalWizardStep!==2 && goalEvents.length>0 && (
-  <div className="max-w-4xl mx-auto mt-4 p-2 goal-timeline">
+  
+<div className="max-w-4xl mx-auto mt-2 goal-timeline">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
         onClick={()=>setGoalTimelineCollapsed(!goalTimelineCollapsed)}
@@ -3202,7 +3203,7 @@ setTimeout(() => {
 
 
 {playerStatsMoment === 'Penalty' && penaltyEvents.length > 0 && (
-  <div className="max-w-4xl mx-auto mt-4 p-2 penalty-timeline">
+<div className="max-w-4xl mx-auto mt-2 penalty-timeline">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
         onClick={()=>setPenaltyTimelineCollapsed(!penaltyTimelineCollapsed)}
