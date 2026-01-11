@@ -145,6 +145,11 @@
             const [goalMinusPlayers,setGoalMinusPlayers]=useState([]);
             const [goalSOGPlayers,setGoalSOGPlayers]=useState([]);
             const [editingGoalIndex,setEditingGoalIndex]=useState(null);
+            const [goalFormCollapsed,setGoalFormCollapsed]=useState(false);
+            const [goalTimelineCollapsed,setGoalTimelineCollapsed]=useState(true);
+            const [penaltyFormCollapsed,setPenaltyFormCollapsed]=useState(false);
+            const [penaltyTimelineCollapsed,setPenaltyTimelineCollapsed]=useState(true);
+            const [highlightEventId,setHighlightEventId]=useState(null);
             const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
             const [introPlaying,setIntroPlaying]=useState(false);
             const matchRef=useRef(null);
@@ -2405,20 +2410,17 @@ return(
 
 <button
   onClick={()=>{
-  if(isViewer) return;
-  // Stäng andra flöden
-    setGoalWizardStep(0); // Stäng goal wizard
+  setPlayerStatsMoment('Penalty'); // LÄGG TILL DENNA RAD
+  setGoalWizardStep(0);
   setRecordingGoal(null);
-  // Öppna penalty
-    setPenaltyWizardOpen(true);
-    // Reset penalty state
-    setPenaltyTeam(null);
-    setPenaltyType("2'");
-    setPenaltyInfraction('');
-    setPenaltyTime('');
-    setPenaltyPlayer('');
-    setEditingPenaltyIndex(null);
-  }}
+  setPenaltyWizardOpen(true);
+  setPenaltyTeam(null);
+  setPenaltyType("2'");
+  setPenaltyInfraction('');
+  setPenaltyTime('');
+  setPenaltyPlayer('');
+  setEditingPenaltyIndex(null);
+}}
   disabled={isViewer || matchEnded}
   className={`px-3 py-1 rounded text-sm font-bold ${
     isViewer || matchEnded 
@@ -2469,7 +2471,7 @@ return(
            <div className="max-w-7xl mx-auto p-2">
 
 
-{penaltyWizardOpen && (
+{playerStatsMoment === 'Penalty' && (
   <div className="max-w-2xl mx-auto p-4">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6':'bg-white rounded-lg shadow-lg p-6'}>
       <h3 className={darkMode?'text-lg font-bold mb-4 text-center text-white':'text-lg font-bold mb-4 text-center text-gray-900'}>
@@ -2662,13 +2664,13 @@ return(
   
   
   // Reset wizard
-  setPenaltyWizardOpen(false);
-  setPenaltyTeam(null);
-  setPenaltyType("2'");
-  setPenaltyInfraction('');
-  setPenaltyTime('');
-  setPenaltyPlayer('');
-  setEditingPenaltyIndex(null);
+setPenaltyWizardOpen(false);
+setPenaltyTeam(null);
+setPenaltyType("2'");
+setPenaltyInfraction('');
+setPenaltyTime('');
+setPenaltyPlayer('');
+setEditingPenaltyIndex(null);
 }}
           disabled={!penaltyTeam || !penaltyPlayer}
           className={penaltyTeam && penaltyPlayer
@@ -2686,10 +2688,21 @@ return(
 
 {playerStatsMoment==='Goal' && goalWizardStep===1 && (
   <div className="max-w-2xl mx-auto p-4">
-    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6':'bg-white rounded-lg shadow-lg p-6'}>
-     <h3 className={darkMode?'text-lg font-bold mb-4 text-center text-white':'text-lg font-bold mb-4 text-center text-gray-900'}>
-        {editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'New Goal'}
-      </h3>
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
+
+      <button
+        onClick={()=>setGoalFormCollapsed(!goalFormCollapsed)}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+      >
+        <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'New Goal'}</span>
+        <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
+          <IconChevronDown />
+        </span>
+      </button>
+      
+
+      {!goalFormCollapsed && (
+        <div className="p-6" style={{animation: 'fadeIn 0.3s ease-in'}}>
       
       <div className="mb-4">
         <label className={darkMode?'block text-xs font-semibold mb-2 text-gray-300':'block text-xs font-semibold mb-2 text-gray-700'}>
@@ -2785,7 +2798,11 @@ return(
 >
   Add players
 </button>
-      </div>
+
+</div>
+
+</div>
+      )}
     </div>
   </div>
 )}
@@ -2958,6 +2975,20 @@ const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...
           setGoalMinusPlayers([]);
           setGoalSOGPlayers([]);
           setEditingGoalIndex(null);
+// Collapse form, expand timeline, highlight new event
+setGoalFormCollapsed(true);
+setGoalTimelineCollapsed(false);
+const eventId = `goal-${isEditing ? editingGoalIndex : goalEvents.length}`;
+setHighlightEventId(eventId);
+setTimeout(() => setHighlightEventId(null), 2000);
+
+// Scroll to timeline
+setTimeout(() => {
+  const timelineEl = document.querySelector('.goal-timeline');
+  if(timelineEl) {
+    timelineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}, 100);
        }}
        className={darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-semibold':'flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold'}
       >
@@ -2968,23 +2999,31 @@ const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...
 )}
 
 {playerStatsMoment==='Goal' && goalWizardStep!==2 && goalEvents.length>0 && (
-  <div className="max-w-4xl mx-auto mt-4 p-2">
+  <div className="max-w-4xl mx-auto mt-4 p-2 goal-timeline">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
-        onClick={()=>setExpandedPlayerStats(prev=>({...prev,goalSummary:!prev.goalSummary}))}
-        className={darkMode?'w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 font-bold flex items-center justify-between':'w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 font-bold flex items-center justify-between'}
+        onClick={()=>setGoalTimelineCollapsed(!goalTimelineCollapsed)}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
       >
         <span>Registered Goals ({goalEvents.length})</span>
-        <span>{expandedPlayerStats.goalSummary?<IconChevronUp />:<IconChevronDown />}</span>
+        <span className={`transition-transform duration-300 ${goalTimelineCollapsed ? '' : 'rotate-180'}`}>
+          <IconChevronDown />
+        </span>
       </button>
       
-      {expandedPlayerStats.goalSummary && (
+      {!goalTimelineCollapsed && (
         <div className="p-3">
           <div className="space-y-2">
             {[...goalEvents].reverse().map((event,reverseIdx)=>{
               const idx=goalEvents.length-1-reverseIdx;
               return(
-              <div key={idx} className={darkMode?'bg-gray-700 border border-gray-600 rounded p-3':'bg-gray-50 border border-gray-200 rounded p-3'}>
+              <div 
+  key={idx} 
+  className={`${darkMode?'bg-gray-700 border border-gray-600':'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${
+    highlightEventId === `goal-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
+  }`}
+  style={highlightEventId === `goal-${idx}` ? {animation: 'pulse 1s ease-in-out'} : {}}
+>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <div className="font-bold mb-1">
@@ -3116,7 +3155,7 @@ const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...
 
 
 
-{penaltyWizardOpen && penaltyEvents.length>0 && (
+{playerStatsMoment === 'Penalty' && penaltyEvents.length > 0 && (
   <div className="max-w-4xl mx-auto mt-4 p-2">
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
@@ -3206,11 +3245,9 @@ const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...
 
 
 
-{(playerStatsMoment!=='Goal' || goalWizardStep===0) && (
-                <div
-  className={`grid gap-2 ${
-    playerStatsViewMode === 'sideBySide' && (playerStatsMoment === 'All' || playerStatsMoment === 'Penalty')
-      ? 'md:grid-cols-2'
+{playerStatsMoment === 'FO/SOG' && (  
+<div className={`grid gap-2 ${
+      playerStatsViewMode === 'sideBySide' && playerStatsMoment === 'All'      ? 'md:grid-cols-2'
       : ''
   }`}
   style={
@@ -4891,7 +4928,7 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                                         <tbody>
                                           {playerNums.map(pNum=>{
                                             const pStats=players[pNum].periods[p];
-                                            const  pim = calculatePIMFromEvents(team, pNum, parseInt(p));
+                                            const pim = calculatePIMFromEvents(team, pNum, parseInt(p));
                                             const onIcePlus=pStats?.['OnIce+']||0;
                                             const onIceMinus=pStats?.['OnIce-']||0;
                                             const plusMinus=onIcePlus-onIceMinus;
