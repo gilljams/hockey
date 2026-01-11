@@ -130,7 +130,15 @@
             const [recordingGoal,setRecordingGoal]=useState(null);
             const [goalSituation,setGoalSituation]=useState('EQ');
             const [goalTime,setGoalTime]=useState('');
+            const [penaltyWizardOpen,setPenaltyWizardOpen]=useState(false);
+            const [penaltyTeam,setPenaltyTeam]=useState(null);
+            const [penaltyType,setPenaltyType]=useState("2'");
+            const [penaltyInfraction,setPenaltyInfraction]=useState('');
+            const [penaltyTime,setPenaltyTime]=useState('');
+            const [penaltyPlayer,setPenaltyPlayer]=useState('');
+            const [editingPenaltyIndex,setEditingPenaltyIndex]=useState(null);
             const [goalEvents,setGoalEvents]=useState([]);
+            const [penaltyEvents,setPenaltyEvents]=useState([]);
             const [goalScorers,setGoalScorers]=useState([]);
             const [goalAssists,setGoalAssists]=useState([]);
             const [goalPlusPlayers,setGoalPlusPlayers]=useState([]);
@@ -297,6 +305,7 @@ const normalizePlayerStats = (stats) => {
 
 setPlayerStats({home:{players:{}},away:{players:{}}});
 setGoalEvents([]);
+setPenaltyEvents([]);
 setCurrentPeriod(1);
 setMatchEnded(false);
 setGoalFocusSwapped(false);
@@ -437,6 +446,7 @@ setActiveGoalies({home:'starter',away:'starter'});
             setPeriodStats(normalizePeriodStats(gs.periodStats));
             if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
             if(gs.goalEvents) setGoalEvents(gs.goalEvents);
+            if(gs.penaltyEvents) setPenaltyEvents(gs.penaltyEvents);
             setGameMode('single');
             setScreen('game');
       } else {
@@ -460,11 +470,11 @@ setActiveGoalies({home:'starter',away:'starter'});
       useEffect(()=>{localStorage.setItem('externalLinkTitle', externalLinkTitle)},[externalLinkTitle]);
       useEffect(()=>{localStorage.setItem('defaultHomeRoster', defaultHomeRoster)},[defaultHomeRoster]);
       useEffect(()=>{
-        if(!isMultiplayer&&screen==='game'){
-          const gs={currentPeriod, homeName, awayName, periodStats, playerStats, timestamp:new Date().toISOString()};
-            localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
-        }
-      },[currentPeriod,homeName,awayName,periodStats,playerStats,isMultiplayer,screen]);
+  if(!isMultiplayer&&screen==='game'){
+    const gs={currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, timestamp:new Date().toISOString()};
+    localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
+  }
+},[currentPeriod,homeName,awayName,periodStats,playerStats,goalEvents,penaltyEvents,isMultiplayer,screen]);
       useEffect(() => {
         if (screen === 'create') {
               setTimeout(() => {
@@ -565,6 +575,7 @@ useEffect(() => {
             setMatchEnded(d.ended ?? false);
             setPlayerStats(normalizePlayerStats(d.playerStats));
             setGoalEvents(d.goalEvents ?? []);
+            setPenaltyEvents(d.penaltyEvents ?? []);
             setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
                  setIsCreator(d.creatorId === userId.current);
@@ -793,6 +804,8 @@ const startMatch=()=>{
       3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
     },
     playerStats:{home:{players:{}},away:{players:{}}},
+    goalEvents:[],
+    penaltyEvents:[],
     ended:false,
     createdAt:Date.now(),
     creatorId:userId.current,
@@ -1825,7 +1838,8 @@ const handlePlayerInputChange = (value, idx) => {
     setCurrentPeriod(1);
     setPlayerStats({home:{players:{}},away:{players:{}}});
     setGoalEvents([]);
-    if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}},goalEvents:[]});
+    setPenaltyEvents([]);
+    if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}},goalEvents:[],penaltyEvents:[]});
     else localStorage.removeItem('juniorLeagueGame')
   }
 };
@@ -1840,6 +1854,34 @@ const handlePlayerInputChange = (value, idx) => {
         });
         return{homeScore:hs,awayScore:as,homeSaves:hsv,awaySaves:asv}
       };
+
+
+const calculatePIMFromEvents = (team, player, period = null) => {
+
+  // Hoppa över BENCH penalties i spelarstatistik
+  if (player === 'BENCH') return 0;
+
+  const penaltyMinutes = {"2'":2,"5'":5,"10'":10,"20'":20};
+  
+  return penaltyEvents
+    .filter(e => 
+      e.team === team && 
+      e.player === player && 
+      (period === null || e.period === period)
+    )
+    .reduce((total, e) => total + (penaltyMinutes[e.penaltyType] || 0), 0);
+};
+
+const calculatePenaltyCountFromEvents = (team, player, penaltyType, period = null) => {
+  return penaltyEvents
+    .filter(e => 
+      e.team === team && 
+      e.player === player && 
+      e.penaltyType === penaltyType &&
+      (period === null || e.period === period)
+    ).length;
+};
+
       
       const totals=calcTotals();
       const calcSP=(sv,g)=>{const sh=sv+g;return sh===0?'0.0':((sv/sh)*100).toFixed(1)};
@@ -2075,10 +2117,9 @@ const renderPlayerTable=(team)=>{
   // Penalty mode shows all penalty columns for both teams (no special logic needed)
   
   // Map display column names to actual stat names
-  const getActualStatName = (col) => {
+const getActualStatName = (col) => {
   if (col === '+') return 'OnIce+';
   if (col === '-') return 'OnIce-';
-  // Penalty columns and PIM keep their names
   return col;
 };
   
@@ -2333,15 +2374,16 @@ return(
                 <div className="flex gap-2 items-center flex-wrap">
                   
 {[
-  {key:'FO/SOG',label:'FO/SOG'},
-  {key:'Penalty',label:'Penalty'}
+  {key:'FO/SOG',label:'FO/SOG'}
 ].map(m=>(
   <button
     key={m.key}
     onClick={()=>{
       setPlayerStatsMoment(m.key);
+   setPenaltyWizardOpen(false); // Lägg till
       setGoalWizardStep(0);
       setRecordingGoal(null);
+      
     }}
     className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment===m.key?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
   >
@@ -2354,10 +2396,39 @@ return(
     setPlayerStatsMoment('Goal');
     setGoalWizardStep(1);
     setRecordingGoal(null);
+    setPenaltyWizardOpen(false); // Stäng penalty wizard
   }}
   className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment==='Goal'?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
 >
   Goal
+</button>
+
+<button
+  onClick={()=>{
+  if(isViewer) return;
+  // Stäng andra flöden
+    setGoalWizardStep(0); // Stäng goal wizard
+  setRecordingGoal(null);
+  // Öppna penalty
+    setPenaltyWizardOpen(true);
+    // Reset penalty state
+    setPenaltyTeam(null);
+    setPenaltyType("2'");
+    setPenaltyInfraction('');
+    setPenaltyTime('');
+    setPenaltyPlayer('');
+    setEditingPenaltyIndex(null);
+  }}
+  disabled={isViewer || matchEnded}
+  className={`px-3 py-1 rounded text-sm font-bold ${
+    isViewer || matchEnded 
+      ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+      : penaltyWizardOpen
+        ? 'bg-yellow-400 text-blue-900'
+        : darkMode?'bg-gray-700':'bg-white bg-opacity-20'
+  }`}
+>
+  Penalty
 </button>
 
 
@@ -2398,7 +2469,219 @@ return(
            <div className="max-w-7xl mx-auto p-2">
 
 
+{penaltyWizardOpen && (
+  <div className="max-w-2xl mx-auto p-4">
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-6':'bg-white rounded-lg shadow-lg p-6'}>
+      <h3 className={darkMode?'text-lg font-bold mb-4 text-center text-white':'text-lg font-bold mb-4 text-center text-gray-900'}>
+        {editingPenaltyIndex !== null ? `Edit Penalty #${editingPenaltyIndex + 1}` : 'New Penalty'}
+      </h3>
+      
+      {/* Team Selection */}
+      <div className="mb-4">
+        <label className={darkMode?'block text-xs font-semibold mb-2 text-gray-300':'block text-xs font-semibold mb-2 text-gray-700'}>
+          Which team?
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={()=>setPenaltyTeam('home')}
+            className={penaltyTeam==='home'
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+            }
+          >
+            {homeName}
+          </button>
+          <button
+            onClick={()=>setPenaltyTeam('away')}
+            className={penaltyTeam==='away'
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+            }
+          >
+            {awayName}
+          </button>
+        </div>
+      </div>
 
+      {/* Penalty Type */}
+      <div className="mb-4">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Penalty Type
+        </label>
+        <div className="grid grid-cols-4 gap-2">
+          {["2'","5'","10'","20'"].map(type=>(
+            <button
+              key={type}
+              onClick={()=>setPenaltyType(type)}
+              className={penaltyType===type
+                ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
+                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+              }
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Infraction (optional dropdown) */}
+      <div className="mb-4">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Infraction (optional)
+        </label>
+        <select
+          value={penaltyInfraction}
+          onChange={(e)=>setPenaltyInfraction(e.target.value)}
+          className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+        >
+          <option value="">Select infraction...</option>
+          <option value="Tripping">Tripping</option>
+          <option value="Hooking">Hooking</option>
+          <option value="Slashing">Slashing</option>
+          <option value="High-sticking">High-sticking</option>
+          <option value="Interference">Interference</option>
+          <option value="Holding">Holding</option>
+          <option value="Cross-checking">Cross-checking</option>
+          <option value="Boarding">Boarding</option>
+          <option value="Charging">Charging</option>
+          <option value="Roughing">Roughing</option>
+          <option value="Elbowing">Elbowing</option>
+          <option value="Kneeing">Kneeing</option>
+          <option value="Delay of game">Delay of game</option>
+          <option value="Too many men">Too many men</option>
+          <option value="Unsportsmanlike conduct">Unsportsmanlike conduct</option>
+          <option value="Fighting">Fighting</option>
+          <option value="Misconduct">Misconduct</option>
+        </select>
+      </div>
+
+      {/* Game Time (optional) */}
+      <div className="mb-4">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Game Time (optional)
+        </label>
+        <input
+          type="text"
+          value={penaltyTime}
+          onChange={(e)=>setPenaltyTime(e.target.value)}
+          placeholder="e.g. 12:34"
+          className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+        />
+      </div>
+
+      {/* Player Selection */}
+      {penaltyTeam && (
+        <div className="mb-6">
+          <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+            Player #
+          </label>
+          <select
+            value={penaltyPlayer}
+            onChange={(e)=>setPenaltyPlayer(e.target.value)}
+            className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+          >
+            <option value="">Select player...</option>
+            <option value="BENCH">Bench / Team</option>
+            {Object.keys(playerStats[penaltyTeam]?.players || {})
+              .sort((a,b)=>parseInt(a)-parseInt(b))
+              .map(pNum=>(
+                <option key={pNum} value={pNum}>#{pNum}</option>
+              ))
+            }
+          </select>
+        </div>
+      )}
+
+      {/* Buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={()=>{
+            setPenaltyWizardOpen(true);
+            setPenaltyTeam(null);
+            setPenaltyType("2'");
+            setPenaltyInfraction('');
+            setPenaltyTime('');
+            setPenaltyPlayer('');
+            setEditingPenaltyIndex(null);
+          }}
+          className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded font-semibold'}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={()=>{
+  if(!penaltyTeam){
+    alert('Please select which team got the penalty');
+    return;
+  }
+  if(!penaltyPlayer){
+    alert('Please select a player');
+    return;
+  }
+  if(isViewer)return;
+  if(isMultiplayer&&!currentUser){
+    alert('You must be logged in to edit multiplayer games');
+    return;
+  }
+  
+  // Create penalty event
+  const newEvent={
+    team: penaltyTeam,
+    player: penaltyPlayer,
+    penaltyType: penaltyType,
+    infraction: penaltyInfraction,
+    time: penaltyTime,
+    period: currentPeriod,
+    timestamp: editingPenaltyIndex !== null ? penaltyEvents[editingPenaltyIndex].timestamp : Date.now()
+  };
+  
+  let updatedEvents;
+  const isEditing = editingPenaltyIndex !== null;
+  const oldEvent = isEditing ? penaltyEvents[editingPenaltyIndex] : null;
+  
+  if(isEditing){
+    // Editing existing penalty - replace it
+    updatedEvents = penaltyEvents.map((ev,i)=>i===editingPenaltyIndex?newEvent:ev);
+  } else {
+    // New penalty - add to end
+    updatedEvents = [...penaltyEvents, newEvent];
+  }
+  setPenaltyEvents(updatedEvents);
+  
+  if(isMultiplayer && matchRef.current){
+    matchRef.current.child('penaltyEvents').set(updatedEvents);
+  } else if(!isMultiplayer && screen === 'game'){
+    const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+    gs.penaltyEvents = updatedEvents;
+    localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+  }
+  
+  // We don't need to update playerStats for penalties anymore
+// PIM is calculated from penaltyEvents on-the-fly
+  
+  
+  
+  // Reset wizard
+  setPenaltyWizardOpen(false);
+  setPenaltyTeam(null);
+  setPenaltyType("2'");
+  setPenaltyInfraction('');
+  setPenaltyTime('');
+  setPenaltyPlayer('');
+  setEditingPenaltyIndex(null);
+}}
+          disabled={!penaltyTeam || !penaltyPlayer}
+          className={penaltyTeam && penaltyPlayer
+            ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-3 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold text-white')
+            :(darkMode?'flex-1 bg-gray-600 py-3 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-3 rounded font-bold text-gray-400 cursor-not-allowed')
+          }
+        >
+          Save Penalty
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 
 {playerStatsMoment==='Goal' && goalWizardStep===1 && (
@@ -2830,6 +3113,98 @@ const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...
     </div>
   </div>
 )}
+
+
+
+{penaltyWizardOpen && penaltyEvents.length>0 && (
+  <div className="max-w-4xl mx-auto mt-4 p-2">
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
+      <button
+        onClick={()=>setExpandedPlayerStats(prev=>({...prev,penaltySummary:!prev.penaltySummary}))}
+        className={darkMode?'w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-3 font-bold flex items-center justify-between':'w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 font-bold flex items-center justify-between'}
+      >
+        <span>Registered Penalties ({penaltyEvents.length})</span>
+        <span>{expandedPlayerStats.penaltySummary?<IconChevronUp />:<IconChevronDown />}</span>
+      </button>
+      
+      {expandedPlayerStats.penaltySummary && (
+        <div className="p-3">
+          <div className="space-y-2">
+            {[...penaltyEvents].reverse().map((event,reverseIdx)=>{
+              const idx=penaltyEvents.length-1-reverseIdx;
+              const teamName = event.team === 'home' ? homeName : awayName;
+              return(
+                <div key={idx} className={darkMode?'bg-gray-700 border border-gray-600 rounded p-3':'bg-gray-50 border border-gray-200 rounded p-3'}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="font-bold mb-1">
+                        {teamName} - #{event.player} - {event.penaltyType}
+                      </div>
+                      <div className={darkMode?'text-sm text-gray-300':'text-sm text-gray-600'}>
+                        <div>
+                          Period {event.period}
+                          {event.infraction && ` • ${event.infraction}`}
+                          {event.time && ` • ${event.time}`}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={()=>{
+                          const event=penaltyEvents[idx];
+                          setEditingPenaltyIndex(idx);
+                          setPenaltyTeam(event.team);
+                          setPenaltyType(event.penaltyType);
+                          setPenaltyInfraction(event.infraction||'');
+                          setPenaltyTime(event.time||'');
+                          setPenaltyPlayer(event.player);
+                          setPenaltyWizardOpen(true);
+                        }}
+                        className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={()=>{
+                          if(!window.confirm('Delete this penalty?'))return;
+                          if(isViewer)return;
+                          if(isMultiplayer&&!currentUser){
+                            alert('You must be logged in to edit multiplayer games');
+                            return;
+                          }
+
+                          const eventToDelete = penaltyEvents[idx];
+                          const updatedEvents = penaltyEvents.filter((_,i)=>i!==idx);
+                          
+                          setPenaltyEvents(updatedEvents);
+                          
+                          if(isMultiplayer && matchRef.current){
+                            matchRef.current.update({penaltyEvents: updatedEvents});
+                          } else if(!isMultiplayer && screen === 'game'){
+                            const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                            gs.penaltyEvents = updatedEvents;
+                            localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                          }
+
+                         
+                        }}
+                        className={darkMode?'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                      >
+                        Del
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
 
 {(playerStatsMoment!=='Goal' || goalWizardStep===0) && (
                 <div
@@ -3608,7 +3983,9 @@ const renderGoalieCard = (team, name, goals, saves) => {
   <div className="flex justify-between items-center">
                   <div className="flex gap-2 items-center flex-wrap">
 
-    {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
+    {[1,2,3].map(p=><button key={p} onClick={()=>{
+setCurrentPeriod(p);
+if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
             {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
             {!periodStats[4]&&currentPeriod===3&&(
               <button
@@ -3876,7 +4253,9 @@ return(
               <div className="flex justify-between items-center mb-2">
   <div className="flex gap-2 items-center">
     
-    {[1,2,3].map(p=><button key={p} onClick={()=>{setCurrentPeriod(p);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
+    {[1,2,3].map(p=><button key={p} onClick={()=>{
+setCurrentPeriod(p);
+if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
                   {!periodStats[4]&&currentPeriod===3&&(
                     <button
@@ -4512,6 +4891,7 @@ return(
                                         <tbody>
                                           {playerNums.map(pNum=>{
                                             const pStats=players[pNum].periods[p];
+                                            const  pim = calculatePIMFromEvents(team, pNum, parseInt(p));
                                             const onIcePlus=pStats?.['OnIce+']||0;
                                             const onIceMinus=pStats?.['OnIce-']||0;
                                             const plusMinus=onIcePlus-onIceMinus;
@@ -4530,22 +4910,22 @@ return(
   <td className="text-center px-2 py-2">{foTotal}</td>
   <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
   <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
-  <td className="text-center px-2 py-2">{pStats?.['PIM']||0}</td>
+  <td className="text-center px-2 py-2">{pim}</td>
 </tr>
                                             );
                                           })}
                                           {/* TOTAL ROW */}
                                           {(() => {
                                             let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
-                                            playerNums.forEach(pNum => {
-                                              const pStats = players[pNum].periods[p];
-                                              totalG += pStats?.['G'] || 0;
-                                              totalA += pStats?.['A'] || 0;
-                                              totalFOPlus += pStats?.['FO+'] || 0;
-                                              totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
-                                              totalSOG += pStats?.['SOG'] || 0;
-                                              totalPIM += pStats?.['PIM'] || 0;
-                                            });
+playerNums.forEach(pNum => {
+  const pStats = players[pNum].periods[p];
+  totalG += pStats?.['G'] || 0;
+  totalA += pStats?.['A'] || 0;
+  totalFOPlus += pStats?.['FO+'] || 0;
+  totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
+  totalSOG += pStats?.['SOG'] || 0;
+  totalPIM += calculatePIMFromEvents(team, pNum, parseInt(p));  // ÄNDRAD RAD
+});
                                             const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
                                             return (
                                               <tr className={`border-t-2 ${darkMode?'border-gray-500 bg-gray-600':'border-gray-400 bg-gray-100'} text-sm font-bold`}>
@@ -4650,14 +5030,14 @@ return(
                                     <tbody>
                                       {playerNums.map(pNum=>{
                                         const pStats=players[pNum].total;
-                                        const onIcePlus=pStats?.['OnIce+']??0;
-                                        const onIceMinus=pStats?.['OnIce-']??0;
-                                        const plusMinus=onIcePlus-onIceMinus;
-                                        const foPlus=pStats?.['FO+']??0;
-                                        const foMinus=pStats?.['FO-']??0;
-                                        const foTotal=foPlus+foMinus;
-                                        const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
-                                        const pim=pStats?.['PIM']??0;
+const onIcePlus=pStats?.['OnIce+']??0;
+const onIceMinus=pStats?.['OnIce-']??0;
+const plusMinus=onIcePlus-onIceMinus;
+const foPlus=pStats?.['FO+']??0;
+const foMinus=pStats?.['FO-']??0;
+const foTotal=foPlus+foMinus;
+const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
+const pim=calculatePIMFromEvents(team, pNum);  // ÄNDRAD RAD - null som period = alla perioder
 
                                         return(
                                           <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'} text-sm`}>
@@ -4674,16 +5054,16 @@ return(
                                       })}
                                       {/* TOTAL ROW */}
                                       {(() => {
-                                        let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
-                                        playerNums.forEach(pNum => {
-                                          const pStats = players[pNum].total;
-                                          totalG += pStats?.['G'] || 0;
-                                          totalA += pStats?.['A'] || 0;
-                                          totalFOPlus += pStats?.['FO+'] || 0;
-                                          totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
-                                          totalSOG += pStats?.['SOG'] || 0;
-                                          totalPIM += pStats?.['PIM'] || 0;
-                                        });
+  let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
+  playerNums.forEach(pNum => {
+    const pStats = players[pNum].total;
+    totalG += pStats?.['G'] || 0;
+    totalA += pStats?.['A'] || 0;
+    totalFOPlus += pStats?.['FO+'] || 0;
+    totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
+    totalSOG += pStats?.['SOG'] || 0;
+    totalPIM += calculatePIMFromEvents(team, pNum);  
+  });
                                         const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
                                         return (
                                           <tr className={`border-t-2 ${darkMode?'border-gray-500 bg-gray-600':'border-gray-400 bg-gray-100'} text-sm font-bold`}>
