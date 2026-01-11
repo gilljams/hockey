@@ -2492,15 +2492,15 @@ return(
       
       {/* Team Selection */}
       <div className="mb-4">
-        <label className={darkMode?'block text-xs font-semibold mb-2 text-gray-300':'block text-xs font-semibold mb-2 text-gray-700'}>
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
           Which team?
         </label>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={()=>setPenaltyTeam('home')}
             className={penaltyTeam==='home'
-              ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
-              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
             }
           >
             {homeName}
@@ -2508,8 +2508,8 @@ return(
           <button
             onClick={()=>setPenaltyTeam('away')}
             className={penaltyTeam==='away'
-              ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
-              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
             }
           >
             {awayName}
@@ -2528,8 +2528,8 @@ return(
               key={type}
               onClick={()=>setPenaltyType(type)}
               className={penaltyType===type
-                ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
-                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+                ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
               }
             >
               {type}
@@ -2546,7 +2546,7 @@ return(
         <select
           value={penaltyInfraction}
           onChange={(e)=>setPenaltyInfraction(e.target.value)}
-          className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+          className={darkMode?'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-2 border border-gray-300 rounded-lg'}
         >
           <option value="">Select infraction...</option>
           <option value="Tripping">Tripping</option>
@@ -2579,7 +2579,7 @@ return(
           value={penaltyTime}
           onChange={(e)=>setPenaltyTime(e.target.value)}
           placeholder="e.g. 12:34"
-          className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+          className={darkMode?'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-2 border border-gray-300 rounded-lg'}
         />
       </div>
 
@@ -2592,7 +2592,7 @@ return(
           <select
             value={penaltyPlayer}
             onChange={(e)=>setPenaltyPlayer(e.target.value)}
-            className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+            className={darkMode?'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-2 border border-gray-300 rounded-lg'}
           >
             <option value="">Select player...</option>
             <option value="BENCH">Bench / Team</option>
@@ -2618,7 +2618,7 @@ return(
             setPenaltyPlayer('');
             setEditingPenaltyIndex(null);
           }}
-          className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded font-semibold'}
+          className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
         >
           Cancel
         </button>
@@ -2700,8 +2700,8 @@ setTimeout(() => {
 }}
           disabled={!penaltyTeam || !penaltyPlayer}
           className={penaltyTeam && penaltyPlayer
-            ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-3 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold text-white')
-            :(darkMode?'flex-1 bg-gray-600 py-3 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-3 rounded font-bold text-gray-400 cursor-not-allowed')
+            ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+            :(darkMode?'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
           }
         >
           Save Penalty
@@ -2721,7 +2721,7 @@ setTimeout(() => {
 
       <button
         onClick={()=>setGoalFormCollapsed(!goalFormCollapsed)}
-        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
       >
         <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'Add Goal'}</span>
         <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
@@ -2734,15 +2734,15 @@ setTimeout(() => {
         <div className="p-6" style={{animation: 'fadeIn 0.3s ease-in'}}>
       
       <div className="mb-4">
-        <label className={darkMode?'block text-xs font-semibold mb-2 text-gray-300':'block text-xs font-semibold mb-2 text-gray-700'}>
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
          Who scored?
 </label>
         <div className="grid grid-cols-2 gap-3">
         <button
             onClick={()=>setRecordingGoal('home')}
             className={recordingGoal==='home'
-              ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
-              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
             }
           >
             {homeName}
@@ -2750,8 +2750,8 @@ setTimeout(() => {
           <button
             onClick={()=>setRecordingGoal('away')}
             className={recordingGoal==='away'
-              ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
-              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
             }
           >
             {awayName}
@@ -2768,8 +2768,8 @@ setTimeout(() => {
               key={sit}
               onClick={()=>setGoalSituation(sit)}
               className={goalSituation===sit
-                ?(darkMode?'bg-yellow-500 text-gray-900 py-3 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-3 rounded-lg font-bold')
-                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold')
+                ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
               }
             >
               {sit}
@@ -2787,7 +2787,7 @@ setTimeout(() => {
           value={goalTime}
           onChange={(e)=>setGoalTime(e.target.value)}
           placeholder="e.g. 12:34"
-          className={darkMode?'w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-3 border border-gray-300 rounded-lg'}
+          className={darkMode?'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-2 border border-gray-300 rounded-lg'}
         />
       </div>
 
@@ -2807,7 +2807,7 @@ setTimeout(() => {
      setEditingGoalIndex(null);
 
   }}
-  className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-3 rounded font-semibold'}
+  className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
 >
   Cancel
 </button>
@@ -2821,8 +2821,8 @@ setTimeout(() => {
   }}
   disabled={!recordingGoal}
   className={recordingGoal
-    ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-3 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold text-white')
-    :(darkMode?'flex-1 bg-gray-600 py-3 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-3 rounded font-bold text-gray-400 cursor-not-allowed')
+    ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+    :(darkMode?'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
   }
 >
   Add players
@@ -3033,7 +3033,7 @@ setTimeout(() => {
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
         onClick={()=>setGoalTimelineCollapsed(!goalTimelineCollapsed)}
-        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
       >
         <span> Goals - Timeline </span>
         <span className={`transition-transform duration-300 ${goalTimelineCollapsed ? '' : 'rotate-180'}`}>
@@ -3209,7 +3209,7 @@ setTimeout(() => {
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
       <button
         onClick={()=>setPenaltyTimelineCollapsed(!penaltyTimelineCollapsed)}
-        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
       >
         <span>Penalty - Timeline</span>
         <span className={`transition-transform duration-300 ${penaltyTimelineCollapsed ? '' : 'rotate-180'}`}>
