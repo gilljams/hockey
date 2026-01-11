@@ -2181,6 +2181,9 @@ const getActualStatName = (col) => {
                 {columnsToShow.map(col=>{
   const actualStat = getActualStatName(col);
   const isPIM = col === 'PIM';
+  
+  // Beräkna PIM från events för denna spelare i nuvarande period
+  const calculatedPIM = isPIM ? calculatePIMFromEvents(team, pNum, currentPeriod) : 0;
   const isGoalMode = playerStatsMoment === 'Goal' && goalWizardStep === 2;
   
   // Goal wizard checkbox mode
@@ -2272,7 +2275,7 @@ const getActualStatName = (col) => {
                 : (darkMode ? 'bg-blue-900 bg-opacity-40 hover:bg-opacity-60 text-blue-200 cursor-pointer' : 'bg-blue-100 hover:bg-blue-200 text-blue-800 cursor-pointer')
           } ${!isPIM && sparkleStats[`${team}${pNum}${actualStat}${currentPeriod}`]?'sparkle':''}`}
         >
-          {currentPeriodStats[actualStat]||0}
+          {isPIM ? calculatedPIM : (currentPeriodStats[actualStat]||0)}
         </div>
       </div>
     </td>
@@ -5024,7 +5027,7 @@ playerNums.forEach(pNum => {
   totalFOPlus += pStats?.['FO+'] || 0;
   totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
   totalSOG += pStats?.['SOG'] || 0;
-  totalPIM += calculatePIMFromEvents(team, pNum, parseInt(p));  // ÄNDRAD RAD
+  totalPIM += calculatePIMFromEvents(team, pNum, parseInt(p));
 });
                                             const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
                                             return (
@@ -5148,7 +5151,7 @@ const pim=calculatePIMFromEvents(team, pNum);  // ÄNDRAD RAD - null som period 
   <td className="text-center px-2 py-2">{foTotal}</td>
   <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
   <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
-  <td className="text-center px-2 py-2">{pStats?.['PIM'] ?? 0}</td>
+  <td className="text-center px-2 py-2">{pim}</td>
 </tr>
                                         );
                                       })}
