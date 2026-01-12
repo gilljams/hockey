@@ -4970,7 +4970,18 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                               {['home','away'].map(team=>{
                                 const teamName=team==='home'?homeName:awayName;
                                 const players=playerStats[team]?.players||{};
-                                const playerNums=Object.keys(players).filter(pNum=>players[pNum]?.periods?.[p]).sort((a,b)=>parseInt(a)-parseInt(b));
+                                const playerNums = Object.keys(players)
+  .filter(pNum => {
+    // Visa spelare om de har stats ELLER penalties för denna period
+    const hasStats = players[pNum]?.periods?.[p];
+    const hasPenalties = penaltyEvents.some(e => 
+      e.team === team && 
+      e.player === pNum && 
+      e.period === parseInt(p)
+    );
+    return hasStats || hasPenalties;
+  })
+  .sort((a,b)=>parseInt(a)-parseInt(b));
                                 
                                 if(playerNums.length===0)return null;
                                 
