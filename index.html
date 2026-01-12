@@ -18,9 +18,7 @@
             @keyframes sparkle{0%, 100% { transform: scale(1); opacity: 1 }50%{transform:scale(1.2);opacity:.8}}
             .sparkle{animation:sparkle .6s ease-in-out}
             @keyframes eq-bar{0%, 100% { height: 30%}50%{height:80%}}
-            .eq-bar {
-  animation: eq-bar 0.9s ease-in-out infinite alternate;
-}
+            .eq-bar {animation: eq-bar 0.9s ease-in-out infinite alternate;}
             .eq-bar:nth-child(1){animation-delay:0s}
              .eq-bar:nth-child(2){animation-delay:0.15s}
              .eq-bar:nth-child(3){animation-delay:0.3s}
@@ -32,33 +30,33 @@
             const {useState, useRef, useEffect}=React;
 
             const firebaseConfig={
-              apiKey:"AIzaSyBFO04MS1hfTnE_ciPxTJCXO_Jk1w8DudY",
+            apiKey:"AIzaSyBFO04MS1hfTnE_ciPxTJCXO_Jk1w8DudY",
             authDomain:"hockey-scorekeeper.firebaseapp.com",
             databaseURL:"https://hockey-scorekeeper-default-rtdb.europe-west1.firebasedatabase.app",
             projectId:"hockey-scorekeeper",
             storageBucket:"hockey-scorekeeper.firebasestorage.app",
             messagingSenderId:"804304791634",
             appId:"1:804304791634:web:98532061d3768f6b8c178b"
-    };
+            };
 
             let db=null;
             let auth=null;
             try{
-  if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+            if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
             db=firebase.database();
             auth=firebase.auth();
-}catch(e){console.log("Firebase error:", e)}
+            }catch(e){console.log("Firebase error:", e)}
 
-    const genCode=()=>{
-      const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            const genCode=()=>{
+            const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code='';
             for(let i=0;i<6;i++){
               code += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
+            }
             return code;
-    };
+            };
 
-    const SoundEQ = () => (
+            const SoundEQ = () => (
             <div className="flex items-end gap-0.5 h-4 ml-2">
               <div className="eq-bar w-1 bg-white rounded-full"></div>
               <div className="eq-bar w-1 bg-white rounded-full"></div>
@@ -66,8 +64,8 @@
             </div>
             );
 
-    const JuniorLeagueApp=()=>{
-      const [activeTab,setActiveTab]=useState('stats');
+            const JuniorLeagueApp=()=>{
+            const [activeTab,setActiveTab]=useState('stats');
             const [currentPeriod,setCurrentPeriod]=useState(1);
             const [homeName,setHomeName]=useState('HOME TEAM');
             const [awayName,setAwayName]=useState('AWAY TEAM');
@@ -109,14 +107,14 @@
             const [loadingMatches,setLoadingMatches]=useState(false);
             const [wasInMatch, setWasInMatch]=useState(false);
             const [periodStats,setPeriodStats]=useState({
-              1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
+            1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
             2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0},
             3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0}
-      });
+            });
             const [playerStats,setPlayerStats]=useState({
-              home:{players:{ }},
+            home:{players:{ }},
             away:{players:{ }}
-      });
+            });
             const [showPlayerStats,setShowPlayerStats]=useState(false);
             const [playerStatsEditMode,setPlayerStatsEditMode]=useState({home: false, away: false});
             const [playerStatsViewMode,setPlayerStatsViewMode]=useState('sideBySide');
@@ -139,6 +137,7 @@
             const [editingPenaltyIndex,setEditingPenaltyIndex]=useState(null);
             const [goalEvents,setGoalEvents]=useState([]);
             const [penaltyEvents,setPenaltyEvents]=useState([]);
+            const [otherEvents,setOtherEvents]=useState([]);
             const [goalScorers,setGoalScorers]=useState([]);
             const [goalAssists,setGoalAssists]=useState([]);
             const [goalPlusPlayers,setGoalPlusPlayers]=useState([]);
@@ -149,6 +148,13 @@
             const [goalTimelineCollapsed,setGoalTimelineCollapsed]=useState(true);
             const [penaltyFormCollapsed,setPenaltyFormCollapsed]=useState(false);
             const [penaltyTimelineCollapsed,setPenaltyTimelineCollapsed]=useState(true);
+            const [otherWizardOpen,setOtherWizardOpen]=useState(false);
+            const [otherTeam,setOtherTeam]=useState(null);
+            const [otherEventType,setOtherEventType]=useState('timeout');
+            const [otherTime,setOtherTime]=useState('');
+            const [editingOtherIndex,setEditingOtherIndex]=useState(null);
+            const [otherFormCollapsed,setOtherFormCollapsed]=useState(false);
+            const [otherTimelineCollapsed,setOtherTimelineCollapsed]=useState(true);
             const [highlightEventId,setHighlightEventId]=useState(null);
             const audioRefs={homeGoal:useRef(null),awayGoal:useRef(null),homePenalty:useRef(null),awayPenalty:useRef(null),intro:useRef(null)};
             const [introPlaying,setIntroPlaying]=useState(false);
@@ -156,11 +162,11 @@
             const userId = useRef(
             currentUser?.uid ||
             localStorage.getItem('userId') ||
-        (() => {
-          const id = Math.random().toString(36).substr(2,9);
+            (() => {
+            const id = Math.random().toString(36).substr(2,9);
             localStorage.setItem('userId', id);
             return id;
-        })()
+            })()
             );
             const homeTeamInputRef = useRef(null);
             const DEFAULT_HOME = 'HOME TEAM';
@@ -168,9 +174,7 @@
             const [isViewer,setIsViewer]=useState(false);
             const [viewerCount,setViewerCount]=useState(0);
             const [playingSound, setPlayingSound] = useState(null);
-
-
-const IconSettings = () => (
+            const IconSettings = () => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -192,8 +196,7 @@ const IconSettings = () => (
               />
             </svg>
             );
-
-const IconBack = () => (
+            const IconBack = () => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -209,8 +212,7 @@ const IconBack = () => (
               />
             </svg>
             );
-
-const IconChevronDown = () => (
+            const IconChevronDown = () => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -226,8 +228,7 @@ const IconChevronDown = () => (
               />
             </svg>
             );
-
-const IconChevronUp = () => (
+            const IconChevronUp = () => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -244,80 +245,77 @@ const IconChevronUp = () => (
             </svg>
             );
 
-
       // Normalization functions
       const normalizePeriodStats = (stats) => {
-  const normalized = {};
-  for (let p = 1; p <= 4; p++) {
-    // Only add period 4 if it actually exists in the data
-    if (p === 4 && !stats?.[p]) {
+      const normalized = {};
+      for (let p = 1; p <= 4; p++) {
+      // Only add period 4 if it actually exists in the data
+      if (p === 4 && !stats?.[p]) {
       continue;
-    }
-    normalized[p] = {
+      }
+      normalized[p] = {
       homeScore: stats?.[p]?.homeScore ?? 0,
       awayScore: stats?.[p]?.awayScore ?? 0,
       homeSaves: stats?.[p]?.homeSaves ?? 0,
       awaySaves: stats?.[p]?.awaySaves ?? 0,
       homeGoalie: stats?.[p]?.homeGoalie ?? {starter:{saves:0,ga:0},backup:{saves:0,ga:0}},
       awayGoalie: stats?.[p]?.awayGoalie ?? {starter:{saves:0,ga:0},backup:{saves:0,ga:0}}
-    };
-  }
-  return normalized;
-};
-
-
-
-const normalizePlayerStats = (stats) => {
-  const normalized = {
-    home: { players: {} },
-    away: { players: {} }
-  };
-  
-  ['home', 'away'].forEach(team => {
-    const players = stats?.[team]?.players ?? {};
-    Object.keys(players).forEach(playerNum => {
-      const player = players[playerNum];
-      normalized[team].players[playerNum] = {
-        periods: player?.periods ?? {},
-        total: {
-          'G': player?.total?.['G'] ?? 0,
-          'A': player?.total?.['A'] ?? 0,
-          'OnIce+': player?.total?.['OnIce+'] ?? 0,
-          'OnIce-': player?.total?.['OnIce-'] ?? 0,
-          'FO+': player?.total?.['FO+'] ?? 0,
-          'FO-': player?.total?.['FO-'] ?? 0,
-          'SOG': player?.total?.['SOG'] ?? 0,
-          "2'": player?.total?.["2'"] ?? 0,
-          "5'": player?.total?.["5'"] ?? 0,
-          "10'": player?.total?.["10'"] ?? 0,
-          "20'": player?.total?.["20'"] ?? 0,
-          'PIM': player?.total?.['PIM'] ?? 0
-        }
       };
-    });
-  });
+      }
+      return normalized;
+      };
+
+      const normalizePlayerStats = (stats) => {
+        const normalized = {
+          home: { players: {} },
+          away: { players: {} }
+        };
   
-  return normalized;
-};
+      ['home', 'away'].forEach(team => {
+        const players = stats?.[team]?.players ?? {};
+        Object.keys(players).forEach(playerNum => {
+          const player = players[playerNum];
+          normalized[team].players[playerNum] = {
+            periods: player?.periods ?? {},
+            total: {
+              'G': player?.total?.['G'] ?? 0,
+              'A': player?.total?.['A'] ?? 0,
+              'OnIce+': player?.total?.['OnIce+'] ?? 0,
+              'OnIce-': player?.total?.['OnIce-'] ?? 0,
+              'FO+': player?.total?.['FO+'] ?? 0,
+              'FO-': player?.total?.['FO-'] ?? 0,
+              'SOG': player?.total?.['SOG'] ?? 0,
+              "2'": player?.total?.["2'"] ?? 0,
+              "5'": player?.total?.["5'"] ?? 0,
+              "10'": player?.total?.["10'"] ?? 0,
+              "20'": player?.total?.["20'"] ?? 0,
+              'PIM': player?.total?.['PIM'] ?? 0
+            }
+          };
+        });
+      });
+      return normalized;
+      };
 
       // Reset all game state
       const resetGameState = () => {
         setPeriodStats({
-  1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
-  2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
-  3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}}
-});
+        1:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
+        2:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}},
+        3:{homeScore:0,awayScore:0,homeSaves:0,awaySaves:0,homeGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}},awayGoalie:{starter:{saves:0,ga:0},backup:{saves:0,ga:0}}}
+      });
 
-setPlayerStats({home:{players:{}},away:{players:{}}});
-setGoalEvents([]);
-setPenaltyEvents([]);
-setCurrentPeriod(1);
-setMatchEnded(false);
-setGoalFocusSwapped(false);
-setActiveGoalies({home:'starter',away:'starter'});
-        setIsCreator(false);
-        setSparkleStats({});
-        setExpandedPlayerStats({});
+      setPlayerStats({home:{players:{}},away:{players:{}}});
+      setGoalEvents([]);
+      setPenaltyEvents([]);
+      setOtherEvents([]);
+      setCurrentPeriod(1);
+      setMatchEnded(false);
+      setGoalFocusSwapped(false);
+      setActiveGoalies({home:'starter',away:'starter'});
+      setIsCreator(false);
+      setSparkleStats({});
+      setExpandedPlayerStats({});
       };
 
       useEffect(() => {
@@ -326,27 +324,26 @@ setActiveGoalies({home:'starter',away:'starter'});
         }
       }, [isViewer, screen]);
 
-  // Auth listener
+      // Auth listener
       useEffect(()=>{
         if(!auth){
           setAuthLoading(false);
           return;
         }
   
-  const unsubscribe=auth.onAuthStateChanged(user=>{
-    setCurrentUser(user);
-    if(user && db){
-      db.ref(`users/${user.uid}/isAdmin`).once('value', snapshot => {
-        setIsAdmin(snapshot.val() === true);
-      });
-    } else {
-      setIsAdmin(false);
-    }
-    setAuthLoading(false);
-  });
-  
-  return ()=>unsubscribe();
-},[]);
+      const unsubscribe=auth.onAuthStateChanged(user=>{
+      setCurrentUser(user);
+      if(user && db){
+        db.ref(`users/${user.uid}/isAdmin`).once('value', snapshot => {
+          setIsAdmin(snapshot.val() === true);
+        });
+      } else {
+        setIsAdmin(false);
+      }
+      setAuthLoading(false);
+      }); 
+      return ()=>unsubscribe();
+      },[]);
 
       // Update userId ref when user changes
       useEffect(()=>{
@@ -406,7 +403,7 @@ setActiveGoalies({home:'starter',away:'starter'});
               } catch(e) {
                 console.log('Failed to parse', k);
               }
-            }else if(k==='focusMode'){
+          }else if(k==='focusMode'){
               setFocusMode(v==='null'?null:v);
           }else if(k==='externalLinkUrl'){
             setExternalLinkUrl(v);
@@ -423,46 +420,47 @@ setActiveGoalies({home:'starter',away:'starter'});
             // Check for multiplayer reconnect
             const savedMatch=localStorage.getItem('multiplayerMatch');
             if(savedMatch){
-  try{
-    const md=JSON.parse(savedMatch);
-            if(md.code){
-              setSavedMatchCode(md.code);
-            setGameMode(md.gameMode||'multi');
-            setShowReconnectPrompt(true);
-    }else{
-              localStorage.removeItem('multiplayerMatch');
-    }
-  }catch(e){
-              localStorage.removeItem('multiplayerMatch');
-  }
-}
+            try{
+              const md=JSON.parse(savedMatch);
+                      if(md.code){
+                      setSavedMatchCode(md.code);
+                      setGameMode(md.gameMode||'multi');
+                      setShowReconnectPrompt(true);
+              }else{
+                        localStorage.removeItem('multiplayerMatch');
+              }
+            }catch(e){
+                        localStorage.removeItem('multiplayerMatch');
+            }
+          }
 
             // Load single-player game if no multiplayer session
             const lastScreen=localStorage.getItem('currentScreen');
             if(!savedMatch && (!lastScreen || lastScreen==='game')){
-  const saved=localStorage.getItem('juniorLeagueGame');
+            const saved=localStorage.getItem('juniorLeagueGame');
             if(saved){
-    try {
-      const gs=JSON.parse(saved);
-            if(gs.currentPeriod && gs.periodStats && gs.homeName) {
-              setCurrentPeriod(gs.currentPeriod);
-            setHomeName(gs.homeName);
-            setAwayName(gs.awayName);
-            setPeriodStats(normalizePeriodStats(gs.periodStats));
-            if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
-            if(gs.goalEvents) setGoalEvents(gs.goalEvents);
-            if(gs.penaltyEvents) setPenaltyEvents(gs.penaltyEvents);
-            setGameMode('single');
-            setScreen('game');
-      } else {
-              localStorage.removeItem('juniorLeagueGame');
-      }
-    } catch(e) {
-              console.log('Failed to load saved game:', e);
-            localStorage.removeItem('juniorLeagueGame');
-    }
-  }
-}
+            try {
+              const gs=JSON.parse(saved);
+                    if(gs.currentPeriod && gs.periodStats && gs.homeName) {
+                    setCurrentPeriod(gs.currentPeriod);
+                    setHomeName(gs.homeName);
+                    setAwayName(gs.awayName);
+                    setPeriodStats(normalizePeriodStats(gs.periodStats));
+                    if(gs.playerStats) setPlayerStats(normalizePlayerStats(gs.playerStats));
+                    if(gs.goalEvents) setGoalEvents(gs.goalEvents);
+                    if(gs.penaltyEvents) setPenaltyEvents(gs.penaltyEvents);
+                    if(gs.otherEvents) setOtherEvents(gs.otherEvents);
+                    setGameMode('single');
+                    setScreen('game');
+              } else {
+                      localStorage.removeItem('juniorLeagueGame');
+              }
+            } catch(e) {
+                      console.log('Failed to load saved game:', e);
+                    localStorage.removeItem('juniorLeagueGame');
+            }
+          }
+        }
 
       },[]);
 
@@ -475,11 +473,11 @@ setActiveGoalies({home:'starter',away:'starter'});
       useEffect(()=>{localStorage.setItem('externalLinkTitle', externalLinkTitle)},[externalLinkTitle]);
       useEffect(()=>{localStorage.setItem('defaultHomeRoster', defaultHomeRoster)},[defaultHomeRoster]);
       useEffect(()=>{
-  if(!isMultiplayer&&screen==='game'){
-    const gs={currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, timestamp:new Date().toISOString()};
-    localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
-  }
-},[currentPeriod,homeName,awayName,periodStats,playerStats,goalEvents,penaltyEvents,isMultiplayer,screen]);
+      if(!isMultiplayer&&screen==='game'){
+      const gs={currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, otherEvents, timestamp:new Date().toISOString()};
+      localStorage.setItem('juniorLeagueGame',JSON.stringify(gs));
+    }
+    },[currentPeriod,homeName,awayName,periodStats,playerStats,goalEvents,penaltyEvents,otherEvents,isMultiplayer,screen]);
       useEffect(() => {
         if (screen === 'create') {
               setTimeout(() => {
@@ -489,9 +487,9 @@ setActiveGoalies({home:'starter',away:'starter'});
         }
       }, [screen]);
 
-// Handle ?join=XXXXXX-V → open "Join game as viewer" dialog with prefilled code
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
+            // Handle ?join=XXXXXX-V → open "Join game as viewer" dialog with prefilled code
+            useEffect(() => {
+            const params = new URLSearchParams(window.location.search);
             const joinCode = params.get('join');
 
             if (!joinCode) return;
@@ -513,24 +511,24 @@ useEffect(() => {
             window.history.replaceState({ }, document.title, window.location.pathname);
 }, []);
 
-useEffect(() => {
-  const handleBeforeUnload = (e) => {
-    if (
-            screen === 'game' &&
-            isMultiplayer &&
-            matchEnded &&
-            isCreator
-            ) {
-              e.preventDefault();
-            e.returnValue = '';
-    }
-  };
+            useEffect(() => {
+              const handleBeforeUnload = (e) => {
+                if (
+                        screen === 'game' &&
+                        isMultiplayer &&
+                        matchEnded &&
+                        isCreator
+                        ) {
+                          e.preventDefault();
+                        e.returnValue = '';
+                }
+              };
 
             window.addEventListener('beforeunload', handleBeforeUnload);
-  return () => {
+            return () => {
               window.removeEventListener('beforeunload', handleBeforeUnload);
-  };
-}, [screen, isMultiplayer, matchEnded, isCreator]);
+            };
+          }, [screen, isMultiplayer, matchEnded, isCreator]);
 
 
       useEffect(()=>{
@@ -581,18 +579,19 @@ useEffect(() => {
             setPlayerStats(normalizePlayerStats(d.playerStats));
             setGoalEvents(d.goalEvents ?? []);
             setPenaltyEvents(d.penaltyEvents ?? []);
+            setOtherEvents(d.otherEvents ?? []);
             setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
                  setIsCreator(d.creatorId === userId.current);
       
-// Check if user was in match but is now removed (kicked)
-const isCurrentlyInMatch = !!(d.users && d.users[userId.current]);
-const isOwner = d.creatorId === userId.current;
-const amIKicked = d.kickedUsers && d.kickedUsers[userId.current];
+      // Check if user was in match but is now removed (kicked)
+      const isCurrentlyInMatch = !!(d.users && d.users[userId.current]);
+      const isOwner = d.creatorId === userId.current;
+      const amIKicked = d.kickedUsers && d.kickedUsers[userId.current];
 
             if (!isViewer && !isOwner && isMultiplayer && wasInMatch) {
-  // SCENARIO 1: Jag är kickad
-  if (amIKicked) {
+            // SCENARIO 1: Jag är kickad
+            if (amIKicked) {
               localStorage.removeItem('multiplayerMatch');
             resetGameState();
             setIsMultiplayer(false);
@@ -601,18 +600,18 @@ const amIKicked = d.kickedUsers && d.kickedUsers[userId.current];
             setScreen('start');
             alert('You have been removed from this match. You can join as a viewer instead using the viewer code (-V)');
             return;
-  }
+            }
 
-  // SCENARIO 2: Matchen är inte slut, jag var inne, men nu är jag inte det (och inte kickad)
-  if (!matchEnded && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0) {
-              // Möjligt Network-issue, visa reconect-prompt
-              localStorage.removeItem('multiplayerMatch');
-            resetGameState();
-            setIsMultiplayer(false);
-            setMatchCode('');
-            setScreen('start');
-            alert('You have been disconnected from the match');
-  }
+            // SCENARIO 2: Matchen är inte slut, jag var inne, men nu är jag inte det (och inte kickad)
+            if (!matchEnded && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0) {
+                        // Möjligt Network-issue, visa reconect-prompt
+                        localStorage.removeItem('multiplayerMatch');
+                      resetGameState();
+                      setIsMultiplayer(false);
+                      setMatchCode('');
+                      setScreen('start');
+                      alert('You have been disconnected from the match');
+            }
 }
 
             // Sätt wasInMatch ENDAST när vi verkligen är inne
@@ -712,10 +711,10 @@ const kickEditor=(editorId)=>{
   }
 };
 
-const reconnectToMatch=()=>{
+    const reconnectToMatch=()=>{
               setWasInMatch(false);
             try{
-    const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
+            const saved=JSON.parse(localStorage.getItem('multiplayerMatch'));
             resetGameState();
             setGameMode('multi');
             localStorage.setItem('gameMode','multi');
@@ -724,8 +723,8 @@ const reconnectToMatch=()=>{
             setIsMultiplayer(true);
             setScreen('game');
             setShowReconnectPrompt(false);
-  }catch(e){
-              resetGameState();
+            }catch(e){
+            resetGameState();
             setGameMode('multi');
             localStorage.setItem('gameMode','multi');
             setMatchCode(savedMatchCode);
@@ -748,7 +747,7 @@ const startNewSession=()=>{
 const createMatch=()=>{
   // Check if user is logged in
   if(!currentUser){
-              alert('You must be logged in to create a game');
+            alert('You must be logged in to create a game');
             setScreen('start');
             return;
   }
@@ -811,6 +810,7 @@ const startMatch=()=>{
     playerStats:{home:{players:{}},away:{players:{}}},
     goalEvents:[],
     penaltyEvents:[],
+    otherEvents:[],
     ended:false,
     createdAt:Date.now(),
     creatorId:userId.current,
@@ -822,8 +822,8 @@ const startMatch=()=>{
               [userId.current]:{
               joinedAt:Date.now(),
             role:'editor'
-      }
-    },
+              }
+            },
 
             // Viewers lista
             viewers:{ },
@@ -833,7 +833,7 @@ const startMatch=()=>{
 
             viewerCode:viewerCode
   }).then(()=>{
-              resetGameState();
+            resetGameState();
             setGameMode('multi');
             localStorage.setItem('gameMode','multi');
             setIsMultiplayer(true);
@@ -905,8 +905,8 @@ if(!isViewerCode && d.kickedUsers && d.kickedUsers[userId.current]){
 
             if(d.ended){
             // NY KOD: Erbjud att joina som viewer
-if(window.confirm('This game has ended. Join as viewer to see final stats?')){
-              resetGameState();
+            if(window.confirm('This game has ended. Join as viewer to see final stats?')){
+            resetGameState();
             setGameMode('multi');
             localStorage.setItem('gameMode','multi');
             setMatchCode(baseCode);
@@ -917,12 +917,12 @@ if(window.confirm('This game has ended. Join as viewer to see final stats?')){
             localStorage.setItem('multiplayerMatch',JSON.stringify({code:baseCode,timestamp:Date.now(),isViewer:true,gameMode:'multi'}));
             setScreen('game');
             if(window.gtag)gtag('event','match_joined_viewer_ended',{match_code:baseCode});
-        }else{
+            }else{
               setError('This game has already ended');
         }
       }
             else{
-              resetGameState();
+            resetGameState();
             setGameMode('multi');
             localStorage.setItem('gameMode','multi');
             setMatchCode(baseCode);
@@ -1333,10 +1333,10 @@ const exitToStart=()=>{
 
             // Save team info to database
             await db.ref(`users/${user.uid}`).set({
-          email: email,
-          teamName: teamName.trim(),
-          createdAt: Date.now()
-        });
+              email: email,
+              teamName: teamName.trim(),
+              createdAt: Date.now()
+            });
         
         onSuccess();
       } else {
@@ -1640,7 +1640,7 @@ const updateStat=(team,stat,delta)=>{
 
             // Om det är saves, uppdatera både totala saves OCH den aktiva målvaktens saves
             if(stat==='Saves'){
-  const activeGoalie = activeGoalies[team];
+            const activeGoalie = activeGoalies[team];
 
             // Uppdatera aktiv målvakts saves
             ns[currentPeriod][team+'Goalie'][activeGoalie].saves = Math.max(0, (ns[currentPeriod][team+'Goalie'][activeGoalie].saves || 0) + delta);
@@ -1672,10 +1672,10 @@ const updateStat=(team,stat,delta)=>{
   
             setPeriodStats(ns);
             const k=`${team}${stat}${currentPeriod}`;
-  setSparkleStats(p=>({...p,[k]:true}));
-  setTimeout(()=>setSparkleStats(p=>({...p,[k]:false})),600);
-  if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns})
-};
+            setSparkleStats(p=>({...p,[k]:true}));
+            setTimeout(()=>setSparkleStats(p=>({...p,[k]:false})),600);
+            if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns})
+          };
 
 
 
@@ -1844,7 +1844,8 @@ const handlePlayerInputChange = (value, idx) => {
     setPlayerStats({home:{players:{}},away:{players:{}}});
     setGoalEvents([]);
     setPenaltyEvents([]);
-    if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}},goalEvents:[],penaltyEvents:[]});
+    setOtherEvents([]);
+    if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({periodStats:ns,currentPeriod:1,playerStats:{home:{players:{}},away:{players:{}}},goalEvents:[],penaltyEvents:[],otherEvents:[]});
     else localStorage.removeItem('juniorLeagueGame')
   }
 };
@@ -2277,6 +2278,11 @@ const resetModeState = () => {
   setPenaltyTime('');
   setPenaltyPlayer('');
   setEditingPenaltyIndex(null);
+  setOtherWizardOpen(false);
+  setOtherTeam(null);
+  setOtherEventType('timeout');
+  setOtherTime('');
+  setEditingOtherIndex(null);
 };
       
 const renderPlayerTable=(team)=>{
@@ -2612,6 +2618,24 @@ return(
   Penalty
 </button>
 
+<button
+  onClick={()=>{
+  resetModeState();
+  setPlayerStatsMoment('Other');
+  setOtherWizardOpen(true);
+  setOtherTeam(null);
+}}
+  disabled={isViewer || matchEnded}
+  className={`px-3 py-1 rounded text-sm font-bold ${
+    isViewer || matchEnded 
+      ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+      : otherWizardOpen
+        ? 'bg-yellow-400 text-blue-900'
+        : darkMode?'bg-gray-700':'bg-white bg-opacity-20'
+  }`}
+>
+  Other
+</button>
 
 
                 <div className="flex gap-2 items-center flex-wrap">
@@ -2832,28 +2856,29 @@ return(
   
   
   // Reset wizard
-setPenaltyWizardOpen(false);
-setPenaltyTeam(null);
-setPenaltyType("2'");
-setPenaltyInfraction('');
-setPenaltyTime('');
-setPenaltyPlayer('');
-setEditingPenaltyIndex(null);
-// Collapse form, expand timeline, highlight new event
-setPenaltyFormCollapsed(true);
-setPenaltyTimelineCollapsed(false);
-const eventId = `penalty-${isEditing ? editingPenaltyIndex : penaltyEvents.length}`;
-setHighlightEventId(eventId);
-setTimeout(() => setHighlightEventId(null), 2000);
+  setPenaltyWizardOpen(false);
+  setPenaltyTeam(null);
+  setPenaltyType("2'");
+  setPenaltyInfraction('');
+  setPenaltyTime('');
+  setPenaltyPlayer('');
+  setEditingPenaltyIndex(null);
+            
+  // Collapse form, expand timeline, highlight new event
+  setPenaltyFormCollapsed(true);
+  setPenaltyTimelineCollapsed(false);
+  const eventId = `penalty-${isEditing ? editingPenaltyIndex : penaltyEvents.length}`;
+  setHighlightEventId(eventId);
+  setTimeout(() => setHighlightEventId(null), 2000);
 
-// Scroll to timeline
-setTimeout(() => {
-  const timelineEl = document.querySelector('.penalty-timeline');
-  if(timelineEl) {
-    timelineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-}, 100);
-}}
+  // Scroll to timeline
+  setTimeout(() => {
+    const timelineEl = document.querySelector('.penalty-timeline');
+    if(timelineEl) {
+      timelineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 100);
+  }}
           disabled={!penaltyTeam || !penaltyPlayer}
           className={penaltyTeam && penaltyPlayer
             ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
@@ -2892,7 +2917,7 @@ setTimeout(() => {
       <div className="mb-4">
         <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
          Who scored?
-</label>
+        </label>
         <div className="grid grid-cols-2 gap-3">
         <button
             onClick={()=>setRecordingGoal('home')}
@@ -3228,8 +3253,8 @@ setTimeout(() => {
                         setGoalSOGPlayers(event.sog||[]);
                         setGoalWizardStep(1);
                         setGoalFormCollapsed(false);
-                            setGoalTimelineCollapsed(true);
-                            setTimeout(() => {
+                        setGoalTimelineCollapsed(true);
+                        setTimeout(() => {
                               const formEl = document.querySelector('.goal-form');
                               if(formEl) {
                                 formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3383,8 +3408,8 @@ setTimeout(() => {
                           setPenaltyPlayer(event.player);
                           setPenaltyWizardOpen(true);
                           setPenaltyFormCollapsed(false);
-                              setPenaltyTimelineCollapsed(true);
-                              setTimeout(() => {
+                          setPenaltyTimelineCollapsed(true);
+                          setTimeout(() => {
                                 const formEl = document.querySelector('.penalty-form');
                                 if(formEl) {
                                   formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3687,7 +3712,7 @@ if(screen==='start')return(
   <span>JOIN GAME</span>
 </button>
                
-                {/* Join Match as Viewer - always available */}
+                {/* Join Game as Viewer - always available */}
                 <button 
                   onClick={()=>setScreen('join')}
                   className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600':'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
@@ -3704,7 +3729,7 @@ if(screen==='start')return(
                 </button>
               </div>
               
-{/* Bottom section with admin and logout */}
+              {/* Bottom section with admin and logout */}
               <div className="mt-6 pt-6 border-t border-opacity-20 space-y-2">
                 {currentUser && isAdmin && (
                   <button 
@@ -3955,16 +3980,14 @@ if(screen==='create')return(
 
 if(focusMode&&screen==='game'){
   const homeTeam = goalFocusSwapped ? 'away' : 'home';
- const awayTeam = goalFocusSwapped ? 'home' : 'away';
+  const awayTeam = goalFocusSwapped ? 'home' : 'away';
   const homeName_ = goalFocusSwapped ? awayName : homeName;
   const awayName_ = goalFocusSwapped ? homeName : awayName;
   const homeGoals = goalFocusSwapped ? totals.awayScore : totals.homeScore;
   const awayGoals = goalFocusSwapped ? totals.homeScore : totals.awayScore;
   const homeSaves = goalFocusSwapped ? totals.awaySaves : totals.homeSaves;
   const awaySaves = goalFocusSwapped ? totals.homeSaves : totals.awaySaves;
-
-
-const renderGoalieCard = (team, name, goals, saves) => {
+  const renderGoalieCard = (team, name, goals, saves) => {
   const activeGoalie = activeGoalies[team];
   const currentPeriodSaves = periodStats[currentPeriod]?.[team+'Saves'] ?? 0;
   
@@ -4038,23 +4061,23 @@ const renderGoalieCard = (team, name, goals, saves) => {
 };
 
 
-  {/* Statistics Section */}
+        {/* Statistics Section */}
         <div className="space-y-3">
           {[
             {team: homeTeam, name: homeName_, goals: homeGoals, saves: homeSaves},
             {team: awayTeam, name: awayName_, goals: awayGoals, saves: awaySaves}
          ].map(teamStats => {
-  const selectedGoalie = selectedGoalieStats[teamStats.team];
+            const selectedGoalie = selectedGoalieStats[teamStats.team];
                         
-  const periodKeys = Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b));
+            const periodKeys = Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b));
             
             // Calculate per goalie per period
             const tableData = periodKeys.map(p => {
-              const goalieData = periodStats[p]?.[teamStats.team+'Goalie'];
-              const starterSaves = goalieData?.starter?.saves ?? 0;
-              const starterGA = goalieData?.starter?.ga ?? 0;
-              const backupSaves = goalieData?.backup?.saves ?? 0;
-              const backupGA = goalieData?.backup?.ga ?? 0;
+            const goalieData = periodStats[p]?.[teamStats.team+'Goalie'];
+            const starterSaves = goalieData?.starter?.saves ?? 0;
+            const starterGA = goalieData?.starter?.ga ?? 0;
+            const backupSaves = goalieData?.backup?.saves ?? 0;
+            const backupGA = goalieData?.backup?.ga ?? 0;
               
               return { 
                 period: p, 
@@ -4086,7 +4109,6 @@ const renderGoalieCard = (team, name, goals, saves) => {
             const backupTotalSOG = backupTotalSaves + backupTotalGA;
             const starterTotalSvsPct = starterTotalSOG === 0 ? '-' : ((starterTotalSaves / starterTotalSOG) * 100).toFixed(1);
             const backupTotalSvsPct = backupTotalSOG === 0 ? '-' : ((backupTotalSaves / backupTotalSOG) * 100).toFixed(1);
-            
             const isExpanded = expandedGoalieStats[teamStats.team];
             
             // Choose which goalie's data to display
@@ -4109,10 +4131,10 @@ const renderGoalieCard = (team, name, goals, saves) => {
                 {isExpanded && (
                   <div className="p-4">
                     
-{/* Goalie Toggle */}
+                {/* Goalie Toggle */}
                     <div className="mb-3 flex gap-1">
                       <button
-  onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'starter'}))}
+                        onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'starter'}))}
                         className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
                           selectedGoalie === 'starter'
                             ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
@@ -4122,7 +4144,7 @@ const renderGoalieCard = (team, name, goals, saves) => {
                         Starter
                       </button>
                       <button
-  onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'backup'}))}
+                        onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'backup'}))}
                         className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
                           selectedGoalie === 'backup'
                             ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
@@ -4185,8 +4207,6 @@ const renderGoalieCard = (team, name, goals, saves) => {
           })}
         </div>
 
-
-
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
       <audio ref={audioRefs.homeGoal} src="homeGoal.mp3"/>
@@ -4195,9 +4215,6 @@ const renderGoalieCard = (team, name, goals, saves) => {
       <audio ref={audioRefs.awayPenalty} src="awayPenalty.mp3"/>
       <audio ref={audioRefs.intro} src="intro.mp3"/>
 
-
-
-
  <div className={`min-h-screen ${darkMode?'bg-gray-900':'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
             <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-3 py-2 shadow-lg sticky top-0 z-50`}>
               <div className="max-w-7xl mx-auto">
@@ -4205,8 +4222,8 @@ const renderGoalieCard = (team, name, goals, saves) => {
                   <div className="flex gap-2 items-center flex-wrap">
 
     {[1,2,3].map(p=><button key={p} onClick={()=>{
-setCurrentPeriod(p);
-if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
+    setCurrentPeriod(p);
+    if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
             {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-2 py-1 rounded text-sm font-bold ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
             {!periodStats[4]&&currentPeriod===3&&(
               <button
@@ -4224,8 +4241,7 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                 +OT
               </button>
             )}
-          
-
+        
  <button 
   onClick={()=>setGoalFocusSwapped(!goalFocusSwapped)} 
   className={`px-3 py-1 rounded font-bold ${darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
@@ -4233,8 +4249,6 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
 >
   ⇄
 </button>
-
-
 
           </div>
           <button
@@ -4256,8 +4270,6 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
           {renderGoalieCard(awayTeam, awayName_, awayGoals, awaySaves)}
         </div>
     
-  
-
     {/* Statistics Section */}
         <div className="space-y-3">
           {[
@@ -4306,27 +4318,26 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
             const backupTotalSOG = backupTotalSaves + backupTotalGA;
             const starterTotalSvsPct = starterTotalSOG === 0 ? '-' : ((starterTotalSaves / starterTotalSOG) * 100).toFixed(1);
             const backupTotalSvsPct = backupTotalSOG === 0 ? '-' : ((backupTotalSaves / backupTotalSOG) * 100).toFixed(1);
-            
             const isExpanded = expandedGoalieStats[teamStats.team];
             
            // Choose which goalie's data to display
-const displayData = selectedGoalie === 'total'
-  ? { 
-      tableData: tableData.map(d => ({
-        period: d.period, 
-        saves: d.starter.saves + d.backup.saves,
-        ga: d.starter.ga + d.backup.ga,
-        sog: d.starter.sog + d.backup.sog,
-        svsPct: (d.starter.sog + d.backup.sog) === 0 ? '-' : (((d.starter.saves + d.backup.saves) / (d.starter.sog + d.backup.sog)) * 100).toFixed(1)
-      })), 
-      total: {
-        saves: starterTotalSaves + backupTotalSaves, 
-        ga: starterTotalGA + backupTotalGA, 
-        sog: starterTotalSOG + backupTotalSOG, 
-        svsPct: (starterTotalSOG + backupTotalSOG) === 0 ? '-' : (((starterTotalSaves + backupTotalSaves) / (starterTotalSOG + backupTotalSOG)) * 100).toFixed(1)
-      }
-    }
-  : selectedGoalie === 'starter'
+          const displayData = selectedGoalie === 'total'
+            ? { 
+                tableData: tableData.map(d => ({
+                  period: d.period, 
+                  saves: d.starter.saves + d.backup.saves,
+                  ga: d.starter.ga + d.backup.ga,
+                  sog: d.starter.sog + d.backup.sog,
+                  svsPct: (d.starter.sog + d.backup.sog) === 0 ? '-' : (((d.starter.saves + d.backup.saves) / (d.starter.sog + d.backup.sog)) * 100).toFixed(1)
+                })), 
+                total: {
+                  saves: starterTotalSaves + backupTotalSaves, 
+                  ga: starterTotalGA + backupTotalGA, 
+                  sog: starterTotalSOG + backupTotalSOG, 
+                  svsPct: (starterTotalSOG + backupTotalSOG) === 0 ? '-' : (((starterTotalSaves + backupTotalSaves) / (starterTotalSOG + backupTotalSOG)) * 100).toFixed(1)
+                }
+              }
+            : selectedGoalie === 'starter'
               ? { tableData: tableData.map(d => ({period: d.period, ...d.starter})), total: {saves: starterTotalSaves, ga: starterTotalGA, sog: starterTotalSOG, svsPct: starterTotalSvsPct} }
               : { tableData: tableData.map(d => ({period: d.period, ...d.backup})), total: {saves: backupTotalSaves, ga: backupTotalGA, sog: backupTotalSOG, svsPct: backupTotalSvsPct} };
             
@@ -4347,39 +4358,39 @@ const displayData = selectedGoalie === 'total'
 
 
 
-{/* Goalie Toggle */}
-<div className="mb-3 flex gap-1">
-  <button
-    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'total'}))}
-    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
-      selectedGoalie === 'total'
-        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
-        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-    }`}
-  >
-    All
-  </button>
-  <button
-    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'starter'}))}
-    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
-      selectedGoalie === 'starter'
-        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
-        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-    }`}
-  >
-    Starter
-  </button>
-  <button
-    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'backup'}))}
-    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
-      selectedGoalie === 'backup'
-        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
-        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-    }`}
-  >
-    Backup
-  </button>
-</div>                    
+                {/* Goalie Toggle */}
+                <div className="mb-3 flex gap-1">
+                  <button
+                    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'total'}))}
+                    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+                      selectedGoalie === 'total'
+                        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+                        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'starter'}))}
+                    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+                      selectedGoalie === 'starter'
+                        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+                        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                    }`}
+                  >
+                    Starter
+                  </button>
+                  <button
+                    onClick={() => setSelectedGoalieStats(prev => ({...prev, [teamStats.team]: 'backup'}))}
+                    className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${
+                      selectedGoalie === 'backup'
+                        ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
+                        : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                    }`}
+                  >
+                    Backup
+                  </button>
+                </div>                    
                     <div className="overflow-x-auto">
                       <table className={`w-full text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                         <thead>
@@ -4475,7 +4486,7 @@ return(
   <div className="flex gap-2 items-center">
     
     {[1,2,3].map(p=><button key={p} onClick={()=>{
-setCurrentPeriod(p);
+    setCurrentPeriod(p);
 if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:p})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod===p?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {periodStats[4]&&<button onClick={()=>{setCurrentPeriod(4);if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({currentPeriod:4})}} disabled={matchEnded||isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod===4?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}>OT</button>}
                   {!periodStats[4]&&currentPeriod===3&&(
@@ -4528,9 +4539,6 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
   <button onClick={()=>setShowSettings(!showSettings)} className={`${darkMode?'bg-gray-700':'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}><IconSettings /></button>
 </div>
               </div>
-
-
-
 
          {showSettings&&<div className={`${darkMode?'bg-gray-700 text-white':'bg-white text-gray-800'} rounded-lg p-4 mb-4 max-h-[70vh] overflow-y-auto`}>
                 <div className="flex justify-between items-center mb-4">
@@ -4811,10 +4819,6 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                 </div>
               </div>}
 
-
-
-
-
 <div className="grid grid-cols-2 gap-2 mb-2">
   {[
     {name:homeName,score:totals.homeScore,saves:totals.homeSaves,team:'home'},
@@ -4982,7 +4986,6 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                 </div>
               </div>
 
-
              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3`}>
                 {!spotifyLoaded&&!spotifyLoading?<button onClick={loadSpotify} className={`w-full ${darkMode?'bg-gray-700 hover:bg-gray-600':'bg-gray-600 hover:bg-gray-700'} text-white py-8 rounded-lg font-semibold text-lg transition-colors`}>Load Spotify</button>:spotifyLoading?<div className={`py-8 text-center ${darkMode?'text-gray-300':'text-gray-600'}`}><div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent rounded-full mb-2"></div><div>Loading...</div></div>:<div style={{opacity:0,animation:'fadeIn 0.5s ease-in forwards'}}>
                   {spotifyFallback||!getSpotifyUrl(spotifyPlaylist)?(
@@ -5021,7 +5024,6 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
               </div>
              
             </div>}
-
 
 {activeTab==='stats'&&<div>
               {Object.keys(periodStats).sort((a,b)=>parseInt(a)-parseInt(b)).map(p=>{
@@ -5070,103 +5072,103 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                       const hasPlayersWithData=Object.keys(homePlayers).some(pNum=>homePlayers[pNum]?.periods?.[p])||
                                                 Object.keys(awayPlayers).some(pNum=>awayPlayers[pNum]?.periods?.[p]);
                       
-                      if(!hasPlayersWithData)return null;
-                      
-                      return(
+                      if (!hasPlayersWithData) return null;
+
+                      return (
                         <div className="mt-4 pt-4 border-t">
                           <button
-                            onClick={()=>setExpandedPlayerStats(prev=>({...prev,[p]:!prev[p]}))}
-                            className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
+                            onClick={() => setExpandedPlayerStats(prev => ({ ...prev, [p]: !prev[p] }))}
+                            className={`w-full text-left font-semibold text-sm ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
                           >
                             <span>Player Statistics</span>
-                            
-                                <span>{expandedPlayerStats[p]?<IconChevronUp />:<IconChevronDown />}</span>
+
+                            <span>{expandedPlayerStats[p] ? <IconChevronUp /> : <IconChevronDown />}</span>
                           </button>
-                          
-                          {expandedPlayerStats[p]&&(
+
+                          {expandedPlayerStats[p] && (
                             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {['home','away'].map(team=>{
-                                const teamName=team==='home'?homeName:awayName;
-                                const players=playerStats[team]?.players||{};
+                              {['home', 'away'].map(team => {
+                                const teamName = team === 'home' ? homeName : awayName;
+                                const players = playerStats[team]?.players || {};
                                 const playerNums = Object.keys(players)
-  .filter(pNum => {
-    // Visa spelare om de har stats ELLER penalties för denna period
-    const hasStats = players[pNum]?.periods?.[p];
-    const hasPenalties = penaltyEvents.some(e => 
-      e.team === team && 
-      e.player === pNum && 
-      e.period === parseInt(p)
-    );
-    return hasStats || hasPenalties;
-  })
-  .sort((a,b)=>parseInt(a)-parseInt(b));
-                                
-                                if(playerNums.length===0)return null;
-                                
-                                return(
-                                  <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
-                                    <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
+                                  .filter(pNum => {
+                                    // Visa spelare om de har stats ELLER penalties för denna period
+                                    const hasStats = players[pNum]?.periods?.[p];
+                                    const hasPenalties = penaltyEvents.some(e =>
+                                      e.team === team &&
+                                      e.player === pNum &&
+                                      e.period === parseInt(p)
+                                    );
+                                    return hasStats || hasPenalties;
+                                  })
+                                  .sort((a, b) => parseInt(a) - parseInt(b));
+
+                                if (playerNums.length === 0) return null;
+
+                                return (
+                                  <div key={team} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded p-3`}>
+                                    <div className={`font-semibold mb-2 ${darkMode ? 'text-white' : ''}`}>{teamName}</div>
                                     <div className="overflow-x-auto">
                                       <table className="w-full text-xs">
                                         <thead>
-  <tr className={`${darkMode?'text-gray-400':'text-gray-600'} text-sm`}>
-    <th className="text-left px-2 py-2 font-semibold">#</th>
-    <th className="text-center px-2 py-2 font-semibold">G</th>
-    <th className="text-center px-2 py-2 font-semibold">A</th>
-    <th className="text-center px-2 py-2 font-semibold">+/-</th>
-    <th className="text-center px-2 py-2 font-semibold">FO</th>
-    <th className="text-center px-2 py-2 font-semibold">FO%</th>
-    <th className="text-center px-2 py-2 font-semibold">SOG</th>
-    <th className="text-center px-2 py-2 font-semibold">PIM</th>
-  </tr>
-</thead>
+                                          <tr className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                                            <th className="text-left px-2 py-2 font-semibold">#</th>
+                                            <th className="text-center px-2 py-2 font-semibold">G</th>
+                                            <th className="text-center px-2 py-2 font-semibold">A</th>
+                                            <th className="text-center px-2 py-2 font-semibold">+/-</th>
+                                            <th className="text-center px-2 py-2 font-semibold">FO</th>
+                                            <th className="text-center px-2 py-2 font-semibold">FO%</th>
+                                            <th className="text-center px-2 py-2 font-semibold">SOG</th>
+                                            <th className="text-center px-2 py-2 font-semibold">PIM</th>
+                                          </tr>
+                                        </thead>
                                         <tbody>
-                                          {playerNums.map(pNum=>{
-                                            const pStats=players[pNum].periods[p];
+                                          {playerNums.map(pNum => {
+                                            const pStats = players[pNum].periods[p];
                                             const pim = calculatePIMFromEvents(team, pNum, parseInt(p));
-                                            const onIcePlus=pStats?.['OnIce+']||0;
-                                            const onIceMinus=pStats?.['OnIce-']||0;
-                                            const plusMinus=onIcePlus-onIceMinus;
-                                            const foPlus=pStats?.['FO+']||0;
-                                            const foMinus=pStats?.['FO-']||0;
-                                            const foTotal=foPlus+foMinus;
-                                            const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
-                                            return(
-                                              <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'} text-sm`}>
-  <td className="font-bold px-2 py-2">{pNum}</td>
-  <td className="text-center px-2 py-2">{pStats?.['G']||0}</td>
-  <td className="text-center px-2 py-2">{pStats?.['A']||0}</td>
-  <td className="text-center px-2 py-2 font-semibold">
-  {plusMinus === 0 ? '0' : `${plusMinus > 0 ? '+' : ''}${plusMinus}`}
-</td>
-  <td className="text-center px-2 py-2">{foTotal}</td>
-  <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
-  <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
-  <td className="text-center px-2 py-2">{pim}</td>
-</tr>
+                                            const onIcePlus = pStats?.['OnIce+'] || 0;
+                                            const onIceMinus = pStats?.['OnIce-'] || 0;
+                                            const plusMinus = onIcePlus - onIceMinus;
+                                            const foPlus = pStats?.['FO+'] || 0;
+                                            const foMinus = pStats?.['FO-'] || 0;
+                                            const foTotal = foPlus + foMinus;
+                                            const foPct = foTotal === 0 ? '-' : ((foPlus / foTotal) * 100).toFixed(0);
+                                            return (
+                                              <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-sm`}>
+                                                <td className="font-bold px-2 py-2">{pNum}</td>
+                                                <td className="text-center px-2 py-2">{pStats?.['G'] || 0}</td>
+                                                <td className="text-center px-2 py-2">{pStats?.['A'] || 0}</td>
+                                                <td className="text-center px-2 py-2 font-semibold">
+                                                  {plusMinus === 0 ? '0' : `${plusMinus > 0 ? '+' : ''}${plusMinus}`}
+                                                </td>
+                                                <td className="text-center px-2 py-2">{foTotal}</td>
+                                                <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct !== '-' ? '%' : ''}</td>
+                                                <td className="text-center px-2 py-2">{pStats?.['SOG'] || 0}</td>
+                                                <td className="text-center px-2 py-2">{pim}</td>
+                                              </tr>
                                             );
                                           })}
                                           {/* TOTAL ROW */}
                                           {(() => {
                                             let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
-playerNums.forEach(pNum => {
-  const pStats = players[pNum].periods[p];
-  totalG += pStats?.['G'] || 0;
-  totalA += pStats?.['A'] || 0;
-  totalFOPlus += pStats?.['FO+'] || 0;
-  totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
-  totalSOG += pStats?.['SOG'] || 0;
-  totalPIM += calculatePIMFromEvents(team, pNum, parseInt(p));
-});
+                                            playerNums.forEach(pNum => {
+                                              const pStats = players[pNum].periods[p];
+                                              totalG += pStats?.['G'] || 0;
+                                              totalA += pStats?.['A'] || 0;
+                                              totalFOPlus += pStats?.['FO+'] || 0;
+                                              totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
+                                              totalSOG += pStats?.['SOG'] || 0;
+                                              totalPIM += calculatePIMFromEvents(team, pNum, parseInt(p));
+                                            });
                                             const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
                                             return (
-                                              <tr className={`border-t-2 ${darkMode?'border-gray-500 bg-gray-600':'border-gray-400 bg-gray-100'} text-sm font-bold`}>
+                                              <tr className={`border-t-2 ${darkMode ? 'border-gray-500 bg-gray-600' : 'border-gray-400 bg-gray-100'} text-sm font-bold`}>
                                                 <td className="px-2 py-2">TOT</td>
                                                 <td className="text-center px-2 py-2">{totalG}</td>
                                                 <td className="text-center px-2 py-2">{totalA}</td>
                                                 <td className="text-center px-2 py-2">-</td>
                                                 <td className="text-center px-2 py-2">{totalFO}</td>
-                                                <td className="text-center px-2 py-2">{teamFOPct}{teamFOPct!=='-'?'%':''}</td>
+                                                <td className="text-center px-2 py-2">{teamFOPct}{teamFOPct !== '-' ? '%' : ''}</td>
                                                 <td className="text-center px-2 py-2">{totalSOG}</td>
                                                 <td className="text-center px-2 py-2">{totalPIM}</td>
                                               </tr>
@@ -5187,149 +5189,149 @@ playerNums.forEach(pNum => {
                 );
               })}
 
-<div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-4 mb-4`}>
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className={`text-xl font-bold ${darkMode?'text-white':''}`}>FINAL</h3>
+        <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow p-4 mb-4`}>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : ''}`}>FINAL</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {['home', 'away'].map(team => {
+              const name = team === 'home' ? homeName : awayName;
+              const score = team === 'home' ? totals.homeScore : totals.awayScore;
+              const saves = team === 'home' ? totals.homeSaves : totals.awaySaves;
+              const oppTeam = team === 'home' ? 'away' : 'home';
+              const oppScore = team === 'home' ? totals.awayScore : totals.homeScore;
+              const shotsFor = (team === 'home' ? totals.awaySaves : totals.homeSaves) + score;
+              const shotsAgainst = saves + oppScore;
+              const color = darkMode ? (team === 'home' ? 'bg-blue-900 bg-opacity-30 border-blue-700' : 'bg-red-900 bg-opacity-30 border-red-700') : (team === 'home' ? 'bg-blue-50' : 'bg-red-50');
+
+              return (
+                <div key={team} className={`${color} ${darkMode ? 'border' : ''} rounded p-3`}>
+                  <div className={`font-semibold mb-2 ${darkMode ? 'text-white' : ''}`}>{name}</div>
+                  <div className={`text-sm space-y-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <div className="flex justify-between"><span>Goals:</span><span className="font-bold text-lg">{score}</span></div>
+                    <div className="flex justify-between"><span>SOG:</span><span className="font-bold">{shotsFor}</span></div>
+                    <div className="flex justify-between"><span>Saves:</span><span className="font-bold">{saves}</span></div>
+                    <div className="flex justify-between"><span>SA:</span><span className="font-bold">{shotsAgainst}</span></div>
+                    <div className="flex justify-between border-t pt-1"><span>SVS %:</span><span className="font-bold">{calcSP(saves, oppScore)}%</span></div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {['home','away'].map(team=>{
-                    const name=team==='home'?homeName:awayName;
-                    const score=team==='home'?totals.homeScore:totals.awayScore;
-                    const saves=team==='home'?totals.homeSaves:totals.awaySaves;
-                    const oppTeam=team==='home'?'away':'home';
-                    const oppScore=team==='home'?totals.awayScore:totals.homeScore;
-                    const shotsFor=(team==='home'?totals.awaySaves:totals.homeSaves)+score;
-                    const shotsAgainst=saves+oppScore;
-                    const color=darkMode?(team==='home'?'bg-blue-900 bg-opacity-30 border-blue-700':'bg-red-900 bg-opacity-30 border-red-700'):(team==='home'?'bg-blue-50':'bg-red-50');
-                    
-                    return(
-                      <div key={team} className={`${color} ${darkMode?'border':''} rounded p-3`}>
-                        <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{name}</div>
-                        <div className={`text-sm space-y-1 ${darkMode?'text-gray-300':'text-gray-700'}`}>
-                          <div className="flex justify-between"><span>Goals:</span><span className="font-bold text-lg">{score}</span></div>
-                          <div className="flex justify-between"><span>SOG:</span><span className="font-bold">{shotsFor}</span></div>
-                          <div className="flex justify-between"><span>Saves:</span><span className="font-bold">{saves}</span></div>
-                          <div className="flex justify-between"><span>SA:</span><span className="font-bold">{shotsAgainst}</span></div>
-                          <div className="flex justify-between border-t pt-1"><span>SVS %:</span><span className="font-bold">{calcSP(saves,oppScore)}%</span></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+              );
+            })}
+          </div>
                 
-                {(playerStats.home?.players||playerStats.away?.players)&&(()=>{
-                  const homePlayers=playerStats.home?.players||{};
-                  const awayPlayers=playerStats.away?.players||{};
-                  
-                  if(Object.keys(homePlayers).length===0&&Object.keys(awayPlayers).length===0)return null;
-                  
-                  return(
-                    <div className="mt-4 pt-4 border-t">
-                      <button
-                        onClick={()=>setExpandedPlayerStats(prev=>({...prev,total:!prev.total}))}
-                        className={`w-full text-left font-semibold text-sm ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between mb-3`}
-                      >
-                        <span>Total Player Statistics</span>
-                        <span>{expandedPlayerStats.total?<IconChevronUp />:<IconChevronDown />}</span>
-                      </button>
-                      
-                      {expandedPlayerStats.total&&(
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['home','away'].map(team=>{
-                            const teamName=team==='home'?homeName:awayName;
-                            const players=playerStats[team]?.players||{};
-                            const playerNums=Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
-                            
-                            if(playerNums.length===0)return null;
-                            
-                            return(
-                              <div key={team} className={`${darkMode?'bg-gray-700':'bg-gray-50'} rounded p-3`}>
-                                <div className={`font-semibold mb-2 ${darkMode?'text-white':''}`}>{teamName}</div>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full text-xs">
-                                    <thead>
-  <tr className={`${darkMode?'text-gray-400':'text-gray-600'} text-sm`}>
-    <th className="text-left px-2 py-2 font-semibold">#</th>
-    <th className="text-center px-2 py-2 font-semibold">G</th>
-    <th className="text-center px-2 py-2 font-semibold">A</th>
-    <th className="text-center px-2 py-2 font-semibold">+/-</th>
-    <th className="text-center px-2 py-2 font-semibold">FO</th>
-    <th className="text-center px-2 py-2 font-semibold">FO%</th>
-    <th className="text-center px-2 py-2 font-semibold">SOG</th>
-    <th className="text-center px-2 py-2 font-semibold">PIM</th>
-  </tr>
-</thead>
-                                    <tbody>
-                                      {playerNums.map(pNum=>{
-                                        const pStats=players[pNum].total;
-const onIcePlus=pStats?.['OnIce+']??0;
-const onIceMinus=pStats?.['OnIce-']??0;
-const plusMinus=onIcePlus-onIceMinus;
-const foPlus=pStats?.['FO+']??0;
-const foMinus=pStats?.['FO-']??0;
-const foTotal=foPlus+foMinus;
-const foPct=foTotal===0?'-':((foPlus/foTotal)*100).toFixed(0);
-const pim=calculatePIMFromEvents(team, pNum);  // ÄNDRAD RAD - null som period = alla perioder
+                {(playerStats.home?.players || playerStats.away?.players) && (() => {
+            const homePlayers = playerStats.home?.players || {};
+            const awayPlayers = playerStats.away?.players || {};
 
-                                        return(
-                                          <tr key={pNum} className={`border-t ${darkMode?'border-gray-600':'border-gray-200'} text-sm`}>
-  <td className="font-bold px-2 py-2">{pNum}</td>
-  <td className="text-center px-2 py-2">{pStats?.['G']||0}</td>
-  <td className="text-center px-2 py-2">{pStats?.['A']||0}</td>
-  <td className="text-center px-2 py-2 font-semibold">{plusMinus>=0?'+':''}{plusMinus}</td>
-  <td className="text-center px-2 py-2">{foTotal}</td>
-  <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct!=='-'?'%':''}</td>
-  <td className="text-center px-2 py-2">{pStats?.['SOG']||0}</td>
-  <td className="text-center px-2 py-2">{pim}</td>
-</tr>
-                                        );
-                                      })}
-                                      {/* TOTAL ROW */}
-                                      {(() => {
-  let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
-  playerNums.forEach(pNum => {
-    const pStats = players[pNum].total;
-    totalG += pStats?.['G'] || 0;
-    totalA += pStats?.['A'] || 0;
-    totalFOPlus += pStats?.['FO+'] || 0;
-    totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
-    totalSOG += pStats?.['SOG'] || 0;
-    totalPIM += calculatePIMFromEvents(team, pNum);  
-  });
-                                        const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
-                                        return (
-                                          <tr className={`border-t-2 ${darkMode?'border-gray-500 bg-gray-600':'border-gray-400 bg-gray-100'} text-sm font-bold`}>
-                                            <td className="px-2 py-2">TOT</td>
-                                            <td className="text-center px-2 py-2">{totalG}</td>
-                                            <td className="text-center px-2 py-2">{totalA}</td>
-                                            <td className="text-center px-2 py-2">-</td>
-                                            <td className="text-center px-2 py-2">{totalFO}</td>
-                                            <td className="text-center px-2 py-2">{teamFOPct}{teamFOPct!=='-'?'%':''}</td>
-                                            <td className="text-center px-2 py-2">{totalSOG}</td>
-                                            <td className="text-center px-2 py-2">{totalPIM}</td>
-                                          </tr>
-                                        );
-                                      })()}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            );
-                          })}
+            if (Object.keys(homePlayers).length === 0 && Object.keys(awayPlayers).length === 0) return null;
+
+            return (
+              <div className="mt-4 pt-4 border-t">
+                <button
+                  onClick={() => setExpandedPlayerStats(prev => ({ ...prev, total: !prev.total }))}
+                  className={`w-full text-left font-semibold text-sm ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between mb-3`}
+                >
+                  <span>Total Player Statistics</span>
+                  <span>{expandedPlayerStats.total ? <IconChevronUp /> : <IconChevronDown />}</span>
+                </button>
+
+                {expandedPlayerStats.total && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {['home', 'away'].map(team => {
+                      const teamName = team === 'home' ? homeName : awayName;
+                      const players = playerStats[team]?.players || {};
+                      const playerNums = Object.keys(players).sort((a, b) => parseInt(a) - parseInt(b));
+
+                      if (playerNums.length === 0) return null;
+
+                      return (
+                        <div key={team} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded p-3`}>
+                          <div className={`font-semibold mb-2 ${darkMode ? 'text-white' : ''}`}>{teamName}</div>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                              <thead>
+                                <tr className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                                  <th className="text-left px-2 py-2 font-semibold">#</th>
+                                  <th className="text-center px-2 py-2 font-semibold">G</th>
+                                  <th className="text-center px-2 py-2 font-semibold">A</th>
+                                  <th className="text-center px-2 py-2 font-semibold">+/-</th>
+                                  <th className="text-center px-2 py-2 font-semibold">FO</th>
+                                  <th className="text-center px-2 py-2 font-semibold">FO%</th>
+                                  <th className="text-center px-2 py-2 font-semibold">SOG</th>
+                                  <th className="text-center px-2 py-2 font-semibold">PIM</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {playerNums.map(pNum => {
+                                  const pStats = players[pNum].total;
+                                  const onIcePlus = pStats?.['OnIce+'] ?? 0;
+                                  const onIceMinus = pStats?.['OnIce-'] ?? 0;
+                                  const plusMinus = onIcePlus - onIceMinus;
+                                  const foPlus = pStats?.['FO+'] ?? 0;
+                                  const foMinus = pStats?.['FO-'] ?? 0;
+                                  const foTotal = foPlus + foMinus;
+                                  const foPct = foTotal === 0 ? '-' : ((foPlus / foTotal) * 100).toFixed(0);
+                                  const pim = calculatePIMFromEvents(team, pNum);  // ÄNDRAD RAD - null som period = alla perioder
+
+                                  return (
+                                    <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-sm`}>
+                                      <td className="font-bold px-2 py-2">{pNum}</td>
+                                      <td className="text-center px-2 py-2">{pStats?.['G'] || 0}</td>
+                                      <td className="text-center px-2 py-2">{pStats?.['A'] || 0}</td>
+                                      <td className="text-center px-2 py-2 font-semibold">{plusMinus >= 0 ? '+' : ''}{plusMinus}</td>
+                                      <td className="text-center px-2 py-2">{foTotal}</td>
+                                      <td className="text-center px-2 py-2 font-semibold">{foPct}{foPct !== '-' ? '%' : ''}</td>
+                                      <td className="text-center px-2 py-2">{pStats?.['SOG'] || 0}</td>
+                                      <td className="text-center px-2 py-2">{pim}</td>
+                                    </tr>
+                                  );
+                                })}
+                                {/* TOTAL ROW */}
+                                {(() => {
+                                  let totalG = 0, totalA = 0, totalFO = 0, totalFOPlus = 0, totalSOG = 0, totalPIM = 0;
+                                  playerNums.forEach(pNum => {
+                                    const pStats = players[pNum].total;
+                                    totalG += pStats?.['G'] || 0;
+                                    totalA += pStats?.['A'] || 0;
+                                    totalFOPlus += pStats?.['FO+'] || 0;
+                                    totalFO += (pStats?.['FO+'] || 0) + (pStats?.['FO-'] || 0);
+                                    totalSOG += pStats?.['SOG'] || 0;
+                                    totalPIM += calculatePIMFromEvents(team, pNum);
+                                  });
+                                  const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
+                                  return (
+                                    <tr className={`border-t-2 ${darkMode ? 'border-gray-500 bg-gray-600' : 'border-gray-400 bg-gray-100'} text-sm font-bold`}>
+                                      <td className="px-2 py-2">TOT</td>
+                                      <td className="text-center px-2 py-2">{totalG}</td>
+                                      <td className="text-center px-2 py-2">{totalA}</td>
+                                      <td className="text-center px-2 py-2">-</td>
+                                      <td className="text-center px-2 py-2">{totalFO}</td>
+                                      <td className="text-center px-2 py-2">{teamFOPct}{teamFOPct !== '-' ? '%' : ''}</td>
+                                      <td className="text-center px-2 py-2">{totalSOG}</td>
+                                      <td className="text-center px-2 py-2">{totalPIM}</td>
+                                    </tr>
+                                  );
+                                })()}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })()}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+            );
+          })()}
+        </div>
 
-              <div className="grid grid-cols-3 gap-3 mt-4">
-                <button onClick={copyStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Copy Stats</button>
-                <button onClick={downloadCSV} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Export CSV</button>
-                <button onClick={shareStats} className={`${darkMode?'bg-gray-800 border-gray-600 text-white':'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Share</button> 
-              </div>
-              
-            </div>}
+        <div className="grid grid-cols-3 gap-3 mt-4">
+          <button onClick={copyStats} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Copy Stats</button>
+          <button onClick={downloadCSV} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Export CSV</button>
+          <button onClick={shareStats} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Share</button>
+        </div>
+
+      </div>}
 
          {activeTab === 'referee' && <div>
   <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 p-2">
