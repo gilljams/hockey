@@ -2259,6 +2259,25 @@ const saveGoalHandler = () => {
     }
   }, 100);
 };
+
+// Cleanup function when switching between modes (Goal/Penalty/FO/SOG)
+const resetModeState = () => {
+  setGoalWizardStep(0);
+  setRecordingGoal(null);
+  setEditingGoalIndex(null);
+  setGoalScorers([]);
+  setGoalAssists([]);
+  setGoalPlusPlayers([]);
+  setGoalMinusPlayers([]);
+  setGoalSOGPlayers([]);
+  setPenaltyWizardOpen(false);
+  setPenaltyTeam(null);
+  setPenaltyType("2'");
+  setPenaltyInfraction('');
+  setPenaltyTime('');
+  setPenaltyPlayer('');
+  setEditingPenaltyIndex(null);
+};
       
 const renderPlayerTable=(team)=>{
   const teamName=team==='home'?homeName:awayName;
@@ -2553,11 +2572,8 @@ return(
   <button
     key={m.key}
     onClick={()=>{
+      resetModeState();
       setPlayerStatsMoment(m.key);
-   setPenaltyWizardOpen(false); // Lägg till
-      setGoalWizardStep(0);
-      setRecordingGoal(null);
-      
     }}
     className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment===m.key?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
   >
@@ -2567,10 +2583,9 @@ return(
 
 <button
   onClick={()=>{
+    resetModeState();
     setPlayerStatsMoment('Goal');
     setGoalWizardStep(1);
-    setRecordingGoal(null);
-    setPenaltyWizardOpen(false); // Stäng penalty wizard
   }}
   className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment==='Goal'?'bg-yellow-400 text-blue-900':darkMode?'bg-gray-700':'bg-white bg-opacity-20'}`}
 >
@@ -2579,16 +2594,10 @@ return(
 
 <button
   onClick={()=>{
-  setPlayerStatsMoment('Penalty'); // LÄGG TILL DENNA RAD
-  setGoalWizardStep(0);
-  setRecordingGoal(null);
+  resetModeState();
+  setPlayerStatsMoment('Penalty');
   setPenaltyWizardOpen(true);
   setPenaltyTeam(null);
-  setPenaltyType("2'");
-  setPenaltyInfraction('');
-  setPenaltyTime('');
-  setPenaltyPlayer('');
-  setEditingPenaltyIndex(null);
 }}
   disabled={isViewer || matchEnded}
   className={`px-3 py-1 rounded text-sm font-bold ${
