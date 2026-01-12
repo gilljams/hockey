@@ -2314,18 +2314,25 @@ const getActualStatName = (col) => {
 
 <div className="px-4 py-3 border-b flex items-center justify-between">
   <div className="flex items-center gap-3 flex-1">
-    <h3 className={`text-sm font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+    <h3 className={`text-sm font-semibold truncate ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
       {teamName}
     </h3>
     {playerStatsMoment === 'Goal' && goalWizardStep === 2 && (
-      <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+      <span className={`text-xs whitespace-nowrap ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
         {editingGoalIndex !== null ? '(edit)' : `(${goalEvents.filter(e => e.team === team).length} goals)`}
       </span>
     )}
     {playerStatsMoment === 'FO/SOG' && (
       <button
-        onClick={() => setPlayerStatsEditMode(prev => ({...prev, [team]: !prev[team]}))}
-        className={`text-xs px-2 py-1 rounded transition-all ${
+        onClick={() => {
+          const otherTeam = team === 'home' ? 'away' : 'home';
+          setPlayerStatsEditMode(prev => ({
+            ...prev,
+            [team]: !prev[team],
+            [otherTeam]: false  // Auto-toggle off the other team
+          }));
+        }}
+        className={`text-xs px-2 py-1 rounded transition-all whitespace-nowrap ${
           playerStatsEditMode[team]
             ? (darkMode ? 'bg-yellow-900 bg-opacity-60 text-yellow-200' : 'bg-yellow-100 text-yellow-800 font-semibold')
             : (darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
@@ -2335,25 +2342,19 @@ const getActualStatName = (col) => {
       </button>
     )}
   </div>
-  <button 
-    onClick={() => setCollapsedPlayerTables(prev => ({...prev, [team]: !prev[team]}))}
-    className={`text-lg flex-shrink-0 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
-  >
-    {collapsedPlayerTables[team] ? <IconChevronDown /> : <IconChevronUp />}
-  </button>
 </div>
               
-{!collapsedPlayerTables[team] && (
+{(playerStatsMoment === 'FO/SOG' || !collapsedPlayerTables[team]) ? (
   <>
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
       <table className={`w-full ${darkMode?'text-gray-200':''}`}>
         <thead className={`${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} sticky top-[1px] z-20`}>
           <tr>
-            <th className={`px-2 py-3 text-left text-xs font-semibold sticky left-0 ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} z-10`}>#</th>
+            <th className={`px-1 py-3 text-left text-xs font-semibold sticky left-0 ${darkMode?'bg-gray-700 text-gray-200':'bg-gray-100'} z-10`}>#</th>
             {columnsToShow.map(col=>(
-              <th key={col} className={`px-2 py-3 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>{col}</th>
+              <th key={col} className={`px-1 py-3 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}>{col}</th>
             ))}
-            {playerStatsEditMode[team]&&<th className={`px-2 py-3 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}></th>}
+            {playerStatsEditMode[team]&&<th className={`px-1 py-3 text-center text-xs font-semibold ${darkMode?'text-gray-200':''}`}></th>}
           </tr>
         </thead>
         <tbody>
@@ -2369,7 +2370,7 @@ const getActualStatName = (col) => {
             
             return(
               <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} ${darkMode?'hover:bg-gray-700':'hover:bg-gray-50'} transition-colors group`}>
-  <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} ${darkMode?'group-hover:bg-gray-700':'group-hover:bg-gray-50'} z-10 transition-colors`}>{pNum}</td>
+  <td className={`px-1 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-800':'bg-white'} ${darkMode?'group-hover:bg-gray-700':'group-hover:bg-gray-50'} z-10 transition-colors`}>{pNum}</td>
                 {columnsToShow.map(col=>{
   const actualStat = getActualStatName(col);
   const isPIM = col === 'PIM';
@@ -2432,7 +2433,7 @@ const getActualStatName = (col) => {
     };
     
     return (
-  <td key={col} className="px-2 py-1">
+  <td key={col} className="px-1 py-1">
         <div className="flex items-center justify-center">
           <input
             type="checkbox"
@@ -2448,18 +2449,18 @@ const getActualStatName = (col) => {
   
   // Normal mode (original code)
   return (
-    <td key={col} className="px-2 py-3">
-      <div className="flex items-center justify-center gap-2">
+    <td key={col} className="px-1 py-3">
+      <div className="flex items-center justify-center gap-1">
         {playerStatsEditMode[team] && !isPIM && (
           <button
             onClick={()=>updatePlayerStat(team,pNum,actualStat,-1)}
             disabled={matchEnded||isViewer}
-            className={`w-8 h-8 rounded flex items-center justify-center text-base font-bold transition-all ${darkMode?'bg-red-900 hover:bg-red-800 text-red-100 disabled:opacity-50':'bg-red-200 hover:bg-red-300 text-red-900 disabled:opacity-50'}`}
+            className={`w-7 h-7 rounded flex items-center justify-center text-sm font-bold transition-all ${darkMode?'bg-red-900 hover:bg-red-800 text-red-100 disabled:opacity-50':'bg-red-200 hover:bg-red-300 text-red-900 disabled:opacity-50'}`}
           >−</button>
         )}
         <div
           onClick={isPIM ? undefined : ()=>updatePlayerStat(team,pNum,actualStat,1)}
-          className={`min-w-[2.5rem] h-7 px-2 rounded border flex items-center justify-center transition-all ${
+          className={`min-w-[2.2rem] h-7 px-1 rounded border flex items-center justify-center transition-all text-sm ${
             isPIM 
               ? (darkMode ? 'bg-gray-700 text-gray-400 border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-300 cursor-default')
               : (matchEnded||isViewer)
@@ -2475,11 +2476,11 @@ const getActualStatName = (col) => {
   );
 })}
                 {playerStatsEditMode[team]&&(
-                  <td className="px-2 py-3">
+                  <td className="px-1 py-3">
                     <button
                       onClick={()=>removePlayer(team,pNum)}
                       disabled={matchEnded||isViewer}
-                      className={`w-8 h-8 rounded flex items-center justify-center text-lg font-bold transition-all ${darkMode?'bg-red-900 hover:bg-red-800 text-red-100 disabled:opacity-50':'bg-red-200 hover:bg-red-300 text-red-900 disabled:opacity-50'}`}
+                      className={`w-7 h-7 rounded flex items-center justify-center text-lg font-bold transition-all ${darkMode?'bg-red-900 hover:bg-red-800 text-red-100 disabled:opacity-50':'bg-red-200 hover:bg-red-300 text-red-900 disabled:opacity-50'}`}
                     >×</button>
                   </td>
                 )}
@@ -2501,7 +2502,7 @@ const getActualStatName = (col) => {
   </div>
 )}
   </>
-)}
+) : null}
             </div>
           );
         };
@@ -3437,24 +3438,16 @@ setTimeout(() => {
 
 
 {playerStatsMoment === 'FO/SOG' && (  
-<div className={`grid gap-2 ${
-      playerStatsViewMode === 'sideBySide' && playerStatsMoment === 'All'      ? 'md:grid-cols-2'
-      : ''
-  }`}
-  style={
-    playerStatsViewMode === 'sideBySide' &&
-    (playerStatsMoment === 'Goal' || playerStatsMoment === 'FO/SOG')
-      ? {
-          gridTemplateColumns:
-            playerStatsMoment === 'Goal'
-              ? '1fr 1fr'
-              : '1fr 1fr'
-        }
-      : undefined
-  }
+<div className={`grid gap-2`}
+  style={{
+    gridTemplateColumns: 
+      playerStatsEditMode.home || playerStatsEditMode.away
+        ? playerStatsEditMode.home && !playerStatsEditMode.away ? '1fr' : !playerStatsEditMode.home && playerStatsEditMode.away ? '1fr' : '1fr'
+        : '1fr 1fr'
+  }}
 >
-    {renderPlayerTable('home')}
-    {renderPlayerTable('away')}
+    {(!playerStatsEditMode.home && !playerStatsEditMode.away) || playerStatsEditMode.home ? renderPlayerTable('home') : null}
+    {(!playerStatsEditMode.home && !playerStatsEditMode.away) || playerStatsEditMode.away ? renderPlayerTable('away') : null}
   </div>
 )}
             </div>
