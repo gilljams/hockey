@@ -2102,7 +2102,164 @@ const statColumns={
 };
              
 const activeColumns=statColumns[playerStatsMoment];
-        
+
+// Save goal handler
+const saveGoalHandler = () => {
+  if(isViewer) return;
+  if(isMultiplayer && !currentUser){
+    alert('You must be logged in to edit multiplayer games');
+    return;
+  }
+  
+  // Save or update goal event
+  const newEvent = {
+    team: recordingGoal,
+    situation: goalSituation,
+    time: goalTime,
+    period: currentPeriod,
+    timestamp: editingGoalIndex !== null ? goalEvents[editingGoalIndex].timestamp : Date.now(),
+    scorers: goalScorers,
+    assists: goalAssists,
+    plus: goalPlusPlayers,
+    minus: goalMinusPlayers,
+    sog: goalSOGPlayers
+  };
+  
+  let updatedEvents;
+  const isEditing = editingGoalIndex !== null;
+  const oldEvent = isEditing ? goalEvents[editingGoalIndex] : null;
+  
+  if(isEditing){
+    updatedEvents = goalEvents.map((ev,i) => i === editingGoalIndex ? newEvent : ev);
+  } else {
+    updatedEvents = [...goalEvents, newEvent];
+  }
+  setGoalEvents(updatedEvents);
+
+  if (isMultiplayer && matchRef.current) {
+    matchRef.current.child('goalEvents').set(updatedEvents);
+  } else if (!isMultiplayer && screen === 'game') {
+    const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+    gs.goalEvents = updatedEvents;
+    localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+  }
+  
+  // Update player stats
+  const newStats = structuredClone(playerStats);
+
+  // If editing, first remove old stats
+  if (isEditing && oldEvent) {
+    const oldPlayerIds = new Set([
+      ...(oldEvent.scorers || []),
+      ...(oldEvent.assists || []),
+      ...(oldEvent.plus || []),
+      ...(oldEvent.minus || []),
+      ...(oldEvent.sog || [])
+    ]);
+    
+    oldPlayerIds.forEach(playerId => {
+      const [team, pNum] = playerId.split('-');
+      
+      if (!newStats[team]?.players?.[pNum]?.periods?.[oldEvent.period]) return;
+      
+      if (oldEvent.scorers?.includes(playerId)) {
+        newStats[team].players[pNum].periods[oldEvent.period]['G'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['G'] || 0) - 1);
+      }
+      if (oldEvent.assists?.includes(playerId)) {
+        newStats[team].players[pNum].periods[oldEvent.period]['A'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['A'] || 0) - 1);
+      }
+      if (oldEvent.plus?.includes(playerId)) {
+        newStats[team].players[pNum].periods[oldEvent.period]['OnIce+'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['OnIce+'] || 0) - 1);
+      }
+      if (oldEvent.minus?.includes(playerId)) {
+        newStats[team].players[pNum].periods[oldEvent.period]['OnIce-'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['OnIce-'] || 0) - 1);
+      }
+      if (oldEvent.sog?.includes(playerId)) {
+        newStats[team].players[pNum].periods[oldEvent.period]['SOG'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['SOG'] || 0) - 1);
+      }
+    });
+  }
+
+  // Get unique player IDs (for new/updated event)
+  const allPlayerIds = new Set([...goalScorers, ...goalAssists, ...goalPlusPlayers, ...goalMinusPlayers, ...goalSOGPlayers]);
+  
+  // Process each unique player once
+  allPlayerIds.forEach(playerId => {
+    const [team, pNum] = playerId.split('-');
+    
+    if(!newStats[team]) newStats[team] = {players: {}};
+    if(!newStats[team].players) newStats[team].players = {};
+    if(!newStats[team].players[pNum]){
+      newStats[team].players[pNum] = {
+        periods: {},
+        total: {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
+      };
+    }
+    if(!newStats[team].players[pNum].periods[currentPeriod]){
+      newStats[team].players[pNum].periods[currentPeriod] = {'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
+    }
+    
+    // Add stats
+    if(goalScorers.includes(playerId)){
+      newStats[team].players[pNum].periods[currentPeriod]['G'] += 1;
+    }
+    if(goalAssists.includes(playerId)){
+      newStats[team].players[pNum].periods[currentPeriod]['A'] += 1;
+    }
+    if(goalPlusPlayers.includes(playerId)){
+      newStats[team].players[pNum].periods[currentPeriod]['OnIce+'] += 1;
+    }
+    if(goalMinusPlayers.includes(playerId)){
+      newStats[team].players[pNum].periods[currentPeriod]['OnIce-'] += 1;
+    }
+    if(goalSOGPlayers.includes(playerId)){
+      newStats[team].players[pNum].periods[currentPeriod]['SOG'] += 1;
+    }
+  });
+  
+  // Recalculate totals
+  Object.keys(newStats).forEach(team => {
+    Object.keys(newStats[team].players).forEach(pNum => {
+      const player = newStats[team].players[pNum];
+      ['G','A','OnIce+','OnIce-','SOG'].forEach(stat => {
+        player.total[stat] = 0;
+        Object.keys(player.periods).forEach(p => {
+          player.total[stat] += player.periods[p][stat] || 0;
+        });
+      });
+    });
+  });
+  
+  setPlayerStats(newStats);
+  if(isMultiplayer && matchRef.current) matchRef.current.update({playerStats: newStats});
+  
+  // Reset form
+  setRecordingGoal(null);
+  setGoalSituation('EQ');
+  setGoalTime('');
+  setGoalScorers([]);
+  setGoalAssists([]);
+  setGoalPlusPlayers([]);
+  setGoalMinusPlayers([]);
+  setGoalSOGPlayers([]);
+  setEditingGoalIndex(null);
+  
+  // Collapse form, expand timeline, highlight new event
+  setGoalFormCollapsed(true);
+  setGoalTimelineCollapsed(false);
+  const eventId = `goal-${isEditing ? editingGoalIndex : goalEvents.length}`;
+  setHighlightEventId(eventId);
+  setTimeout(() => setHighlightEventId(null), 2000);
+
+  // Scroll to timeline
+  setTimeout(() => {
+    const timelineEl = document.querySelector('.goal-timeline');
+    if(timelineEl) {
+      timelineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, 100);
+};
+      
 const renderPlayerTable=(team)=>{
   const teamName=team==='home'?homeName:awayName;
   const players=playerStats?.[team]?.players??{};
@@ -2717,7 +2874,7 @@ setTimeout(() => {
 )}
 
 
-{playerStatsMoment==='Goal' && goalWizardStep===1 && (
+{playerStatsMoment==='Goal' && (
   <div className="max-w-4xl mx-auto goal-form">
 
     <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
@@ -2794,241 +2951,214 @@ setTimeout(() => {
         />
       </div>
 
+{/* Player tables - visas när lag är valt */}
+{recordingGoal && (
+  <div className="mb-6" style={{animation: 'fadeIn 0.3s ease-in'}}>
+    <div className="grid gap-3" style={{gridTemplateColumns: '2fr 1fr'}}>
+      {/* Scoring team table */}
+      <div className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg overflow-hidden`}>
+        <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
+          <table className={`w-full ${darkMode?'text-gray-200':''}`}>
+            <thead className={`${darkMode?'bg-gray-800 text-gray-200':'bg-gray-100'} sticky top-0 z-10`}>
+              <tr>
+                <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode?'bg-gray-800':'bg-gray-100'} z-10`}>#</th>
+                {['G','A','+','SOG'].map(col=>(
+                  <th key={col} className="px-2 py-2 text-center text-xs font-semibold">{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                const team = recordingGoal;
+                const players = playerStats?.[team]?.players ?? {};
+                const playerNums = Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
+                
+                if(playerNums.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan="5" className="text-center py-8 text-sm opacity-60">
+                        No players added yet
+                      </td>
+                    </tr>
+                  );
+                }
+                
+                return playerNums.map(pNum => {
+                  const playerId = `${team}-${pNum}`;
+                  const isGoal = goalScorers.includes(playerId);
+                  const isAssist = goalAssists.includes(playerId);
+                  const isPlus = goalPlusPlayers.includes(playerId);
+                  const isSOG = goalSOGPlayers.includes(playerId);
+                  
+                  return (
+                    <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} hover:bg-opacity-50 transition-colors`}>
+                      <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-700':'bg-gray-50'} z-10`}>{pNum}</td>
+                      
+                      {/* G */}
+                      <td className="px-2 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isGoal}
+                          onChange={() => {
+                            const isAdding = !isGoal;
+                            setGoalScorers(prev => 
+                              isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+                            );
+                            if (isAdding && !isSOG) {
+                              setGoalSOGPlayers(prev => [...prev, playerId]);
+                            }
+                            if (!isAdding && isSOG) {
+                              setGoalSOGPlayers(prev => prev.filter(id => id !== playerId));
+                            }
+                            if (isAdding && !isPlus) {
+                              setGoalPlusPlayers(prev => [...prev, playerId]);
+                            }
+                          }}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </td>
+                      
+                      {/* A */}
+                      <td className="px-2 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isAssist}
+                          onChange={() => {
+                            const isAdding = !isAssist;
+                            setGoalAssists(prev => 
+                              isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+                            );
+                            if (isAdding && !isPlus) {
+                              setGoalPlusPlayers(prev => [...prev, playerId]);
+                            }
+                          }}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </td>
+                      
+                      {/* + */}
+                      <td className="px-2 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isPlus}
+                          onChange={() => {
+                            setGoalPlusPlayers(prev => 
+                              prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                            );
+                          }}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </td>
+                      
+                      {/* SOG */}
+                      <td className="px-2 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSOG}
+                          disabled={true}
+                          className="w-5 h-5 cursor-not-allowed opacity-50"
+                        />
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      {/* Opponent team table */}
+      <div className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg overflow-hidden`}>
+        <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
+          <table className={`w-full ${darkMode?'text-gray-200':''}`}>
+            <thead className={`${darkMode?'bg-gray-800 text-gray-200':'bg-gray-100'} sticky top-0 z-10`}>
+              <tr>
+                <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode?'bg-gray-800':'bg-gray-100'} z-10`}>#</th>
+                <th className="px-2 py-2 text-center text-xs font-semibold">-</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                const oppTeam = recordingGoal === 'home' ? 'away' : 'home';
+                const players = playerStats?.[oppTeam]?.players ?? {};
+                const playerNums = Object.keys(players).sort((a,b)=>parseInt(a)-parseInt(b));
+                
+                if(playerNums.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan="2" className="text-center py-8 text-sm opacity-60">
+                        No players added yet
+                      </td>
+                    </tr>
+                  );
+                }
+                
+                return playerNums.map(pNum => {
+                  const playerId = `${oppTeam}-${pNum}`;
+                  const isMinus = goalMinusPlayers.includes(playerId);
+                  
+                  return (
+                    <tr key={pNum} className={`border-t ${darkMode?'border-gray-700':'border-gray-200'} hover:bg-opacity-50 transition-colors`}>
+                      <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode?'bg-gray-700':'bg-gray-50'} z-10`}>{pNum}</td>
+                      <td className="px-2 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isMinus}
+                          onChange={() => {
+                            setGoalMinusPlayers(prev => 
+                              prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                            );
+                          }}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                      </td>
+                    </tr>
+                  );
+                });
+              })()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 <div className="flex gap-2">
-        <button
-  onClick={()=>{
-    setGoalWizardStep(1);
-    setRecordingGoal(null);
-    setGoalSituation('EQ');
-    setGoalTime('');
-    setEditingGoalIndex(null);
-    setGoalScorers([]);
-    setGoalAssists([]);
-    setGoalPlusPlayers([]);
-    setGoalMinusPlayers([]);
-    setGoalSOGPlayers([]);
-     setEditingGoalIndex(null);
-
-  }}
-  className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
->
-  Cancel
-</button>
-        <button
-  onClick={()=>{
-    if(!recordingGoal){
-      alert('Please select which team scored');
-      return;
+  <button
+    onClick={()=>{
+      setRecordingGoal(null);
+      setGoalSituation('EQ');
+      setGoalTime('');
+      setEditingGoalIndex(null);
+      setGoalScorers([]);
+      setGoalAssists([]);
+      setGoalPlusPlayers([]);
+      setGoalMinusPlayers([]);
+      setGoalSOGPlayers([]);
+    }}
+    className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
+  >
+    Cancel
+  </button>
+  <button
+    onClick={saveGoalHandler}
+    disabled={!recordingGoal}
+    className={recordingGoal
+      ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+      :(darkMode?'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
     }
-    setGoalWizardStep(2);
-  }}
-  disabled={!recordingGoal}
-  className={recordingGoal
-    ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
-    :(darkMode?'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
-  }
->
-  Add players
-</button>
-
+  >
+    Save Goal
+  </button>
 </div>
-
 </div>
       )}
     </div>
   </div>
 )}
 
-{playerStatsMoment==='Goal' && goalWizardStep===2 && recordingGoal && (
-  <div className="p-2">
-    
-<div className="grid gap-2" style={{gridTemplateColumns:'2fr 1fr'}}>
-      {renderPlayerTable(recordingGoal==='home'?'home':'away')}
-      {renderPlayerTable(recordingGoal==='home'?'away':'home')}
-    </div>
-  
-    <div className="mt-3 flex gap-2">
-      <button
-  onClick={()=>{
-    setGoalWizardStep(1);
-    setGoalScorers([]);
-    setGoalAssists([]);
-    setGoalPlusPlayers([]);
-    setGoalMinusPlayers([]);
-    setGoalSOGPlayers([]);
-  }}
-        className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2.5 rounded-lg font-semibold':'flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2.5 rounded-lg font-semibold'}
-      >
-        Back
-      </button>
-      <button
-        onClick={()=>{
-  if(isViewer)return;
-  if(isMultiplayer&&!currentUser){
-    alert('You must be logged in to edit multiplayer games');
-    return;
-  }
-  
-  // Save or update goal event
-  const newEvent={
-    team:recordingGoal,
-    situation:goalSituation,
-    time:goalTime,
-    period:currentPeriod,
-    timestamp:editingGoalIndex !== null ? goalEvents[editingGoalIndex].timestamp : Date.now(),
-    scorers:goalScorers,
-    assists:goalAssists,
-    plus:goalPlusPlayers,
-    minus:goalMinusPlayers,
-    sog:goalSOGPlayers
-  };
-  
-  let updatedEvents;
-  const isEditing = editingGoalIndex !== null;
-  const oldEvent = isEditing ? goalEvents[editingGoalIndex] : null;
-  
-  if(isEditing){
-    // Editing existing goal - replace it
-    updatedEvents = goalEvents.map((ev,i)=>i===editingGoalIndex?newEvent:ev);
-  } else {
-    // New goal - add to end
-    updatedEvents = [...goalEvents, newEvent];
-  }
-  setGoalEvents(updatedEvents);
-
-if (isMultiplayer && matchRef.current) {
-  matchRef.current.child('goalEvents').set(updatedEvents);
-} else if (!isMultiplayer && screen === 'game') {
-  const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-  gs.goalEvents = updatedEvents;
-  localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
-}
-
-          
-          
-          // Update player stats
-const newStats=structuredClone(playerStats);
-
-// If editing, first remove old stats
-if (isEditing && oldEvent) {
-  const oldPlayerIds = new Set([
-    ...(oldEvent.scorers || []),
-    ...(oldEvent.assists || []),
-    ...(oldEvent.plus || []),
-    ...(oldEvent.minus || []),
-    ...(oldEvent.sog || [])
-  ]);
-  
-  oldPlayerIds.forEach(playerId => {
-    const [team, pNum] = playerId.split('-');
-    
-    if (!newStats[team]?.players?.[pNum]?.periods?.[oldEvent.period]) return;
-    
-    // Subtract old stats
-    if (oldEvent.scorers?.includes(playerId)) {
-      newStats[team].players[pNum].periods[oldEvent.period]['G'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['G'] || 0) - 1);
-    }
-    if (oldEvent.assists?.includes(playerId)) {
-      newStats[team].players[pNum].periods[oldEvent.period]['A'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['A'] || 0) - 1);
-    }
-    if (oldEvent.plus?.includes(playerId)) {
-      newStats[team].players[pNum].periods[oldEvent.period]['OnIce+'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['OnIce+'] || 0) - 1);
-    }
-    if (oldEvent.minus?.includes(playerId)) {
-      newStats[team].players[pNum].periods[oldEvent.period]['OnIce-'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['OnIce-'] || 0) - 1);
-    }
-    if (oldEvent.sog?.includes(playerId)) {
-      newStats[team].players[pNum].periods[oldEvent.period]['SOG'] = Math.max(0, (newStats[team].players[pNum].periods[oldEvent.period]['SOG'] || 0) - 1);
-    }
-  });
-}
-
-// Get unique player IDs (for new/updated event)
-const allPlayerIds=new Set([...goalScorers,...goalAssists,...goalPlusPlayers,...goalMinusPlayers,...goalSOGPlayers]);
-          
-          // Process each unique player once
-          allPlayerIds.forEach(playerId=>{
-            const [team,pNum]=playerId.split('-');
-            
-            if(!newStats[team])newStats[team]={players:{}};
-            if(!newStats[team].players)newStats[team].players={};
-            if(!newStats[team].players[pNum]){
-              newStats[team].players[pNum]={
-                periods:{},
-                total:{'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0}
-              };
-            }
-            if(!newStats[team].players[pNum].periods[currentPeriod]){
-              newStats[team].players[pNum].periods[currentPeriod]={'G':0,'A':0,'OnIce+':0,'OnIce-':0,'FO+':0,'FO-':0,'SOG':0,"2'":0,"5'":0,"10'":0,"20'":0,'PIM':0};
-            }
-            
-            // Add stats (each player processed exactly once)
-            if(goalScorers.includes(playerId)){
-              newStats[team].players[pNum].periods[currentPeriod]['G']+=1;
-            }
-            if(goalAssists.includes(playerId)){
-              newStats[team].players[pNum].periods[currentPeriod]['A']+=1;
-            }
-            if(goalPlusPlayers.includes(playerId)){
-              newStats[team].players[pNum].periods[currentPeriod]['OnIce+']+=1;
-            }
-            if(goalMinusPlayers.includes(playerId)){
-              newStats[team].players[pNum].periods[currentPeriod]['OnIce-']+=1;
-            }
-            if(goalSOGPlayers.includes(playerId)){
-              newStats[team].players[pNum].periods[currentPeriod]['SOG']+=1;
-            }
-          });
-                   
-          // Recalculate totals
-          Object.keys(newStats).forEach(team=>{
-            Object.keys(newStats[team].players).forEach(pNum=>{
-              const player=newStats[team].players[pNum];
-              ['G','A','OnIce+','OnIce-','SOG'].forEach(stat=>{
-                player.total[stat]=0;
-                Object.keys(player.periods).forEach(p=>{
-                  player.total[stat]+=player.periods[p][stat]||0;
-                });
-              });
-            });
-          });
-          
-          setPlayerStats(newStats);
-          if(isMultiplayer&&matchRef.current)matchRef.current.update({playerStats:newStats});
-          
-          // Reset and stay in Goal mode
-          setGoalWizardStep(1);
-          setRecordingGoal(null);
-          setGoalSituation('EQ');
-          setGoalTime('');
-          setGoalScorers([]);
-          setGoalAssists([]);
-          setGoalPlusPlayers([]);
-          setGoalMinusPlayers([]);
-          setGoalSOGPlayers([]);
-          setEditingGoalIndex(null);
-// Collapse form, expand timeline, highlight new event
-setGoalFormCollapsed(true);
-setGoalTimelineCollapsed(false);
-const eventId = `goal-${isEditing ? editingGoalIndex : goalEvents.length}`;
-setHighlightEventId(eventId);
-setTimeout(() => setHighlightEventId(null), 2000);
-
-// Scroll to timeline
-setTimeout(() => {
-  const timelineEl = document.querySelector('.goal-timeline');
-  if(timelineEl) {
-    timelineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-}, 100);
-       }}
-       className={darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-semibold':'flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold'}
-      >
-        Save Goal
-     </button>
-    </div>
-  </div>
-)}
 
 {playerStatsMoment==='Goal' && goalWizardStep!==2 && goalEvents.length>0 && (
   
