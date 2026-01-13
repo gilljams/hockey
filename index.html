@@ -5290,25 +5290,43 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                                       </span>
                                     )}
                                     
-                                    {event.type === 'goal' && (
+                                      {event.type === 'goal' && (
                                       <div className="flex-1">
-                                        <span className="font-bold">{scoreText}</span>
-                                        <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
-                                        {event.scorers && event.scorers.length > 0 && (
-                                          <span className={`text-sm ${darkMode?'text-gray-400':'text-gray-600'}`}>
-                                            (G: #{event.scorers.map(id=>id.split('-')[1]).join(', #')})
-                                          </span>
+                                        <div>
+                                          <span className="font-bold">{scoreText}</span>
+                                          <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                        </div>
+                                        {(event.scorers?.length > 0 || event.assists?.length > 0 || event.plus?.length > 0 || event.minus?.length > 0) && (
+                                          <div className={`text-xs mt-1 ${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                            {event.scorers && event.scorers.length > 0 && (
+                                              <span>G: #{event.scorers.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                            {event.assists && event.assists.length > 0 && (
+                                              <span className="ml-3">A: #{event.assists.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                            {event.plus && event.plus.length > 0 && (
+                                              <span className="ml-3">+: #{event.plus.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                            {event.minus && event.minus.length > 0 && (
+                                              <span className="ml-3">-: #{event.minus.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                          </div>
                                         )}
                                       </div>
                                     )}
                                     
-                                    {event.type === 'penalty' && (
+                                   {event.type === 'penalty' && (
                                       <div className="flex-1">
-                                        <span className="font-semibold">Penalty</span>
-                                        <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
-                                        <span className={`text-sm ${darkMode?'text-gray-400':'text-gray-600'}`}>
-                                          ({event.penaltyType}, #{event.player})
-                                        </span>
+                                        <div>
+                                          <span className="font-semibold">{event.penaltyType.replace("'", " min")} Penalty</span>
+                                          <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                        </div>
+                                        {(event.player || event.infraction) && (
+                                          <div className={`text-xs mt-1 ${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                            {event.player && <span>#{event.player === 'BENCH' ? 'Bench' : event.player}</span>}
+                                            {event.infraction && <span className={event.player ? 'ml-2' : ''}>{event.infraction}</span>}
+                                          </div>
+                                        )}
                                       </div>
                                     )}
                                     
@@ -5324,76 +5342,68 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                                       </div>
                                     )}
                                   </div>
-                                ) : (
-                                  // DETAILED MODE
-                                  <div>
-
-<div className="flex items-start justify-between mb-2">
+                               ) : (
+                                  // DETAILED MODE - Same as compact but with situation info for goals
+                                  <div className="flex-1">
+                                    {event.type === 'goal' && (
                                       <div>
-                                        {event.time && (
-                                          <div className={`text-xs font-mono mb-1 ${darkMode?'text-gray-400':'text-gray-500'}`}>
-                                            {event.time}
+                                        <div>
+                                          <span className="font-bold">{scoreText}</span>
+                                          <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                          <span className={`text-sm ${darkMode?'text-gray-400':'text-gray-600'}`}>({event.situation})</span>
+                                        </div>
+                                        {(event.scorers?.length > 0 || event.assists?.length > 0 || event.plus?.length > 0 || event.minus?.length > 0) && (
+                                          <div className={`text-xs mt-1 ${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                            {event.scorers && event.scorers.length > 0 && (
+                                              <span>G: #{event.scorers.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                            {event.assists && event.assists.length > 0 && (
+                                              <span className="ml-3">A: #{event.assists.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                            {event.plus && event.plus.length > 0 && (
+                                              <span className="ml-3">+: #{event.plus.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
+                                            {event.minus && event.minus.length > 0 && (
+                                              <span className="ml-3">-: #{event.minus.map(id=>id.split('-')[1]).join(', #')}</span>
+                                            )}
                                           </div>
                                         )}
-                                        
-                                        {event.type === 'goal' && (
-                                          <>
-                                            <div className="font-bold text-lg mb-1">
-                                              {scoreText} {teamName}
-                                            </div>
-                                            <div className={`text-sm ${darkMode?'text-gray-300':'text-gray-600'}`}>
-                                              Goal • {event.situation}
-                                            </div>
-                                          </>
-                                        )}
-                                        
-                                        {event.type === 'penalty' && (
-                                          <>
-                                            <div className="font-bold text-lg mb-1">
-                                              Penalty - {teamName}
-                                            </div>
-                                            <div className={`text-sm ${darkMode?'text-gray-300':'text-gray-600'}`}>
-                                              {event.penaltyType.replace("'", " min")}
-                                              {event.infraction && ` • ${event.infraction}`}
-                                              {' • #'}{event.player === 'BENCH' ? 'Bench' : event.player}
-                                            </div>
-                                          </>
-                                        )}
-                                        
-                                       {event.type === 'other' && (
-                                          <>
-                                            <div className="font-bold text-lg mb-1">
-                                              {event.eventType === 'timeout' ? 'Time-Out' : 
-                                               event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
-                                               event.eventType === 'gkOut' ? 'GK Out' :
-                                               event.eventType === 'gkIn' ? 'GK In' : event.eventType}
-                                            </div>
-                                            <div className={`text-sm ${darkMode?'text-gray-300':'text-gray-600'}`}>
-                                              {teamName}
-                                            </div>
-                                          </>
+                                      </div>
+                                    )}
+                                    
+                                    {event.type === 'penalty' && (
+                                      <div>
+                                        <div>
+                                          <span className="font-semibold">{event.penaltyType.replace("'", " min")} Penalty</span>
+                                          <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                        </div>
+                                        {(event.player || event.infraction) && (
+                                          <div className={`text-xs mt-1 ${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                            {event.player && <span>#{event.player === 'BENCH' ? 'Bench' : event.player}</span>}
+                                            {event.infraction && <span className={event.player ? 'ml-2' : ''}>{event.infraction}</span>}
+                                          </div>
                                         )}
                                       </div>
-                                    </div>
+                                    )}
                                     
-                                    {event.type === 'goal' && (
-                                      <div className={`text-sm space-y-1 pt-2 border-t ${darkMode?'border-gray-700 text-gray-300':'border-gray-200 text-gray-600'}`}>
-                                        {event.scorers && event.scorers.length > 0 && (
-                                          <div>G: #{event.scorers.map(id=>id.split('-')[1]).join(', #')}</div>
-                                        )}
-                                        {event.assists && event.assists.length > 0 && (
-                                          <div>A: #{event.assists.map(id=>id.split('-')[1]).join(', #')}</div>
-                                        )}
-                                        {event.plus && event.plus.length > 0 && (
-                                          <div>+: #{event.plus.map(id=>id.split('-')[1]).join(', #')}</div>
-                                        )}
-                                        {event.minus && event.minus.length > 0 && (
-                                          <div>-: #{event.minus.map(id=>id.split('-')[1]).join(', #')}</div>
-                                        )}
+                                    {event.type === 'other' && (
+                                      <div className="flex-1">
+                                        <span className="font-semibold">
+                                          {event.eventType === 'timeout' ? 'Time-Out' : 
+                                           event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
+                                           event.eventType === 'gkOut' ? 'GK Out' :
+                                           event.eventType === 'gkIn' ? 'GK In' : event.eventType}
+                                        </span>
+                                        <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
                                       </div>
                                     )}
                                   </div>
                                 )}
+
+
+
+
+
                               </div>
                             );
                           })}
