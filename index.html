@@ -2851,7 +2851,7 @@ return(
   }
   
   // We don't need to update playerStats for penalties anymore
-// PIM is calculated from penaltyEvents on-the-fly
+  // PIM is calculated from penaltyEvents on-the-fly
   
   
   
@@ -2886,6 +2886,177 @@ return(
           }
         >
           Save Penalty
+        </button>
+      </div>
+    </div>
+   )}
+  </div>
+</div>
+)}
+
+{playerStatsMoment === 'Other' && (
+  
+<div className="max-w-4xl mx-auto other-form">
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
+      {/* Collapsable Header */}
+      <button
+        onClick={()=>setOtherFormCollapsed(!otherFormCollapsed)}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+      >
+        <span>{editingOtherIndex !== null ? `Edit Event #${editingOtherIndex + 1}` : 'Add Event'}</span>
+        <span className={`transition-transform duration-300 ${otherFormCollapsed ? '' : 'rotate-180'}`}>
+          <IconChevronDown />
+        </span>
+      </button>
+      
+      {!otherFormCollapsed && (
+        <div className="p-6" style={{animation: 'fadeIn 0.3s ease-in'}}>
+
+{/* Team Selection */}
+      <div className="mb-4">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Which team?
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={()=>setOtherTeam('home')}
+            className={otherTeam==='home'
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
+            }
+          >
+            {homeName}
+          </button>
+          <button
+            onClick={()=>setOtherTeam('away')}
+            className={otherTeam==='away'
+              ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+              :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
+            }
+          >
+            {awayName}
+          </button>
+        </div>
+      </div>
+
+      {/* Event Type */}
+      <div className="mb-4">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Event Type
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {['timeout','goalieSwitch'].map(type=>(
+            <button
+              key={type}
+              onClick={()=>setOtherEventType(type)}
+              className={otherEventType===type
+                ?(darkMode?'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold':'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+                :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
+              }
+            >
+              {type === 'timeout' ? 'Time-Out' : 'Switch Goalie'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Game Time (optional) */}
+      <div className="mb-6">
+        <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
+          Game Time (optional)
+        </label>
+        <input
+          type="text"
+          value={otherTime}
+          onChange={(e)=>setOtherTime(e.target.value)}
+          placeholder="e.g. 12:34"
+          className={darkMode?'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white':'w-full px-4 py-2 border border-gray-300 rounded-lg'}
+        />
+      </div>
+
+{/* Buttons */}
+      <div className="flex gap-2">
+        <button
+          onClick={()=>{
+            setOtherWizardOpen(false);
+            setOtherTeam(null);
+            setOtherEventType('timeout');
+            setOtherTime('');
+            setEditingOtherIndex(null);
+          }}
+          className={darkMode?'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white':'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={()=>{
+            if(!otherTeam){
+              alert('Please select which team');
+              return;
+            }
+            if(isViewer)return;
+            if(isMultiplayer&&!currentUser){
+              alert('You must be logged in to edit multiplayer games');
+              return;
+            }
+            
+            // Create other event
+            const newEvent={
+              team: otherTeam,
+              eventType: otherEventType,
+              time: otherTime,
+              period: currentPeriod,
+              timestamp: editingOtherIndex !== null ? otherEvents[editingOtherIndex].timestamp : Date.now()
+            };
+            
+            let updatedEvents;
+            const isEditing = editingOtherIndex !== null;
+            
+            if(isEditing){
+              updatedEvents = otherEvents.map((ev,i)=>i===editingOtherIndex?newEvent:ev);
+            } else {
+              updatedEvents = [...otherEvents, newEvent];
+            }
+            setOtherEvents(updatedEvents);
+            
+            if(isMultiplayer && matchRef.current){
+              matchRef.current.child('otherEvents').set(updatedEvents);
+            } else if(!isMultiplayer && screen === 'game'){
+              const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+              gs.otherEvents = updatedEvents;
+              localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+            }
+            
+            // Reset wizard
+            setOtherWizardOpen(false);
+            setOtherTeam(null);
+            setOtherEventType('timeout');
+            setOtherTime('');
+            setEditingOtherIndex(null);
+            
+            // Collapse form, expand timeline, highlight new event
+            setOtherFormCollapsed(true);
+            setOtherTimelineCollapsed(false);
+            const eventId = `other-${isEditing ? editingOtherIndex : otherEvents.length}`;
+            setHighlightEventId(eventId);
+            setTimeout(() => setHighlightEventId(null), 2000);
+
+
+            // Scroll to timeline
+            setTimeout(() => {
+              const timelineEl = document.querySelector('.other-timeline');
+              if(timelineEl) {
+                timelineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+            }, 100);
+          }}
+          disabled={!otherTeam}
+          className={otherTeam
+            ?(darkMode?'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white':'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+            :(darkMode?'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed':'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
+          }
+        >
+          Save Event
         </button>
       </div>
     </div>
@@ -3460,7 +3631,103 @@ return(
   </div>
 )}
 
+{playerStatsMoment === 'Other' && otherEvents.length > 0 && (
+<div className="max-w-4xl mx-auto mt-2 other-timeline">
+    <div className={darkMode?'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden':'bg-white rounded-lg shadow-lg overflow-hidden'}>
+      <button
+        onClick={()=>setOtherTimelineCollapsed(!otherTimelineCollapsed)}
+        className={`w-full ${darkMode?'bg-gradient-to-r from-blue-700 to-blue-600':'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+      >
+        <span>Events - Timeline</span>
+        <span className={`transition-transform duration-300 ${otherTimelineCollapsed ? '' : 'rotate-180'}`}>
+          <IconChevronDown />
+        </span>
+      </button>
+      
+      {!otherTimelineCollapsed && (
+        <div className="p-3">
+          <div className="space-y-2">
+            {[...otherEvents].reverse().map((event,reverseIdx)=>{
+              const idx=otherEvents.length-1-reverseIdx;
+              const teamName = event.team === 'home' ? homeName : awayName;
+              const eventLabel = event.eventType === 'timeout' ? 'Time-Out' : 'Goalie Switch';
+              return(
+                <div 
+                  key={idx} 
+                  className={`${darkMode?'bg-gray-700 border border-gray-600':'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${
+                    highlightEventId === `other-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
+                  }`}
+                  style={highlightEventId === `other-${idx}` ? {animation: 'pulse 1s ease-in-out'} : {}}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="font-bold mb-1">
+                        {eventLabel} - {teamName}
+                      </div>
+                      <div className={darkMode?'text-sm text-gray-300':'text-sm text-gray-600'}>
+                        <div>
+                          {event.time && `${event.time} • `}Period {event.period}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={()=>{
+                          const event=otherEvents[idx];
+                          setEditingOtherIndex(idx);
+                          setOtherTeam(event.team);
+                          setOtherEventType(event.eventType);
+                          setOtherTime(event.time||'');
+                          setOtherWizardOpen(true);
+                          setOtherFormCollapsed(false);
+                          setOtherTimelineCollapsed(true);
+                          setTimeout(() => {
+                            const formEl = document.querySelector('.other-form');
+                            if(formEl) {
+                              formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                          }, 100);
+                        }}
+                        className={darkMode?'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={()=>{
+                          if(!window.confirm('Delete this event?'))return;
+                          if(isViewer)return;
+                          if(isMultiplayer&&!currentUser){
+                            alert('You must be logged in to edit multiplayer games');
+                            return;
+                          }
 
+                          const updatedEvents = otherEvents.filter((_,i)=>i!==idx);
+                          
+                          setOtherEvents(updatedEvents);
+                          
+                          if(isMultiplayer && matchRef.current){
+                            matchRef.current.update({otherEvents: updatedEvents});
+                          } else if(!isMultiplayer && screen === 'game'){
+                            const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                            gs.otherEvents = updatedEvents;
+                            localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                          }
+                        }}
+                        className={darkMode?'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold':'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                      >
+                        Del
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
 {playerStatsMoment === 'FO/SOG' && (  
 <div className={`grid gap-2`}
