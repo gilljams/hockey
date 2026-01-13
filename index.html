@@ -66,6 +66,7 @@
 
             const JuniorLeagueApp=()=>{
             const [activeTab,setActiveTab]=useState('stats');
+            const [timelineCompactMode,setTimelineCompactMode]=useState(true);
             const [currentPeriod,setCurrentPeriod]=useState(1);
             const [homeName,setHomeName]=useState('HOME TEAM');
             const [awayName,setAwayName]=useState('AWAY TEAM');
@@ -2939,13 +2940,13 @@ return(
         </div>
       </div>
 
-      {/* Event Type */}
+   {/* Event Type */}
       <div className="mb-4">
         <label className={darkMode?'block text-sm font-semibold mb-2 text-gray-300':'block text-sm font-semibold mb-2 text-gray-700'}>
           Event Type
         </label>
         <div className="grid grid-cols-2 gap-2">
-          {['timeout','goalieSwitch'].map(type=>(
+          {['timeout','goalieSwitch','gkOut','gkIn'].map(type=>(
             <button
               key={type}
               onClick={()=>setOtherEventType(type)}
@@ -2954,7 +2955,7 @@ return(
                 :(darkMode?'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold':'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
               }
             >
-              {type === 'timeout' ? 'Time-Out' : 'Switch Goalie'}
+              {type === 'timeout' ? 'Time-Out' : type === 'goalieSwitch' ? 'Switch Goalie' : type === 'gkOut' ? 'GK Out' : 'GK In'}
             </button>
           ))}
         </div>
@@ -5159,14 +5160,242 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
 {!isViewer&&(
   <div className={`${darkMode?'bg-gray-800 border-b border-gray-700':'bg-white'} shadow-md sticky top-48 z-40`}>
     <div className="max-w-6xl mx-auto flex">
-      {['stats','audio','referee',...(externalLinkUrl?['external']:[])].map(tab=>(
+      {['stats','timeline','audio','referee',...(externalLinkUrl?['external']:[])].map(tab=>(
         <button key={tab} onClick={()=>setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab===tab?(darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white'):(darkMode?'bg-gray-700 text-gray-300':'bg-gray-100 text-gray-600')}`}>
-          {tab==='audio'?'Audio':tab==='stats'?'Stats':tab==='referee'?'Referee':externalLinkTitle||'Link'}
+          {tab==='audio'?'Audio':tab==='stats'?'Stats':tab==='timeline'?'Timeline':tab==='referee'?'Referee':externalLinkTitle||'Link'}
         </button>
       ))}
     </div>
   </div>
 )}
+
+
+
+{activeTab==='timeline'&&<div>
+              {/* Compact/Detailed Toggle */}
+              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
+                <div className="flex items-center justify-between">
+                  <h3 className={`text-sm font-semibold ${darkMode?'text-gray-300':'text-gray-600'}`}>Match Timeline</h3>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={()=>setTimelineCompactMode(true)}
+                      className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                        timelineCompactMode
+                          ? (darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white')
+                          : (darkMode?'bg-gray-700 text-gray-300 hover:bg-gray-600':'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                      }`}
+                    >
+                      Compact
+                    </button>
+                    <button
+                      onClick={()=>setTimelineCompactMode(false)}
+                      className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                        !timelineCompactMode
+                          ? (darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white')
+                          : (darkMode?'bg-gray-700 text-gray-300 hover:bg-gray-600':'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                      }`}
+                    >
+                      Detailed
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+{/* Timeline Content */}
+              {(() => {
+                // Combine all events with type
+                const allEvents = [
+                  ...goalEvents.map(e => ({...e, type: 'goal'})),
+                  ...penaltyEvents.map(e => ({...e, type: 'penalty'})),
+                  ...otherEvents.map(e => ({...e, type: 'other'}))
+                ];
+                
+                // Sort by period (descending) then by timestamp (descending)
+                allEvents.sort((a, b) => {
+                  if (b.period !== a.period) return b.period - a.period;
+                  return b.timestamp - a.timestamp;
+                });
+                
+                // Group by period
+                const eventsByPeriod = {};
+                allEvents.forEach(event => {
+                  if (!eventsByPeriod[event.period]) {
+                    eventsByPeriod[event.period] = [];
+                  }
+                  eventsByPeriod[event.period].push(event);
+                });
+                
+                const periods = Object.keys(eventsByPeriod).map(Number).sort((a, b) => b - a);
+                
+                if (allEvents.length === 0) {
+                  return (
+                    <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-8 text-center`}>
+                      <p className={`${darkMode?'text-gray-400':'text-gray-500'}`}>No events recorded yet</p>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div className="space-y-4">
+                    {periods.map(period => (
+                      <div key={period}>
+                        {/* Period Divider */}
+                        <div className={`text-center py-3 ${darkMode?'text-gray-300':'text-gray-700'}`}>
+                          <div className="flex items-center">
+                            <div className={`flex-1 border-t ${darkMode?'border-gray-600':'border-gray-300'}`}></div>
+                            <span className="px-4 font-bold text-lg">
+                              {period <= 3 ? `PERIOD ${period}` : 'OVERTIME'}
+                            </span>
+                            <div className={`flex-1 border-t ${darkMode?'border-gray-600':'border-gray-300'}`}></div>
+                          </div>
+                        </div>
+                        
+                        {/* Events in this period */}
+                        <div className="space-y-2">
+
+{eventsByPeriod[period].map((event, idx) => {
+                            const teamName = event.team === 'home' ? homeName : awayName;
+                            
+                            // Calculate score at this point for goal events
+                            let scoreText = '';
+                            if (event.type === 'goal') {
+                              const eventIndex = goalEvents.findIndex(e => e.timestamp === event.timestamp);
+                              const homeGoals = goalEvents.slice(0, eventIndex + 1).filter(e => e.team === 'home').length;
+                              const awayGoals = goalEvents.slice(0, eventIndex + 1).filter(e => e.team === 'away').length;
+                              scoreText = event.team === 'home' 
+                                ? `${homeGoals}-${awayGoals}` 
+                                : `${homeGoals}-${awayGoals}`;
+                            }
+                            
+                            return (
+                              <div 
+                                key={`${event.type}-${event.timestamp}-${idx}`}
+                                className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white border border-gray-200'} rounded-lg p-3 shadow`}
+                              >
+                                {timelineCompactMode ? (
+                                  // COMPACT MODE
+                                  <div className="flex items-center gap-3">
+                                    {event.time && (
+                                      <span className={`text-xs font-mono ${darkMode?'text-gray-400':'text-gray-500'}`}>
+                                        {event.time}
+                                      </span>
+                                    )}
+                                    
+                                    {event.type === 'goal' && (
+                                      <div className="flex-1">
+                                        <span className="font-bold">{scoreText}</span>
+                                        <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                        {event.scorers && event.scorers.length > 0 && (
+                                          <span className={`text-sm ${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                            (G: #{event.scorers.map(id=>id.split('-')[1]).join(', #')})
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                    
+                                    {event.type === 'penalty' && (
+                                      <div className="flex-1">
+                                        <span className="font-semibold">Penalty</span>
+                                        <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                        <span className={`text-sm ${darkMode?'text-gray-400':'text-gray-600'}`}>
+                                          ({event.penaltyType}, #{event.player})
+                                        </span>
+                                      </div>
+                                    )}
+                                    
+                                    {event.type === 'other' && (
+                                      <div className="flex-1">
+                                        <span className="font-semibold">
+                                          {event.eventType === 'timeout' ? 'Time-Out' : 
+                                           event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
+                                           event.eventType === 'gkOut' ? 'GK Out' :
+                                           event.eventType === 'gkIn' ? 'GK In' : event.eventType}
+                                        </span>
+                                        <span className={`mx-2 ${darkMode?'text-gray-400':'text-gray-600'}`}>{teamName}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  // DETAILED MODE
+                                  <div>
+
+<div className="flex items-start justify-between mb-2">
+                                      <div>
+                                        {event.time && (
+                                          <div className={`text-xs font-mono mb-1 ${darkMode?'text-gray-400':'text-gray-500'}`}>
+                                            {event.time}
+                                          </div>
+                                        )}
+                                        
+                                        {event.type === 'goal' && (
+                                          <>
+                                            <div className="font-bold text-lg mb-1">
+                                              {scoreText} {teamName}
+                                            </div>
+                                            <div className={`text-sm ${darkMode?'text-gray-300':'text-gray-600'}`}>
+                                              Goal • {event.situation}
+                                            </div>
+                                          </>
+                                        )}
+                                        
+                                        {event.type === 'penalty' && (
+                                          <>
+                                            <div className="font-bold text-lg mb-1">
+                                              Penalty - {teamName}
+                                            </div>
+                                            <div className={`text-sm ${darkMode?'text-gray-300':'text-gray-600'}`}>
+                                              {event.penaltyType.replace("'", " min")}
+                                              {event.infraction && ` • ${event.infraction}`}
+                                              {' • #'}{event.player === 'BENCH' ? 'Bench' : event.player}
+                                            </div>
+                                          </>
+                                        )}
+                                        
+                                       {event.type === 'other' && (
+                                          <>
+                                            <div className="font-bold text-lg mb-1">
+                                              {event.eventType === 'timeout' ? 'Time-Out' : 
+                                               event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
+                                               event.eventType === 'gkOut' ? 'GK Out' :
+                                               event.eventType === 'gkIn' ? 'GK In' : event.eventType}
+                                            </div>
+                                            <div className={`text-sm ${darkMode?'text-gray-300':'text-gray-600'}`}>
+                                              {teamName}
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    {event.type === 'goal' && (
+                                      <div className={`text-sm space-y-1 pt-2 border-t ${darkMode?'border-gray-700 text-gray-300':'border-gray-200 text-gray-600'}`}>
+                                        {event.scorers && event.scorers.length > 0 && (
+                                          <div>G: #{event.scorers.map(id=>id.split('-')[1]).join(', #')}</div>
+                                        )}
+                                        {event.assists && event.assists.length > 0 && (
+                                          <div>A: #{event.assists.map(id=>id.split('-')[1]).join(', #')}</div>
+                                        )}
+                                        {event.plus && event.plus.length > 0 && (
+                                          <div>+: #{event.plus.map(id=>id.split('-')[1]).join(', #')}</div>
+                                        )}
+                                        {event.minus && event.minus.length > 0 && (
+                                          <div>-: #{event.minus.map(id=>id.split('-')[1]).join(', #')}</div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>}
+
 
           <div className="max-w-6xl mx-auto p-4">
             {activeTab==='audio'&&<div>
@@ -5599,6 +5828,7 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
         </div>
 
       </div>}
+
 
          {activeTab === 'referee' && <div>
   <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 p-2">
