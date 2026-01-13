@@ -2630,14 +2630,13 @@ return(
   className={`px-3 py-1 rounded text-sm font-bold ${
     isViewer || matchEnded 
       ? 'bg-gray-500 cursor-not-allowed opacity-50' 
-      : otherWizardOpen
+      : playerStatsMoment==='Other'
         ? 'bg-yellow-400 text-blue-900'
         : darkMode?'bg-gray-700':'bg-white bg-opacity-20'
   }`}
 >
   Other
 </button>
-
 
                 <div className="flex gap-2 items-center flex-wrap">
  
@@ -3651,7 +3650,10 @@ return(
             {[...otherEvents].reverse().map((event,reverseIdx)=>{
               const idx=otherEvents.length-1-reverseIdx;
               const teamName = event.team === 'home' ? homeName : awayName;
-              const eventLabel = event.eventType === 'timeout' ? 'Time-Out' : 'Goalie Switch';
+              const eventLabel = event.eventType === 'timeout' ? 'Time-Out' : 
+                                 event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
+                                 event.eventType === 'gkOut' ? 'GK Out' :
+                                 event.eventType === 'gkIn' ? 'GK In' : event.eventType;
               return(
                 <div 
                   key={idx} 
@@ -5171,37 +5173,8 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
 
 
 
-{activeTab==='timeline'&&<div>
-              {/* Compact/Detailed Toggle */}
-              <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-3 mb-3`}>
-                <div className="flex items-center justify-between">
-                  <h3 className={`text-sm font-semibold ${darkMode?'text-gray-300':'text-gray-600'}`}>Match Timeline</h3>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={()=>setTimelineCompactMode(true)}
-                      className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
-                        timelineCompactMode
-                          ? (darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white')
-                          : (darkMode?'bg-gray-700 text-gray-300 hover:bg-gray-600':'bg-gray-200 text-gray-700 hover:bg-gray-300')
-                      }`}
-                    >
-                      Compact
-                    </button>
-                    <button
-                      onClick={()=>setTimelineCompactMode(false)}
-                      className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
-                        !timelineCompactMode
-                          ? (darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white')
-                          : (darkMode?'bg-gray-700 text-gray-300 hover:bg-gray-600':'bg-gray-200 text-gray-700 hover:bg-gray-300')
-                      }`}
-                    >
-                      Detailed
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-{/* Timeline Content */}
+{activeTab==='timeline'&&<div className="max-w-4xl mx-auto">
+              {/* Timeline Content */}
               {(() => {
                 // Combine all events with type
                 const allEvents = [
@@ -5210,10 +5183,20 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                   ...otherEvents.map(e => ({...e, type: 'other'}))
                 ];
                 
-                // Sort by period (descending) then by timestamp (descending)
+               // Sort by period (ascending) then by time (ascending for chronological order)
                 allEvents.sort((a, b) => {
-                  if (b.period !== a.period) return b.period - a.period;
-                  return b.timestamp - a.timestamp;
+                  if (a.period !== b.period) return a.period - b.period;
+                  // Sort by time if available, otherwise by timestamp
+                  if (a.time && b.time) {
+                    // Parse time format "12:34" to minutes for comparison
+                    const parseTime = (timeStr) => {
+                      if (!timeStr) return 0;
+                      const [min, sec] = timeStr.split(':').map(Number);
+                      return (min || 0) * 60 + (sec || 0);
+                    };
+                    return parseTime(a.time) - parseTime(b.time);
+                  }
+                  return a.timestamp - b.timestamp;
                 });
                 
                 // Group by period
@@ -5225,18 +5208,44 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                   eventsByPeriod[event.period].push(event);
                 });
                 
-                const periods = Object.keys(eventsByPeriod).map(Number).sort((a, b) => b - a);
+                const periods = Object.keys(eventsByPeriod).map(Number).sort((a, b) => a - b);
                 
                 if (allEvents.length === 0) {
                   return (
-                    <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow p-8 text-center`}>
+                    <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow-lg p-8 text-center`}>
                       <p className={`${darkMode?'text-gray-400':'text-gray-500'}`}>No events recorded yet</p>
                     </div>
                   );
                 }
                 
                 return (
-                  <div className="space-y-4">
+                  <div className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white'} rounded-lg shadow-lg p-4`}>
+                    {/* Compact/Detailed Toggle */}
+                    <div className="flex justify-end mb-4">
+                      <div className="flex gap-1">
+                        <button
+                          onClick={()=>setTimelineCompactMode(true)}
+                          className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                            timelineCompactMode
+                              ? (darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white')
+                              : (darkMode?'bg-gray-700 text-gray-300 hover:bg-gray-600':'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                          }`}
+                        >
+                          Compact
+                        </button>
+                        <button
+                          onClick={()=>setTimelineCompactMode(false)}
+                          className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${
+                            !timelineCompactMode
+                              ? (darkMode?'bg-blue-700 text-white':'bg-blue-600 text-white')
+                              : (darkMode?'bg-gray-700 text-gray-300 hover:bg-gray-600':'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                          }`}
+                        >
+                          Detailed
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
                     {periods.map(period => (
                       <div key={period}>
                         {/* Period Divider */}
@@ -5270,7 +5279,7 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                             return (
                               <div 
                                 key={`${event.type}-${event.timestamp}-${idx}`}
-                                className={`${darkMode?'bg-gray-800 border border-gray-700':'bg-white border border-gray-200'} rounded-lg p-3 shadow`}
+                                className={`${darkMode?'bg-gray-700 border border-gray-600':'bg-gray-50 border border-gray-200'} rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow`}
                               >
                                 {timelineCompactMode ? (
                                   // COMPACT MODE
@@ -5391,6 +5400,7 @@ if(isMultiplayer&&matchRef.current&&!matchEnded)matchRef.current.update({current
                         </div>
                       </div>
                     ))}
+                  </div>
                   </div>
                 );
               })()}
