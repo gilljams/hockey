@@ -2563,7 +2563,7 @@
 
         return (
           <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-            <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-3 shadow-lg sticky top-0 z-50`}>
+            <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-3 py-2 shadow-lg sticky top-0 z-50`}>
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex gap-2 items-center flex-wrap">
@@ -2576,7 +2576,7 @@
                           if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: p });
                         }}
                         disabled={matchEnded || isViewer}
-                        className={`px-3 py-1 rounded text-sm font-bold ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                        className={`px-3 py-1 rounded font-bold text-base ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                       >
                         {p}
                       </button>
@@ -2588,7 +2588,7 @@
                           if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: 4 });
                         }}
                         disabled={matchEnded || isViewer}
-                        className={`px-3 py-1 rounded text-sm font-bold ${currentPeriod === 4 ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                        className={`px-3 py-1 rounded font-bold text-base ${currentPeriod === 4 ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                       >
                         OT
                       </button>
@@ -2602,7 +2602,7 @@
                           if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: updated, currentPeriod: 4 });
                         }}
                         disabled={matchEnded || isViewer}
-                        className={`px-3 py-1 rounded text-sm font-bold ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                        className={`px-3 py-1 rounded font-bold text-base ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                       >
                         +OT
                       </button>
