@@ -2380,6 +2380,7 @@
                   {playerStatsMoment === 'FO/SOG' && (
                     <button
                       onClick={() => {
+                        if (matchEnded) return;
                         const otherTeam = team === 'home' ? 'away' : 'home';
                         setPlayerStatsEditMode(prev => ({
                           ...prev,
@@ -2387,9 +2388,12 @@
                           [otherTeam]: false  // Auto-toggle off the other team
                         }));
                       }}
-                      className={`text-xs px-2 py-1 rounded transition-all whitespace-nowrap ${playerStatsEditMode[team]
-                        ? (darkMode ? 'bg-yellow-900 bg-opacity-60 text-yellow-200' : 'bg-yellow-100 text-yellow-800 font-semibold')
-                        : (darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+                      disabled={matchEnded}
+                      className={`text-xs px-2 py-1 rounded transition-all whitespace-nowrap ${matchEnded
+                        ? (darkMode ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+                        : playerStatsEditMode[team]
+                          ? (darkMode ? 'bg-yellow-900 bg-opacity-60 text-yellow-200' : 'bg-yellow-100 text-yellow-800 font-semibold')
+                          : (darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
                         }`}
                     >
                       {playerStatsEditMode[team] ? '✎ Edit ON' : '✎ Edit'}
@@ -2640,6 +2644,11 @@
                       resetModeState();
                       setPlayerStatsMoment('Goal');
                       setGoalWizardStep(1);
+                      // Force collapse form if match ended
+                      if (matchEnded) {
+                        setGoalFormCollapsed(true);
+                        setGoalTimelineCollapsed(false);
+                      }
                     }}
                     className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                   >
@@ -2652,9 +2661,14 @@
                       setPlayerStatsMoment('Penalty');
                       setPenaltyWizardOpen(true);
                       setPenaltyTeam(null);
+                      // Force collapse form if match ended
+                      if (matchEnded) {
+                        setPenaltyFormCollapsed(true);
+                        setPenaltyTimelineCollapsed(false);
+                      }
                     }}
-                    disabled={isViewer || matchEnded}
-                    className={`px-3 py-1 rounded text-sm font-bold ${isViewer || matchEnded
+                    disabled={isViewer}
+                    className={`px-3 py-1 rounded text-sm font-bold ${isViewer
                       ? 'bg-gray-500 cursor-not-allowed opacity-50'
                       : penaltyWizardOpen
                         ? 'bg-yellow-400 text-blue-900'
@@ -2670,9 +2684,14 @@
                       setPlayerStatsMoment('Other');
                       setOtherWizardOpen(true);
                       setOtherTeam(null);
+                      // Force collapse form if match ended
+                      if (matchEnded) {
+                        setOtherFormCollapsed(true);
+                        setOtherTimelineCollapsed(false);
+                      }
                     }}
-                    disabled={isViewer || matchEnded}
-                    className={`px-3 py-1 rounded text-sm font-bold ${isViewer || matchEnded
+                    disabled={isViewer}
+                    className={`px-3 py-1 rounded text-sm font-bold ${isViewer
                       ? 'bg-gray-500 cursor-not-allowed opacity-50'
                       : playerStatsMoment === 'Other'
                         ? 'bg-yellow-400 text-blue-900'
@@ -2700,15 +2719,17 @@
                 <div className="max-w-4xl mx-auto penalty-form">
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
                     {/* Collapsable Header */}
-                    <button
-                      onClick={() => setPenaltyFormCollapsed(!penaltyFormCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                    >
-                      <span>{editingPenaltyIndex !== null ? `Edit Penalty #${editingPenaltyIndex + 1}` : 'Add Penalty'}</span>
-                      <span className={`transition-transform duration-300 ${penaltyFormCollapsed ? '' : 'rotate-180'}`}>
-                        <IconChevronDown />
-                      </span>
-                    </button>
+                    {!matchEnded && (
+                      <button
+                        onClick={() => setPenaltyFormCollapsed(!penaltyFormCollapsed)}
+                        className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      >
+                        <span>{editingPenaltyIndex !== null ? `Edit Penalty #${editingPenaltyIndex + 1}` : 'Add Penalty'}</span>
+                        <span className={`transition-transform duration-300 ${penaltyFormCollapsed ? '' : 'rotate-180'}`}>
+                          <IconChevronDown />
+                        </span>
+                      </button>
+                    )}
 
                     {/* Form Content */}
                     {!penaltyFormCollapsed && (
@@ -2929,7 +2950,7 @@
                               : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
                             }
                           >
-                            Save Penalty
+                            {editingPenaltyIndex !== null ? 'Update Penalty' : 'Save Penalty'}
                           </button>
                         </div>
                       </div>
@@ -2943,15 +2964,17 @@
                 <div className="max-w-4xl mx-auto other-form">
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
                     {/* Collapsable Header */}
-                    <button
-                      onClick={() => setOtherFormCollapsed(!otherFormCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                    >
-                      <span>{editingOtherIndex !== null ? `Edit Event #${editingOtherIndex + 1}` : 'Add Event'}</span>
-                      <span className={`transition-transform duration-300 ${otherFormCollapsed ? '' : 'rotate-180'}`}>
-                        <IconChevronDown />
-                      </span>
-                    </button>
+                    {!matchEnded && (
+                      <button
+                        onClick={() => setOtherFormCollapsed(!otherFormCollapsed)}
+                        className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      >
+                        <span>{editingOtherIndex !== null ? `Edit Event #${editingOtherIndex + 1}` : 'Add Event'}</span>
+                        <span className={`transition-transform duration-300 ${otherFormCollapsed ? '' : 'rotate-180'}`}>
+                          <IconChevronDown />
+                        </span>
+                      </button>
+                    )}
 
                     {!otherFormCollapsed && (
                       <div className="p-6" style={{ animation: 'fadeIn 0.3s ease-in' }}>
@@ -3100,7 +3123,7 @@
                               : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
                             }
                           >
-                            Save Event
+                            {editingOtherIndex !== null ? 'Update Event' : 'Save Event'}
                           </button>
                         </div>
                       </div>
@@ -3115,15 +3138,17 @@
 
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
 
-                    <button
-                      onClick={() => setGoalFormCollapsed(!goalFormCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                    >
-                      <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'Add Goal'}</span>
-                      <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
-                        <IconChevronDown />
-                      </span>
-                    </button>
+                    {!matchEnded && (
+                      <button
+                        onClick={() => setGoalFormCollapsed(!goalFormCollapsed)}
+                        className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      >
+                        <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'Add Goal'}</span>
+                        <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
+                          <IconChevronDown />
+                        </span>
+                      </button>
+                    )}
 
 
                     {!goalFormCollapsed && (
@@ -3386,7 +3411,7 @@
                               : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
                             }
                           >
-                            Save Goal
+                            {editingGoalIndex !== null ? 'Update Goal' : 'Save Goal'}
                           </button>
                         </div>
                       </div>
@@ -3455,6 +3480,7 @@
                                   <div className="flex gap-1">
                                     <button
                                       onClick={() => {
+                                        if (matchEnded) return;
                                         const event = goalEvents[idx];
                                         setEditingGoalIndex(idx);
                                         setRecordingGoal(event.team);
@@ -3475,14 +3501,18 @@
                                           }
                                         }, 100);
                                       }}
-                                      className={darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                                      disabled={matchEnded}
+                                      className={matchEnded
+                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                      }
                                     >
                                       Edit
                                     </button>
                                     <button
                                       onClick={() => {
                                         if (!window.confirm('Delete this goal?')) return;
-                                        if (isViewer) return;
+                                        if (isViewer || matchEnded) return;
                                         if (isMultiplayer && !currentUser) {
                                           alert('You must be logged in to edit multiplayer games');
                                           return;
@@ -3554,8 +3584,11 @@
                                           matchRef.current.update({ playerStats: newStats });
                                         }
                                       }}
-
-                                      className={darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                                      disabled={matchEnded}
+                                      className={matchEnded
+                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                        : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                      }
                                     >
                                       Del
                                     </button>
@@ -3613,6 +3646,7 @@
                                   <div className="flex gap-1">
                                     <button
                                       onClick={() => {
+                                        if (matchEnded) return;
                                         const event = penaltyEvents[idx];
                                         setEditingPenaltyIndex(idx);
                                         setPenaltyTeam(event.team);
@@ -3630,14 +3664,18 @@
                                           }
                                         }, 100);
                                       }}
-                                      className={darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                                      disabled={matchEnded}
+                                      className={matchEnded
+                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                      }
                                     >
                                       Edit
                                     </button>
                                     <button
                                       onClick={() => {
                                         if (!window.confirm('Delete this penalty?')) return;
-                                        if (isViewer) return;
+                                        if (isViewer || matchEnded) return;
                                         if (isMultiplayer && !currentUser) {
                                           alert('You must be logged in to edit multiplayer games');
                                           return;
@@ -3658,7 +3696,11 @@
 
 
                                       }}
-                                      className={darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                                      disabled={matchEnded}
+                                      className={matchEnded
+                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                        : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                      }
                                     >
                                       Del
                                     </button>
@@ -3718,6 +3760,7 @@
                                   <div className="flex gap-1">
                                     <button
                                       onClick={() => {
+                                        if (matchEnded) return;
                                         const event = otherEvents[idx];
                                         setEditingOtherIndex(idx);
                                         setOtherTeam(event.team);
@@ -3733,14 +3776,18 @@
                                           }
                                         }, 100);
                                       }}
-                                      className={darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                                      disabled={matchEnded}
+                                      className={matchEnded
+                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                      }
                                     >
                                       Edit
                                     </button>
                                     <button
                                       onClick={() => {
                                         if (!window.confirm('Delete this event?')) return;
-                                        if (isViewer) return;
+                                        if (isViewer || matchEnded) return;
                                         if (isMultiplayer && !currentUser) {
                                           alert('You must be logged in to edit multiplayer games');
                                           return;
@@ -3758,7 +3805,11 @@
                                           localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
                                         }
                                       }}
-                                      className={darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold'}
+                                      disabled={matchEnded}
+                                      className={matchEnded
+                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                        : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                      }
                                     >
                                       Del
                                     </button>
