@@ -2639,7 +2639,6 @@
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-3">
                   <div className="flex gap-2 items-center flex-wrap">
-
                     {[1, 2, 3].map(p => (
                       <button
                         key={p}
@@ -2679,6 +2678,7 @@
                         +OT
                       </button>
                     )}
+                    {matchEnded && <span className="bg-gray-500 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">GAME ENDED</span>}
                   </div>
 
                   <button
@@ -2701,7 +2701,7 @@
                         resetModeState();
                         setPlayerStatsMoment(m.key);
                       }}
-                      className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === m.key ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                      className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === m.key ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                     >
                       {m.label}
                     </button>
@@ -2718,7 +2718,7 @@
                         setGoalTimelineCollapsed(false);
                       }
                     }}
-                    className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                    className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                   >
                     Goal
                   </button>
@@ -2739,7 +2739,7 @@
                     className={`px-3 py-1 rounded text-sm font-bold ${isViewer
                       ? 'bg-gray-500 cursor-not-allowed opacity-50'
                       : penaltyWizardOpen
-                        ? 'bg-yellow-400 text-blue-900'
+                        ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900')
                         : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'
                       }`}
                   >
@@ -2762,7 +2762,7 @@
                     className={`px-3 py-1 rounded text-sm font-bold ${isViewer
                       ? 'bg-gray-500 cursor-not-allowed opacity-50'
                       : playerStatsMoment === 'Other'
-                        ? 'bg-yellow-400 text-blue-900'
+                        ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900')
                         : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'
                       }`}
                   >
@@ -2790,7 +2790,7 @@
                     {!matchEnded && (
                       <button
                         onClick={() => setPenaltyFormCollapsed(!penaltyFormCollapsed)}
-                        className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
                       >
                         <span>{editingPenaltyIndex !== null ? `Edit Penalty #${editingPenaltyIndex + 1}` : 'Add Penalty'}</span>
                         <span className={`transition-transform duration-300 ${penaltyFormCollapsed ? '' : 'rotate-180'}`}>
@@ -3014,8 +3014,8 @@
                             }}
                             disabled={!penaltyTeam || !penaltyPlayer}
                             className={penaltyTeam && penaltyPlayer
-                              ? (darkMode ? 'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
-                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
+                              ? (darkMode ? 'flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed border border-gray-700' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
                             }
                           >
                             {editingPenaltyIndex !== null ? 'Update Penalty' : 'Save Penalty'}
@@ -3035,7 +3035,7 @@
                     {!matchEnded && (
                       <button
                         onClick={() => setOtherFormCollapsed(!otherFormCollapsed)}
-                        className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
                       >
                         <span>{editingOtherIndex !== null ? `Edit Event #${editingOtherIndex + 1}` : 'Add Event'}</span>
                         <span className={`transition-transform duration-300 ${otherFormCollapsed ? '' : 'rotate-180'}`}>
@@ -3187,8 +3187,8 @@
                             }}
                             disabled={!otherTeam}
                             className={otherTeam
-                              ? (darkMode ? 'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
-                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
+                              ? (darkMode ? 'flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed border border-gray-700' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
                             }
                           >
                             {editingOtherIndex !== null ? 'Update Event' : 'Save Event'}
@@ -3209,7 +3209,7 @@
                     {!matchEnded && (
                       <button
                         onClick={() => setGoalFormCollapsed(!goalFormCollapsed)}
-                        className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
                       >
                         <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'Add Goal'}</span>
                         <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
@@ -3475,8 +3475,8 @@
                             onClick={saveGoalHandler}
                             disabled={!recordingGoal}
                             className={recordingGoal
-                              ? (darkMode ? 'flex-1 bg-blue-700 hover:bg-blue-600 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
-                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
+                              ? (darkMode ? 'flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed border border-gray-700' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
                             }
                           >
                             {editingGoalIndex !== null ? 'Update Goal' : 'Save Goal'}
@@ -3495,7 +3495,7 @@
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
                     <button
                       onClick={() => setGoalTimelineCollapsed(!goalTimelineCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
                     >
                       <span> Goals - Timeline </span>
                       <span className={`transition-transform duration-300 ${goalTimelineCollapsed ? '' : 'rotate-180'}`}>
@@ -3517,7 +3517,7 @@
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1">
-                                    <div className="font-bold mb-1">
+                                    <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                       {(() => {
                                         const homeGoals = goalEvents.slice(0, idx + 1).filter(e => e.team === 'home').length;
                                         const awayGoals = goalEvents.slice(0, idx + 1).filter(e => e.team === 'away').length;
@@ -3572,7 +3572,7 @@
                                       disabled={matchEnded}
                                       className={matchEnded
                                         ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                        : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
                                       }
                                     >
                                       Edit
@@ -3679,7 +3679,7 @@
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
                     <button
                       onClick={() => setPenaltyTimelineCollapsed(!penaltyTimelineCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
                     >
                       <span>Penalty - Timeline</span>
                       <span className={`transition-transform duration-300 ${penaltyTimelineCollapsed ? '' : 'rotate-180'}`}>
@@ -3702,7 +3702,7 @@
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1">
-                                    <div className="font-bold mb-1">
+                                    <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                       {event.penaltyType.replace("'", " min")} Penalty - {teamName}
                                     </div>
                                     <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
@@ -3735,7 +3735,7 @@
                                       disabled={matchEnded}
                                       className={matchEnded
                                         ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                        : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
                                       }
                                     >
                                       Edit
@@ -3789,7 +3789,7 @@
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
                     <button
                       onClick={() => setOtherTimelineCollapsed(!otherTimelineCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
                     >
                       <span>Events - Timeline</span>
                       <span className={`transition-transform duration-300 ${otherTimelineCollapsed ? '' : 'rotate-180'}`}>
@@ -3816,7 +3816,7 @@
                               >
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1">
-                                    <div className="font-bold mb-1">
+                                    <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                       {eventLabel} - {teamName}
                                     </div>
                                     <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
@@ -3847,7 +3847,7 @@
                                       disabled={matchEnded}
                                       className={matchEnded
                                         ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                        : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
                                       }
                                     >
                                       Edit
@@ -4421,7 +4421,7 @@
           return (
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg overflow-hidden border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
               {/* Header with team name and total goals */}
-              <div className={`${darkMode ? 'bg-gradient-to-r from-blue-700 to-blue-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 flex items-center justify-between`}>
+              <div className={`${darkMode ? 'bg-gray-700 border-b border-gray-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 flex items-center justify-between`}>
                 <span className="font-bold">{name}</span>
                 <span className="text-2xl font-bold">{goals}</span>
               </div>
@@ -4571,8 +4571,8 @@
                       <button
                         onClick={() => setSelectedGoalieStats(prev => ({ ...prev, [teamStats.team]: 'backup' }))}
                         className={`flex-1 py-2 rounded font-semibold text-sm transition-colors ${selectedGoalie === 'backup'
-                          ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white')
-                          : (darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+                          ? (darkMode ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white')
+                          : (darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
                           }`}
                       >
                         Backup
@@ -4644,7 +4644,6 @@
                 <div className="max-w-7xl mx-auto">
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2 items-center flex-wrap">
-
                       {[1, 2, 3].map(p => <button key={p} onClick={() => {
                         setCurrentPeriod(p);
                         if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: p })
@@ -4674,7 +4673,7 @@
                       >
                         ⇄
                       </button>
-
+                      {matchEnded && <span className="bg-gray-500 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">GAME ENDED</span>}
                     </div>
                     <button
                       onClick={() => setFocusMode(null)}
@@ -5305,8 +5304,8 @@
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                {!isViewer && <button onClick={() => { setFocusMode('home'); setActiveTab('stats') }} className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Goalie Focus</button>}
-                {!isViewer && <button onClick={() => setShowPlayerStats(true)} className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold`}>⛶ Skater Focus</button>}
+                {!isViewer && <button onClick={() => { setFocusMode('home'); setActiveTab('stats') }} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold text-white`}>⛶ Goalie Focus</button>}
+                {!isViewer && <button onClick={() => setShowPlayerStats(true)} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold text-white`}>⛶ Skater Focus</button>}
               </div>
             </div>
           </div>
@@ -5316,7 +5315,7 @@
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white'} shadow-md sticky top-48 z-40`}>
               <div className="max-w-6xl mx-auto flex">
                 {['stats', 'timeline', 'audio', 'referee', ...(externalLinkUrl ? ['external'] : [])].map(tab => (
-                  <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab === tab ? (darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600')}`}>
+                  <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab === tab ? (darkMode ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600')}`}>
                     {tab === 'audio' ? 'Audio' : tab === 'stats' ? 'Stats' : tab === 'timeline' ? 'Timeline' : tab === 'referee' ? 'Referee' : externalLinkTitle || 'Link'}
                   </button>
                 ))}
@@ -5542,7 +5541,7 @@
                                           )}
 
                                           {/* Event Label */}
-                                          <div className="font-semibold text-xs sm:text-sm truncate">
+                                          <div className={`font-semibold text-xs sm:text-sm truncate ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
                                             {getEventLabel(event)}
                                             {event.type === 'goal' && scoreText && (
                                               <span className="ml-1 font-bold">{scoreText}</span>
@@ -5551,7 +5550,7 @@
                                         </div>
 
                                         {/* Bottom row: Team Name (+ Situation) */}
-                                        <div className={`text-[10px] sm:text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                                        <div className={`text-[10px] sm:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} truncate`}>
                                           {teamName}
                                           {event.type === 'goal' && event.situation && (
                                             <span className="ml-1">({event.situation})</span>
@@ -5561,7 +5560,7 @@
 
                                       {/* Expanded details */}
                                       {isExpanded && canExpand && (
-                                        <div className={`mt-2 sm:mt-3 pt-2 sm:pt-3 border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-[10px] sm:text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        <div className={`mt-2 sm:mt-3 pt-2 sm:pt-3 border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-[10px] sm:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                           {event.type === 'goal' && (
                                             <div className="space-y-1">
                                               {event.scorers && event.scorers.length > 0 && (
@@ -5835,7 +5834,7 @@
                                     <div className="overflow-x-auto">
                                       <table className="w-full text-xs">
                                         <thead>
-                                          <tr className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                                          <tr className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
                                             <th className="text-left px-2 py-2 font-semibold">#</th>
                                             <th className="text-center px-2 py-2 font-semibold">G</th>
                                             <th className="text-center px-2 py-2 font-semibold">A</th>
@@ -5858,7 +5857,7 @@
                                             const foTotal = foPlus + foMinus;
                                             const foPct = foTotal === 0 ? '-' : ((foPlus / foTotal) * 100).toFixed(0);
                                             return (
-                                              <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-sm`}>
+                                              <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-200 text-gray-800'} text-sm`}>
                                                 <td className="font-bold px-2 py-2">{pNum}</td>
                                                 <td className="text-center px-2 py-2">{pStats?.['G'] || 0}</td>
                                                 <td className="text-center px-2 py-2">{pStats?.['A'] || 0}</td>
@@ -5886,7 +5885,7 @@
                                             });
                                             const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
                                             return (
-                                              <tr className={`border-t-2 ${darkMode ? 'border-gray-500 bg-gray-600' : 'border-gray-400 bg-gray-100'} text-sm font-bold`}>
+                                              <tr className={`border-t-2 ${darkMode ? 'border-gray-500 bg-gray-600 text-white' : 'border-gray-400 bg-gray-100'} text-sm font-bold`}>
                                                 <td className="px-2 py-2">TOT</td>
                                                 <td className="text-center px-2 py-2">{totalG}</td>
                                                 <td className="text-center px-2 py-2">{totalA}</td>
@@ -5974,7 +5973,7 @@
                                 <div className="overflow-x-auto">
                                   <table className="w-full text-xs">
                                     <thead>
-                                      <tr className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
+                                      <tr className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm`}>
                                         <th className="text-left px-2 py-2 font-semibold">#</th>
                                         <th className="text-center px-2 py-2 font-semibold">G</th>
                                         <th className="text-center px-2 py-2 font-semibold">A</th>
@@ -5998,7 +5997,7 @@
                                         const pim = calculatePIMFromEvents(team, pNum);  // ÄNDRAD RAD - null som period = alla perioder
 
                                         return (
-                                          <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-sm`}>
+                                          <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-600 text-gray-200' : 'border-gray-200 text-gray-800'} text-sm`}>
                                             <td className="font-bold px-2 py-2">{pNum}</td>
                                             <td className="text-center px-2 py-2">{pStats?.['G'] || 0}</td>
                                             <td className="text-center px-2 py-2">{pStats?.['A'] || 0}</td>
@@ -6024,7 +6023,7 @@
                                         });
                                         const teamFOPct = totalFO === 0 ? '-' : ((totalFOPlus / totalFO) * 100).toFixed(0);
                                         return (
-                                          <tr className={`border-t-2 ${darkMode ? 'border-gray-500 bg-gray-600' : 'border-gray-400 bg-gray-100'} text-sm font-bold`}>
+                                          <tr className={`border-t-2 ${darkMode ? 'border-gray-500 bg-gray-600 text-white' : 'border-gray-400 bg-gray-100'} text-sm font-bold`}>
                                             <td className="px-2 py-2">TOT</td>
                                             <td className="text-center px-2 py-2">{totalG}</td>
                                             <td className="text-center px-2 py-2">{totalA}</td>
