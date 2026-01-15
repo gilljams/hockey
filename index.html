@@ -177,7 +177,7 @@
       const [expandedGoalieStats, setExpandedGoalieStats] = useState({ home: false, away: false });
       const [selectedGoalieStats, setSelectedGoalieStats] = useState({ home: 'total', away: 'total' });
       const [gameMode, setGameMode] = useState(localStorage.getItem('gameMode') || 'single');
-      const [trackingMode, setTrackingMode] = useState('simple');
+      const [trackingMode, setTrackingMode] = useState(localStorage.getItem('trackingMode') || 'simple');
       const [goalieMap, setGoalieMap] = useState({
         home: { starter: '', backup: '' },
         away: { starter: '', backup: '' }
@@ -421,7 +421,7 @@
       };
 
       // Reset all game state
-      const resetGameState = () => {
+      const resetGameState = (modeOverride = null) => {
         setPeriodStats({
           1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0, homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }, awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } } },
           2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0, homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }, awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } } },
@@ -436,7 +436,10 @@
         setMatchEnded(false);
         setGoalFocusSwapped(false);
         setActiveGoalies({ home: 'starter', away: 'starter' });
-        setTrackingMode('simple');
+        if (modeOverride) {
+  setTrackingMode(modeOverride);
+}
+
         setGoalieMap({
           home: { starter: '', backup: '' },
           away: { starter: '', backup: '' }
@@ -602,6 +605,7 @@
       useEffect(() => { localStorage.setItem('externalLinkUrl', externalLinkUrl) }, [externalLinkUrl]);
       useEffect(() => { localStorage.setItem('externalLinkTitle', externalLinkTitle) }, [externalLinkTitle]);
       useEffect(() => { localStorage.setItem('defaultHomeRoster', defaultHomeRoster) }, [defaultHomeRoster]);
+      useEffect(() => { localStorage.setItem('trackingMode', trackingMode) }, [trackingMode]);
       useEffect(() => {
         if (!isMultiplayer && screen === 'game') {
           const gs = { currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, otherEvents, trackingMode, goalieMap, timestamp: new Date().toISOString() };
@@ -726,7 +730,7 @@
               // SCENARIO 1: Jag är kickad
               if (amIKicked) {
                 localStorage.removeItem('multiplayerMatch');
-                resetGameState();
+                resetGameState(trackingMode);
                 setIsMultiplayer(false);
                 setMatchCode('');
                 setWasInMatch(false);
@@ -739,7 +743,7 @@
               if (!matchEnded && !isCurrentlyInMatch && d.users && Object.keys(d.users).length > 0) {
                 // Möjligt Network-issue, visa reconect-prompt
                 localStorage.removeItem('multiplayerMatch');
-                resetGameState();
+                resetGameState(trackingMode);
                 setIsMultiplayer(false);
                 setMatchCode('');
                 setScreen('start');
@@ -848,7 +852,7 @@
         setWasInMatch(false);
         try {
           const saved = JSON.parse(localStorage.getItem('multiplayerMatch'));
-          resetGameState();
+          resetGameState(trackingMode);
           setGameMode('multi');
           localStorage.setItem('gameMode', 'multi');
           setMatchCode(savedMatchCode);
@@ -857,7 +861,7 @@
           setScreen('game');
           setShowReconnectPrompt(false);
         } catch (e) {
-          resetGameState();
+          resetGameState(trackingMode);
           setGameMode('multi');
           localStorage.setItem('gameMode', 'multi');
           setMatchCode(savedMatchCode);
@@ -1041,7 +1045,7 @@
             if (d.ended) {
               // NY KOD: Erbjud att joina som viewer
               if (window.confirm('This game has ended. Join as viewer to see final stats?')) {
-                resetGameState();
+                resetGameState(trackingMode);
                 setGameMode('multi');
                 localStorage.setItem('gameMode', 'multi');
                 setMatchCode(baseCode);
@@ -1057,7 +1061,7 @@
               }
             }
             else {
-              resetGameState();
+              resetGameState(trackingMode);
               setGameMode('multi');
               localStorage.setItem('gameMode', 'multi');
               setMatchCode(baseCode);
@@ -4232,7 +4236,7 @@
           matches={userMatches}
           loading={loadingMatches}
           onJoinMatch={(matchCode) => {
-            resetGameState();
+            resetGameState(trackingMode);
             setGameMode('multi');
             localStorage.setItem('gameMode', 'multi');
             setMatchCode(matchCode);
@@ -5066,7 +5070,7 @@
                   {isMultiplayer && !isViewer && (
                     <button onClick={() => {
                       localStorage.removeItem('multiplayerMatch');
-                      resetGameState();
+                      resetGameState(trackingMode);
                       setIsMultiplayer(false);
                       setMatchCode('');
                       setScreen('start');
