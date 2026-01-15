@@ -5070,8 +5070,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
       return (
         <div className={`min-h-screen pb-20 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-          {isViewer && <div className="bg-yellow-500 text-gray-900 px-4 py-2 text-center font-semibold text-sm">
-            VIEWER MODE - live stats (read-only)
+          {isViewer && <div className="bg-yellow-500 text-gray-900 px-2 py-1 text-center font-semibold text-xs">
+            VIEWER MODE
           </div>}
           <audio ref={audioRefs.homeGoal} src="homeGoal.mp3" />
           <audio ref={audioRefs.awayGoal} src="awayGoal.mp3" />
