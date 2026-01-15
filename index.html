@@ -5643,11 +5643,11 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
               <div className="grid grid-cols-2 gap-2 mt-2">
                 {trackingMode === 'advanced' ? (
                   <button onClick={() => setShowPlayerStats(true)} className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} py-2.5 rounded-lg text-sm font-bold text-white shadow-lg col-span-2`}>
-                    OPEN SKATER FOCUS
+                    ⛶ PLAYER EVENTS
                   </button>
                 ) : (
-                  <div className="col-span-2 text-center text-[10px] opacity-40 py-2">
-                    SIMPLE MODE ACTIVE
+                  <div className="col-span-2 text-center text-[9px] opacity-40 py-1">
+                    SIMPLE MODE
                   </div>
                 )}
               </div>
@@ -5666,7 +5666,6 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
               </div>
             </div>
           )}
-
 
 
           {activeTab === 'timeline' && <div className="max-w-6xl mx-auto p-2 sm:p-4">
