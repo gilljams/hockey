@@ -5618,10 +5618,10 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
           </div>
 
 
-          {!isViewer && (
+          {(!isViewer || trackingMode === 'advanced' || goalEvents.length > 0) && (
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white'} shadow-md sticky top-48 z-40`}>
               <div className="max-w-6xl mx-auto flex">
-                {['stats', 'timeline', 'audio', 'referee', ...(externalLinkUrl ? ['external'] : [])].map(tab => (
+                {['stats', ...(trackingMode === 'advanced' || goalEvents.length > 0 ? ['timeline'] : []), ...(!isViewer ? ['audio'] : []), 'referee', ...(externalLinkUrl ? ['external'] : [])].map(tab => (
                   <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab === tab ? (darkMode ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600')}`}>
                     {tab === 'audio' ? 'AUDIO' : tab === 'stats' ? 'STATS' : tab === 'timeline' ? 'TIMELINE' : tab === 'referee' ? 'REFEREE' : externalLinkTitle || 'Link'}
                   </button>
