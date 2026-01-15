@@ -2332,39 +2332,6 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 }
 
 
-         // Advanced mode: update team score from goal event
-          if (trackingMode === 'advanced') {
-            setPeriodStats(prev => {
-              const p = currentPeriod;
-              const isHome = recordingGoal === 'home';
-
-              return {
-                ...prev,
-                [p]: {
-                  ...prev[p],
-                  homeScore: prev[p].homeScore + (isHome ? 1 : 0),
-                  awayScore: prev[p].awayScore + (isHome ? 0 : 1)
-                }
-              };
-            });
-          }
-
-
-         if (isMultiplayer && matchRef.current) {
-           matchRef.current.update({
-             periodStats: {
-               ...periodStats,
-               [currentPeriod]: {
-                 ...periodStats[currentPeriod],
-                 homeScore: periodStats[currentPeriod].homeScore + (recordingGoal === 'home' ? 1 : 0),
-                 awayScore: periodStats[currentPeriod].awayScore + (recordingGoal === 'away' ? 1 : 0)
-               }
-             }
-           });
-         }
-
-
-
           if (isMultiplayer && matchRef.current) {
             matchRef.current.child('goalEvents').set(updatedEvents);
           } else if (!isMultiplayer && screen === 'game') {
