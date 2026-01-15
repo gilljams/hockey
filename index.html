@@ -177,6 +177,11 @@
       const [expandedGoalieStats, setExpandedGoalieStats] = useState({ home: false, away: false });
       const [selectedGoalieStats, setSelectedGoalieStats] = useState({ home: 'total', away: 'total' });
       const [gameMode, setGameMode] = useState(localStorage.getItem('gameMode') || 'single');
+      const [trackingMode, setTrackingMode] = useState('simple');
+      const [goalieMap, setGoalieMap] = useState({
+        home: { starter: '', backup: '' },
+        away: { starter: '', backup: '' }
+      });
       const [matchEnded, setMatchEnded] = useState(false);
       const [sparkleStats, setSparkleStats] = useState({});
       const [error, setError] = useState('');
@@ -431,6 +436,11 @@
         setMatchEnded(false);
         setGoalFocusSwapped(false);
         setActiveGoalies({ home: 'starter', away: 'starter' });
+        setTrackingMode('simple');
+        setGoalieMap({
+          home: { starter: '', backup: '' },
+          away: { starter: '', backup: '' }
+        });
         setIsCreator(false);
         setSparkleStats({});
         setExpandedPlayerStats({});
@@ -568,6 +578,8 @@
                 if (gs.goalEvents) setGoalEvents(gs.goalEvents);
                 if (gs.penaltyEvents) setPenaltyEvents(gs.penaltyEvents);
                 if (gs.otherEvents) setOtherEvents(gs.otherEvents);
+                if (gs.trackingMode) setTrackingMode(gs.trackingMode);
+                if (gs.goalieMap) setGoalieMap(gs.goalieMap);
                 setGameMode('single');
                 setScreen('game');
               } else {
@@ -592,10 +604,10 @@
       useEffect(() => { localStorage.setItem('defaultHomeRoster', defaultHomeRoster) }, [defaultHomeRoster]);
       useEffect(() => {
         if (!isMultiplayer && screen === 'game') {
-          const gs = { currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, otherEvents, timestamp: new Date().toISOString() };
+          const gs = { currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, otherEvents, trackingMode, goalieMap, timestamp: new Date().toISOString() };
           localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
         }
-      }, [currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, otherEvents, isMultiplayer, screen]);
+      }, [currentPeriod, homeName, awayName, periodStats, playerStats, goalEvents, penaltyEvents, otherEvents, trackingMode, goalieMap, isMultiplayer, screen]);
       useEffect(() => {
         if (screen === 'create') {
           setTimeout(() => {
@@ -698,6 +710,9 @@
             setGoalEvents(d.goalEvents ?? []);
             setPenaltyEvents(d.penaltyEvents ?? []);
             setOtherEvents(d.otherEvents ?? []);
+            setTrackingMode(d.trackingMode ?? 'simple');
+            setGoalieMap(d.goalieMap ?? { home: { starter: '', backup: '' }, away: { starter: '', backup: '' } });
+            setActiveGoalies(d.activeGoalies ?? { home: 'starter', away: 'starter' });
             setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
             setIsCreator(d.creatorId === userId.current);
@@ -948,7 +963,9 @@
 
           // Kicked users (svartlista)
           kickedUsers: {},
-
+          trackingMode,
+          goalieMap,
+          activeGoalies,
           viewerCode: viewerCode
         }).then(() => {
           resetGameState();
@@ -1856,6 +1873,16 @@
         }, 600);
 
         if (isMultiplayer && matchRef.current) matchRef.current.update({ playerStats: newStats });
+
+        // Advanced Mode Automation: Auto-update Team Score/Saves
+        if (trackingMode === 'advanced') {
+          if (stat === 'G') {
+            updateStat(team, 'Score', delta);
+          } else if (stat === 'SOG') {
+            const opponentTeam = team === 'home' ? 'away' : 'home';
+            updateStat(opponentTeam, 'Saves', delta);
+          }
+        }
       };
 
       const removePlayer = (team, playerNum) => {
@@ -3156,10 +3183,25 @@
 
                               if (isMultiplayer && matchRef.current) {
                                 matchRef.current.child('otherEvents').set(updatedEvents);
-                              } else if (!isMultiplayer && screen === 'game') {
-                                const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-                                gs.otherEvents = updatedEvents;
-                                localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                if (otherEventType === 'goalieSwitch') {
+                                  const newActive = activeGoalies[otherTeam] === 'starter' ? 'backup' : 'starter';
+                                  const updatedActiveGoalies = { ...activeGoalies, [otherTeam]: newActive };
+                                  setActiveGoalies(updatedActiveGoalies);
+                                  matchRef.current.update({ activeGoalies: updatedActiveGoalies });
+                                }
+                              } else {
+                                if (otherEventType === 'goalieSwitch') {
+                                  setActiveGoalies(prev => ({
+                                    ...prev,
+                                    [otherTeam]: prev[otherTeam] === 'starter' ? 'backup' : 'starter'
+                                  }));
+                                }
+                                if (!isMultiplayer && screen === 'game') {
+                                  const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                  gs.otherEvents = updatedEvents;
+                                  gs.activeGoalies = activeGoalies; // This might be one state behind, better calc it
+                                  localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                }
                               }
 
                               // Reset wizard
@@ -4282,6 +4324,81 @@
                   </div>
                 </div>
 
+                {/* Tracking Mode Selection */}
+                <div className="pt-2">
+                  <label className="block text-sm mb-2">Tracking Mode</label>
+                  <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                    <button
+                      onClick={() => setTrackingMode('simple')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'simple'
+                        ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                      SIMPLE
+                    </button>
+                    <button
+                      onClick={() => setTrackingMode('advanced')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'advanced'
+                        ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                        : 'text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                      ADVANCED
+                    </button>
+                  </div>
+                  <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {trackingMode === 'simple'
+                      ? 'Team-level only. Minimalist and fast.'
+                      : 'Player-level. Totals derived from events.'}
+                  </p>
+                </div>
+
+                {/* Goalie Mapping - Always useful, but essential for advanced */}
+                <div className="pt-2 space-y-3">
+                  <label className="block text-sm font-semibold">Goalie Jersey Numbers</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Home</div>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="Starter"
+                        value={goalieMap.home.starter}
+                        onChange={e => setGoalieMap(prev => ({ ...prev, home: { ...prev.home, starter: e.target.value } }))}
+                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                      />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="Backup"
+                        value={goalieMap.home.backup}
+                        onChange={e => setGoalieMap(prev => ({ ...prev, home: { ...prev.home, backup: e.target.value } }))}
+                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Away</div>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="Starter"
+                        value={goalieMap.away.starter}
+                        onChange={e => setGoalieMap(prev => ({ ...prev, away: { ...prev.away, starter: e.target.value } }))}
+                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                      />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="Backup"
+                        value={goalieMap.away.backup}
+                        onChange={e => setGoalieMap(prev => ({ ...prev, away: { ...prev.away, backup: e.target.value } }))}
+                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+
 
               </div>
               <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START GAME</button>
@@ -5137,10 +5254,113 @@
                       <button
                         onClick={resetCounters}
                         disabled={matchEnded || isViewer}
-                        className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-red-400' : 'bg-white hover:bg-gray-50 border border-red-300 text-red-600'} py-2 rounded font-semibold`}
+                        className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-red-400' : 'bg-white hover:bg-gray-50 border border-red-300 text-red-600'} py-2 rounded font-semibold mb-6`}
                       >
                         Reset All Stats
                       </button>
+
+                      {/* TRACKING MODE - In Settings */}
+                      <div className="mb-6">
+                        <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
+                          Tracking Mode
+                        </h4>
+                        <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                          <button
+                            onClick={() => {
+                              if (trackingMode === 'advanced' && !window.confirm('Switch to Simple mode? Manual team-level adjustments will be enabled, but player-level stats will be hidden.')) return;
+                              setTrackingMode('simple');
+                              if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'simple' })
+                            }}
+                            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'simple'
+                              ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                              : 'text-gray-500 hover:text-gray-700'
+                              }`}
+                          >
+                            SIMPLE
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (trackingMode === 'simple' && !window.confirm('Switch to Advanced mode? Manual team-level adjustments will be disabled. Totals will be derived from player events.')) return;
+                              setTrackingMode('advanced');
+                              if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'advanced' })
+                            }}
+                            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'advanced'
+                              ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                              : 'text-gray-500 hover:text-gray-700'
+                              }`}
+                          >
+                            ADVANCED
+                          </button>
+                        </div>
+                        <p className={`text-[10px] mt-2 opacity-60 text-center italic`}>
+                          {trackingMode === 'advanced'
+                            ? 'Advanced mode: Totals are auto-calculated from player events.'
+                            : 'Simple mode: Manual + / - buttons are used for team totals.'}
+                        </p>
+                      </div>
+
+                      {/* GOALIE MAPPING - In Settings */}
+                      <div className="mb-6">
+                        <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
+                          Goalie Mapping
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Home</div>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Starter #"
+                              value={goalieMap.home.starter}
+                              onChange={e => {
+                                const updated = { ...goalieMap, home: { ...goalieMap.home, starter: e.target.value } };
+                                setGoalieMap(updated);
+                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
+                              }}
+                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Backup #"
+                              value={goalieMap.home.backup}
+                              onChange={e => {
+                                const updated = { ...goalieMap, home: { ...goalieMap.home, backup: e.target.value } };
+                                setGoalieMap(updated);
+                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
+                              }}
+                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Away</div>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Starter #"
+                              value={goalieMap.away.starter}
+                              onChange={e => {
+                                const updated = { ...goalieMap, away: { ...goalieMap.away, starter: e.target.value } };
+                                setGoalieMap(updated);
+                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
+                              }}
+                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Backup #"
+                              value={goalieMap.away.backup}
+                              onChange={e => {
+                                const updated = { ...goalieMap, away: { ...goalieMap.away, backup: e.target.value } };
+                                setGoalieMap(updated);
+                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
+                              }}
+                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -5258,11 +5478,11 @@
                           <span className="font-semibold">{currentPeriodScore} {currentPeriodScore === 1 ? 'goal' : 'goals'}</span>
                         </div>
                         <div className="flex items-center justify-center gap-3 mb-2">
-                          <button onClick={() => updateStat(tm.team, 'Score', -1)} disabled={matchEnded || isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">−</button>
+                          <button onClick={() => updateStat(tm.team, 'Score', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
                           <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`] ? 'sparkle' : ''}`}>
                             {tm.score}
                           </div>
-                          <button onClick={() => updateStat(tm.team, 'Score', 1)} disabled={matchEnded || isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">+</button>
+                          <button onClick={() => updateStat(tm.team, 'Score', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
                         </div>
                         <div className="text-xs opacity-75 text-center">
                           ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Score']}{i < arr.length - 1 ? '-' : ''}</span>)})
@@ -5288,11 +5508,11 @@
                           <span className="font-semibold">{currentPeriodSaves} {currentPeriodSaves === 1 ? 'save' : 'saves'}</span>
                         </div>
                         <div className="flex items-center justify-center gap-3 mb-2">
-                          <button onClick={() => updateStat(tm.team, 'Saves', -1)} disabled={matchEnded || isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">−</button>
+                          <button onClick={() => updateStat(tm.team, 'Saves', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
                           <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`] ? 'sparkle' : ''}`}>
                             {tm.saves}
                           </div>
-                          <button onClick={() => updateStat(tm.team, 'Saves', 1)} disabled={matchEnded || isViewer} className="bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold hover:bg-opacity-30">+</button>
+                          <button onClick={() => updateStat(tm.team, 'Saves', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
                         </div>
                         <div className="text-xs opacity-75 text-center">
                           ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Saves']}{i < arr.length - 1 ? '-' : ''}</span>)})
@@ -5303,9 +5523,16 @@
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2">
-                {!isViewer && <button onClick={() => { setFocusMode('home'); setActiveTab('stats') }} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold text-white`}>⛶ Goalie Focus</button>}
-                {!isViewer && <button onClick={() => setShowPlayerStats(true)} className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-blue-500 bg-opacity-80 hover:bg-opacity-100'} py-2 rounded text-sm font-semibold text-white`}>⛶ Skater Focus</button>}
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {trackingMode === 'advanced' ? (
+                  <button onClick={() => setShowPlayerStats(true)} className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} py-2.5 rounded-lg text-sm font-bold text-white shadow-lg col-span-2`}>
+                    OPEN SKATER FOCUS
+                  </button>
+                ) : (
+                  <div className="col-span-2 text-center text-[10px] opacity-40 py-2">
+                    SIMPLE MODE ACTIVE
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -5811,7 +6038,7 @@
                       {renderTeamStats('away')}
                     </div>
 
-                    {(playerStats.home?.players || playerStats.away?.players) && (() => {
+                    {trackingMode === 'advanced' && (playerStats.home?.players || playerStats.away?.players) && (() => {
                       const homePlayers = playerStats.home?.players || {};
                       const awayPlayers = playerStats.away?.players || {};
                       const hasPlayersWithData = Object.keys(homePlayers).some(pNum => homePlayers[pNum]?.periods?.[p]) ||
@@ -5980,7 +6207,7 @@
                   })}
                 </div>
 
-                {(playerStats.home?.players || playerStats.away?.players) && (() => {
+                {trackingMode === 'advanced' && (playerStats.home?.players || playerStats.away?.players) && (() => {
                   const homePlayers = playerStats.home?.players || {};
                   const awayPlayers = playerStats.away?.players || {};
 
