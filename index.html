@@ -5553,9 +5553,15 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
                       <div>
                         <div className="text-sm mb-2 text-center">
-                          <span className="opacity-50">Period {currentPeriod}</span>
-                          <span className="opacity-30 mx-1">·</span>
-                          <span className="font-semibold">{currentPeriodScore} {currentPeriodScore === 1 ? 'goal' : 'goals'}</span>
+                          {isViewer ? (
+                            <span className="font-semibold">Goals</span>
+                          ) : (
+                            <>
+                              <span className="opacity-50">Period {currentPeriod}</span>
+                              <span className="opacity-30 mx-1">·</span>
+                              <span className="font-semibold">{currentPeriodScore} {currentPeriodScore === 1 ? 'goal' : 'goals'}</span>
+                            </>
+                          )}
                         </div>
                         <div className="flex items-center justify-center gap-3 mb-2">
                           <button onClick={() => updateStat(tm.team, 'Score', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
@@ -5583,9 +5589,15 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     return (
                       <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3`}>
                         <div className="text-sm mb-2 text-center">
-                          <span className="opacity-50">Period {currentPeriod}</span>
-                          <span className="opacity-30 mx-1">·</span>
-                          <span className="font-semibold">{currentPeriodSaves} {currentPeriodSaves === 1 ? 'save' : 'saves'}</span>
+                          {isViewer ? (
+                            <span className="font-semibold">Saves</span>
+                          ) : (
+                            <>
+                              <span className="opacity-50">Period {currentPeriod}</span>
+                              <span className="opacity-30 mx-1">·</span>
+                              <span className="font-semibold">{currentPeriodSaves} {currentPeriodSaves === 1 ? 'save' : 'saves'}</span>
+                            </>
+                          )}
                         </div>
                         <div className="flex items-center justify-center gap-3 mb-2">
                           <button onClick={() => updateStat(tm.team, 'Saves', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
