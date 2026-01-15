@@ -2276,7 +2276,10 @@
 
           let updatedEvents;
           const isEditing = editingGoalIndex !== null;
-          const oldEvent = isEditing ? goalEvents[editingGoalIndex] : null;
+          const oldEvent = isEditing
+            ? structuredClone(goalEvents[editingGoalIndex])
+            : null;
+
 
           if (isEditing) {
             updatedEvents = goalEvents.map((ev, i) => i === editingGoalIndex ? newEvent : ev);
@@ -2284,6 +2287,83 @@
             updatedEvents = [...goalEvents, newEvent];
           }
           setGoalEvents(updatedEvents);
+          
+          if (trackingMode === 'advanced') {
+  setPeriodStats(prev => {
+    const next = { ...prev };
+
+    // Remove old goal if editing
+    if (isEditing && oldEvent) {
+      const pOld = oldEvent.period;
+      next[pOld] = {
+        ...next[pOld],
+        homeScore: next[pOld].homeScore - (oldEvent.team === 'home' ? 1 : 0),
+        awayScore: next[pOld].awayScore - (oldEvent.team === 'away' ? 1 : 0)
+      };
+    }
+
+    // Add new goal
+    const pNew = newEvent.period;
+    next[pNew] = {
+      ...next[pNew],
+      homeScore: next[pNew].homeScore + (newEvent.team === 'home' ? 1 : 0),
+      awayScore: next[pNew].awayScore + (newEvent.team === 'away' ? 1 : 0)
+    };
+
+    return next;
+  });
+}
+
+
+if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
+  const next = structuredClone(periodStats);
+
+  if (isEditing && oldEvent) {
+    const pOld = oldEvent.period;
+    next[pOld].homeScore -= oldEvent.team === 'home' ? 1 : 0;
+    next[pOld].awayScore -= oldEvent.team === 'away' ? 1 : 0;
+  }
+
+  const pNew = newEvent.period;
+  next[pNew].homeScore += newEvent.team === 'home' ? 1 : 0;
+  next[pNew].awayScore += newEvent.team === 'away' ? 1 : 0;
+
+  matchRef.current.update({ periodStats: next });
+}
+
+
+         // Advanced mode: update team score from goal event
+          if (trackingMode === 'advanced') {
+            setPeriodStats(prev => {
+              const p = currentPeriod;
+              const isHome = recordingGoal === 'home';
+
+              return {
+                ...prev,
+                [p]: {
+                  ...prev[p],
+                  homeScore: prev[p].homeScore + (isHome ? 1 : 0),
+                  awayScore: prev[p].awayScore + (isHome ? 0 : 1)
+                }
+              };
+            });
+          }
+
+
+         if (isMultiplayer && matchRef.current) {
+           matchRef.current.update({
+             periodStats: {
+               ...periodStats,
+               [currentPeriod]: {
+                 ...periodStats[currentPeriod],
+                 homeScore: periodStats[currentPeriod].homeScore + (recordingGoal === 'home' ? 1 : 0),
+                 awayScore: periodStats[currentPeriod].awayScore + (recordingGoal === 'away' ? 1 : 0)
+               }
+             }
+           });
+         }
+
+
 
           if (isMultiplayer && matchRef.current) {
             matchRef.current.child('goalEvents').set(updatedEvents);
@@ -3633,9 +3713,42 @@
                                         }
 
                                         const eventToDelete = goalEvents[idx];
+
+                                        // Advanced mode: remove goal from team score
+                                        if (trackingMode === 'advanced') {
+                                          setPeriodStats(prev => {
+                                            const p = eventToDelete.period;
+                                            const wasHome = eventToDelete.team === 'home';
+                                        
+                                            return {
+                                              ...prev,
+                                              [p]: {
+                                                ...prev[p],
+                                                homeScore: prev[p].homeScore - (wasHome ? 1 : 0),
+                                                awayScore: prev[p].awayScore - (wasHome ? 0 : 1)
+                                              }
+                                            };
+                                          });
+                                        }
+
+
                                         const updatedEvents = goalEvents.filter((_, i) => i !== idx);
 
                                         setGoalEvents(updatedEvents);
+
+                                        if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
+                                          matchRef.current.update({
+                                            periodStats: {
+                                              ...periodStats,
+                                              [eventToDelete.period]: {
+                                                ...periodStats[eventToDelete.period],
+                                                homeScore: periodStats[eventToDelete.period].homeScore - (eventToDelete.team === 'home' ? 1 : 0),
+                                                awayScore: periodStats[eventToDelete.period].awayScore - (eventToDelete.team === 'away' ? 1 : 0)
+                                              }
+                                            }
+                                          });
+                                        }
+
 
                                         if (isMultiplayer && matchRef.current) {
                                           matchRef.current.update({ goalEvents: updatedEvents });
