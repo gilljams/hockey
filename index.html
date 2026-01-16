@@ -4435,6 +4435,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                 </div>
 
                 {/* Goalie Mapping - Always useful, but essential for advanced */}
+                {trackingMode === 'advanced' && (
                 <div className="pt-2 space-y-3">
                   <label className="block text-sm font-semibold">Goalie Jersey Numbers</label>
                   <div className="grid grid-cols-2 gap-4">
@@ -4478,6 +4479,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     </div>
                   </div>
                 </div>
+                )}
 
 
               </div>
