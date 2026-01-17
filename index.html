@@ -181,12 +181,7 @@
 
       // Update rosters when initialData changes
       React.useEffect(() => {
-        console.log('🎪 RosterManagerModal useEffect triggered');
-        console.log('📥 Received initialData:', initialData);
-        console.log('📥 Received show:', show);
-        const normalized = normalizeRosterData(initialData);
-        console.log('✨ Normalized data:', normalized);
-        setRosters(normalized);
+        setRosters(normalizeRosterData(initialData));
         setActiveTab('home');
       }, [initialData, show]);
 
@@ -294,7 +289,7 @@
                         }
                       }))}
                       placeholder="30"
-                      className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
+                      className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} font-mono`}
                     />
                   </div>
                   <div>
@@ -311,7 +306,7 @@
                         }
                       }))}
                       placeholder="35"
-                      className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
+                      className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} font-mono`}
                     />
                   </div>
                 </div>
@@ -324,13 +319,13 @@
                 <div className="flex gap-2">
                   <button
                     onClick={loadDefault}
-                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
+                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} py-2 rounded-lg font-semibold text-sm`}
                   >
                     📋 Load Default
                   </button>
                   <button
                     onClick={() => alert('Import feature coming soon!')}
-                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
+                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} py-2 rounded-lg font-semibold text-sm`}
                   >
                     🔗 Import
                   </button>
@@ -339,7 +334,7 @@
               <div className="flex gap-3">
                 <button
                   onClick={onClose}
-                  className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}
+                  className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} py-3 rounded-lg font-semibold`}
                 >
                   Cancel
                 </button>
@@ -5672,9 +5667,6 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
         <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
 <button
   onClick={() => {
-    console.log('🎯 SETTINGS ROSTER CLICK - Before any processing');
-    
-    // Build current roster from game state
     const currentRoster = {
       home: { 
         players: Object.keys(playerStats.home?.players || {})
@@ -5705,20 +5697,10 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
             goalies: defaultAwayGoalies 
           }
         };
-
-    console.log('📋 Current Roster from game:', currentRoster);
-    console.log('📋 Default Home Roster:', defaultHomeRoster);
-    console.log('📋 Default Away Roster:', defaultAwayRoster);
-    console.log('📋 Using this roster:', rosterToUse);
-    console.log('setRosterModalContext calling with:', 'game');
-    console.log('setRosterModalData calling with:', rosterToUse);
-    console.log('setShowRosterModal calling with:', true);
     
     setRosterModalContext('game');
     setRosterModalData(rosterToUse);
     setShowRosterModal(true);
-    
-    console.log('✅ All setters called');
   }}
   disabled={matchEnded}
   className={`w-full ${matchEnded 
