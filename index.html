@@ -169,6 +169,9 @@
       const [externalLinkUrl, setExternalLinkUrl] = useState('');
       const [externalLinkTitle, setExternalLinkTitle] = useState('');
       const [defaultHomeRoster, setDefaultHomeRoster] = useState('');
+      const [defaultAwayRoster, setDefaultAwayRoster] = useState('');
+      const [defaultHomeGoalies, setDefaultHomeGoalies] = useState({ starter: '', backup: '' });
+      const [defaultAwayGoalies, setDefaultAwayGoalies] = useState({ starter: '', backup: '' });
       const [screen, setScreen] = useState('start');
       const [matchCode, setMatchCode] = useState('');
       const [inputCode, setInputCode] = useState('');
@@ -213,6 +216,12 @@
       const [addPlayerNumbers, setAddPlayerNumbers] = useState(['']);
       const [expandedPlayerStats, setExpandedPlayerStats] = useState({});
       const [collapsedPlayerTables, setCollapsedPlayerTables] = useState({});
+      const [showRosterModal, setShowRosterModal] = useState(false);
+      const [rosterModalContext, setRosterModalContext] = useState('create');
+      const [rosterModalData, setRosterModalData] = useState({
+        home: { players: '', goalies: { starter: '', backup: '' } },
+        away: { players: '', goalies: { starter: '', backup: '' } }
+      });
       const [goalWizardStep, setGoalWizardStep] = useState(0);
       const [recordingGoal, setRecordingGoal] = useState(null);
       const [goalSituation, setGoalSituation] = useState('EQ');
@@ -366,8 +375,227 @@
           <line x1="13.75" y1="4.53" x2="15.1" y2="3.18" />
           <line x1="11.05" y1="3.41" x2="11.05" y2="1.5" />
         </svg>
-      );
+);
 
+const HockeyHelmetIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g className="opacity-80">
+      <path fill="currentColor" d="M470.253,247.982c0-3.256,0-56.453,0-69.438c0-12.985-8.47-25.958-21.645-25.958
+c-4.324,0-23.808-47.615-23.808-47.615s2.186,5.406-2.162-20.552c-4.313-25.993-62.75-72.516-72.492-77.921
+c-9.742-5.417-18.39-1.081-18.39,3.243c0,4.325,0,17.298,0,17.298h-28.132V17.19c0-9.48-7.698-17.19-17.19-17.19h-30.425h-30.436
+c-9.48,0-17.178,7.71-17.178,17.19v9.849h-28.132c0,0,0-12.973,0-17.298c0-4.324-8.66-8.66-18.39-3.243
+c-9.742,5.405-68.179,51.928-72.504,77.921c-4.336,25.958-2.162,20.552-2.162,20.552s-8.542,20.874-15.575,34.974h224.412v12.641
+H63.391c-13.152,0-21.645,12.972-21.645,25.958c0,12.985,0,66.182,0,69.438c0,3.231-6.712,118.454,76.648,201.804
+c34.619,34.618,86.546,54.813,127.876,62.214h19.482c41.318-7.401,93.257-27.596,127.875-62.214
+C476.977,366.436,470.253,251.212,470.253,247.982z M206.235,102.797c0,4.776-3.886,8.66-8.649,8.66
+c-4.799,0-8.672-3.884-8.672-8.66V76.828c0-4.776,3.873-8.649,8.672-8.649c4.764,0,8.649,3.873,8.649,8.649V102.797z
+ M130.299,422.509c-16.525-21.241-27.015-43.92-33.098-61.039h33.098V422.509z M130.299,349.305H93.304
+c-2.233-7.817-3.219-13.259-3.219-14.933v-47.924h40.214V349.305z M130.299,274.284H90.085v-27.918
+c0-9.575,7.758-17.333,17.32-17.333h22.894V274.284z M133.731,200.189h-25.97c-4.776,0-8.66-3.886-8.66-8.66
+c0-4.776,3.884-8.637,8.66-8.637h25.97c4.787,0,8.66,3.861,8.66,8.637C142.392,196.303,138.519,200.189,133.731,200.189z
+ M210.047,478.107c-28.369-8.209-50.478-23.665-67.584-41.52v-0.095h67.584V478.107z M210.047,424.327h-67.584V361.47h67.584
+V424.327z M210.047,349.305h-67.584v-62.857h67.584V349.305z M210.047,274.284h-67.584v-45.25h67.584V274.284z M289.798,481.124
+c-10.478,2.103-21.705,3.28-33.787,3.28c-12.081,0-23.319-1.188-33.798-3.315v-44.597h67.585V481.124z M289.798,424.327h-67.585
+V361.47h67.585V424.327z M289.798,349.305h-67.585v-62.857h67.585V349.305z M289.798,274.284h-67.585v-45.25h67.585V274.284z
+ M305.787,76.828c0-4.776,3.873-8.649,8.649-8.649c4.776,0,8.672,3.873,8.672,8.649v25.969c0,4.776-3.896,8.66-8.672,8.66
+c0-4.776-3.896-8.649-3.896-8.649V76.828z M369.548,437.098c-17.072,17.701-39.169,33.002-67.585,41.116v-41.722h67.585V437.098z
+ M369.548,424.327h-67.585V361.47h67.585V424.327z M369.548,349.305h-67.585v-62.857h67.585V349.305z M369.548,274.284h-67.585
+v-45.25h67.585V274.284z M369.631,191.528c0-4.776,3.861-8.637,8.648-8.637h25.97c4.776,0,8.648,3.861,8.648,8.637
+c0,4.775-3.872,8.66-8.648,8.66h-25.97C373.492,200.189,369.631,196.303,369.631,191.528z M381.713,423.078V361.47h33.252
+C408.93,378.743,398.44,401.684,381.713,423.078z M421.925,334.372c0,1.674-0.95,7.116-3.136,14.933h-37.076v-62.857h40.212
+V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.333V274.284z"/>
+    </g>
+  </svg>
+);
+
+      // Parse comma/space separated input into array
+      const parsePlayerInput = (input) => {
+        const nums = input
+          .split(/[,\s]+/)
+          .map(n => n.trim())
+          .filter(n => n !== '' && /^\d+$/.test(n));
+        return [...new Set(nums)];
+      };
+
+      const RosterManagerModal = ({ show, onClose, context, initialData, onSave, darkMode }) => {
+      console.log('RosterManagerModal render:', { show, context }); // LÄGG TILL DENNA RAD
+        const [activeTab, setActiveTab] = React.useState('home');
+        const [rosters, setRosters] = React.useState(initialData || {
+          home: { players: '', goalies: { starter: '', backup: '' } },
+          away: { players: '', goalies: { starter: '', backup: '' } }
+        });
+
+        React.useEffect(() => {
+          if (initialData) setRosters(initialData);
+        }, [initialData]);
+
+        const handleSave = () => {
+          onSave(rosters);
+          onClose();
+        };
+
+        const loadDefault = () => {
+          const defaultHome = localStorage.getItem('defaultHomeRoster') || '';
+          const defaultAway = localStorage.getItem('defaultAwayRoster') || '';
+          const defaultHomeGoalies = JSON.parse(localStorage.getItem('defaultHomeGoalies') || '{"starter":"","backup":""}');
+          const defaultAwayGoalies = JSON.parse(localStorage.getItem('defaultAwayGoalies') || '{"starter":"","backup":""}');
+          
+          setRosters({
+            home: { players: defaultHome, goalies: defaultHomeGoalies },
+            away: { players: defaultAway, goalies: defaultAwayGoalies }
+          });
+        };
+
+        const countPlayers = (team) => {
+          const playerNums = parsePlayerInput(rosters[team]?.players || '');
+          const goalies = [rosters[team]?.goalies?.starter, rosters[team]?.goalies?.backup].filter(g => g && g.trim() !== '');
+          return playerNums.length + goalies.length;
+        };
+
+        if (!show) return null;
+
+        return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+              {/* Header */}
+              <div className={`${darkMode ? 'bg-gray-700 border-b border-gray-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-6 py-4 flex justify-between items-center`}>
+                <h2 className="text-xl font-bold">
+                  {context === 'default' ? 'Default Rosters' : context === 'create' ? 'Setup Rosters' : 'Manage Rosters'}
+                </h2>
+                <button onClick={onClose} className={`${darkMode ? 'hover:bg-gray-600' : 'hover:bg-white hover:bg-opacity-20'} p-2 rounded-lg transition-colors`}>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className={`flex ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                <button
+                  onClick={() => setActiveTab('home')}
+                  className={`flex-1 py-3 font-semibold text-sm ${activeTab === 'home' 
+                    ? (darkMode ? 'bg-gray-800 text-white border-b-2 border-blue-500' : 'bg-white text-blue-600 border-b-2 border-blue-600')
+                    : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')
+                  }`}
+                >
+                  HOME ({countPlayers('home')})
+                </button>
+                <button
+                  onClick={() => setActiveTab('away')}
+                  className={`flex-1 py-3 font-semibold text-sm ${activeTab === 'away'
+                    ? (darkMode ? 'bg-gray-800 text-white border-b-2 border-blue-500' : 'bg-white text-blue-600 border-b-2 border-blue-600')
+                    : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')
+                  }`}
+                >
+                  AWAY ({countPlayers('away')})
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Players */}
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Players
+                  </label>
+                  <textarea
+                    value={rosters[activeTab]?.players || ''}
+                    onChange={(e) => setRosters(prev => ({
+                      ...prev,
+                      [activeTab]: { ...prev[activeTab], players: e.target.value }
+                    }))}
+                    placeholder="e.g. 2, 3, 4, 7, 9, 12, 15, 17, 19, 21, 23, 25"
+                    className={`w-full px-4 py-3 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono text-sm`}
+                    rows={3}
+                  />
+                  <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    💡 Comma or space separated player numbers
+                  </p>
+                </div>
+
+                {/* Goalies */}
+                <div>
+                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Goalies
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={`block text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Starter</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={rosters[activeTab]?.goalies?.starter || ''}
+                        onChange={(e) => setRosters(prev => ({
+                          ...prev,
+                          [activeTab]: { 
+                            ...prev[activeTab], 
+                            goalies: { ...prev[activeTab]?.goalies, starter: e.target.value }
+                          }
+                        }))}
+                        placeholder="30"
+                        className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`block text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Backup</label>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={rosters[activeTab]?.goalies?.backup || ''}
+                        onChange={(e) => setRosters(prev => ({
+                          ...prev,
+                          [activeTab]: { 
+                            ...prev[activeTab], 
+                            goalies: { ...prev[activeTab]?.goalies, backup: e.target.value }
+                          }
+                        }))}
+                        placeholder="35"
+                        className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className={`${darkMode ? 'bg-gray-700 border-t border-gray-600' : 'bg-gray-50 border-t border-gray-200'} px-6 py-4 space-y-3`}>
+                {context !== 'default' && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={loadDefault}
+                      className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
+                    >
+                      📋 Load Default
+                    </button>
+                    <button
+                      onClick={() => alert('Import feature coming soon!')}
+                      className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
+                    >
+                      🔗 Import
+                    </button>
+                  </div>
+                )}
+                <div className="flex gap-3">
+                  <button
+                    onClick={onClose}
+                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+                  >
+                    Save ({countPlayers('home') + countPlayers('away')} players)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+ 
       // Normalization functions
       const normalizePeriodStats = (stats) => {
         const normalized = {};
@@ -399,6 +627,8 @@
           Object.keys(players).forEach(playerNum => {
             const player = players[playerNum];
             normalized[team].players[playerNum] = {
+              name: player?.name ?? '',
+              position: player?.position ?? '',
               periods: player?.periods ?? {},
               total: {
                 'G': player?.total?.['G'] ?? 0,
@@ -429,6 +659,10 @@
         });
 
         setPlayerStats({ home: { players: {} }, away: { players: {} } });
+        setRosterModalData({
+          home: { players: '', goalies: { starter: '', backup: '' } },
+          away: { players: '', goalies: { starter: '', backup: '' } }
+        });
         setGoalEvents([]);
         setPenaltyEvents([]);
         setOtherEvents([]);
@@ -525,7 +759,7 @@
         }
 
         // Load user preferences
-        ['darkMode', 'spotifyPlaylist', 'statsCollapsed', 'keepScreenOn', 'focusMode', 'externalLinkUrl', 'externalLinkTitle', 'defaultHomeRoster'].forEach(k => {
+        ['darkMode', 'spotifyPlaylist', 'statsCollapsed', 'keepScreenOn', 'focusMode', 'externalLinkUrl', 'externalLinkTitle', 'defaultHomeRoster', 'defaultAwayRoster'].forEach(k => {
           const v = localStorage.getItem(k);
           if (v) {
             if (['darkMode', 'statsCollapsed', 'keepScreenOn'].includes(k)) {
@@ -542,11 +776,27 @@
               setExternalLinkTitle(v);
             } else if (k === 'defaultHomeRoster') {
               setDefaultHomeRoster(v);
+            } else if (k === 'defaultAwayRoster') {
+              setDefaultAwayRoster(v);
             } else {
               eval(`set${k.charAt(0).toUpperCase() + k.slice(1)}(v)`);
             }
           }
         });
+
+        // Load default goalies
+        const homeGoalies = localStorage.getItem('defaultHomeGoalies');
+        if (homeGoalies) {
+          try {
+            setDefaultHomeGoalies(JSON.parse(homeGoalies));
+          } catch (e) {}
+        }
+        const awayGoalies = localStorage.getItem('defaultAwayGoalies');
+        if (awayGoalies) {
+          try {
+            setDefaultAwayGoalies(JSON.parse(awayGoalies));
+          } catch (e) {}
+        }
 
         // Check for multiplayer reconnect
         const savedMatch = localStorage.getItem('multiplayerMatch');
@@ -605,6 +855,9 @@
       useEffect(() => { localStorage.setItem('externalLinkUrl', externalLinkUrl) }, [externalLinkUrl]);
       useEffect(() => { localStorage.setItem('externalLinkTitle', externalLinkTitle) }, [externalLinkTitle]);
       useEffect(() => { localStorage.setItem('defaultHomeRoster', defaultHomeRoster) }, [defaultHomeRoster]);
+      useEffect(() => { localStorage.setItem('defaultAwayRoster', defaultAwayRoster) }, [defaultAwayRoster]);
+      useEffect(() => { localStorage.setItem('defaultHomeGoalies', JSON.stringify(defaultHomeGoalies)) }, [defaultHomeGoalies]);
+      useEffect(() => { localStorage.setItem('defaultAwayGoalies', JSON.stringify(defaultAwayGoalies)) }, [defaultAwayGoalies]);
       useEffect(() => { localStorage.setItem('trackingMode', trackingMode) }, [trackingMode]);
       useEffect(() => {
         if (!isMultiplayer && screen === 'game') {
@@ -912,10 +1165,92 @@
         setScreen('created');
       };
 
+const buildPlayerStatsFromRoster = (rosters) => {
+  const result = { home: { players: {} }, away: { players: {} } };
 
-      const startMatch = () => {
-        if (!db) { setError('Firebase not configured'); return }
-        if (!currentUser) { setError('You must be logged in to create a game'); return }
+  ['home', 'away'].forEach(team => {
+    const players = parsePlayerInput(rosters[team].players || []);
+    const goalies = [
+      rosters[team].goalies?.starter,
+      rosters[team].goalies?.backup
+    ].filter(Boolean);
+
+    [...players, ...goalies].forEach(num => {
+      result[team].players[num] = {
+        name: '',
+        position: goalies.includes(num) ? 'GK' : '',
+        periods: {},
+        total: {
+          G: 0, A: 0, 'OnIce+': 0, 'OnIce-': 0,
+          'FO+': 0, 'FO-': 0, SOG: 0,
+          "2'": 0, "5'": 0, "10'": 0, "20'": 0,
+          PIM: 0
+        }
+      };
+    });
+  });
+
+  return result;
+};
+
+
+      const handleRosterSave = (rosters) => {
+  if (rosterModalContext === 'default') {
+    // Save as defaults to localStorage
+    setDefaultHomeRoster(rosters.home.players);
+    setDefaultAwayRoster(rosters.away.players);
+    setDefaultHomeGoalies(rosters.home.goalies);
+    setDefaultAwayGoalies(rosters.away.goalies);
+    return;
+  }
+
+  // Update goalie map
+  setGoalieMap({
+    home: rosters.home.goalies,
+    away: rosters.away.goalies
+  });
+
+  // Parse and prepare player stats
+  const newPlayerStats = { home: { players: {} }, away: { players: {} } };
+  
+  ['home', 'away'].forEach(team => {
+    const playerNums = parsePlayerInput(rosters[team].players || '');
+    const goalies = [rosters[team].goalies.starter, rosters[team].goalies.backup].filter(g => g && g.trim() !== '');
+    
+    [...playerNums, ...goalies].forEach(pNum => {
+      if (pNum && pNum.trim() !== '') {
+        newPlayerStats[team].players[pNum] = {
+          name: '',
+          position: goalies.includes(pNum) ? 'GK' : '',
+          periods: {},
+          total: { 'G': 0, 'A': 0, 'OnIce+': 0, 'OnIce-': 0, 'FO+': 0, 'FO-': 0, 'SOG': 0, "2'": 0, "5'": 0, "10'": 0, "20'": 0, 'PIM': 0 }
+        };
+      }
+    });
+  });
+
+setPlayerStats(newPlayerStats);
+  console.log('handleRosterSave - newPlayerStats:', newPlayerStats); // LÄGG TILL
+  setRosterModalData(rosters);
+  
+  // If in game, sync to Firebase
+  if (rosterModalContext === 'game' && isMultiplayer && matchRef.current && !matchEnded) {
+    matchRef.current.update({ 
+      playerStats: newPlayerStats,
+      goalieMap: {
+        home: rosters.home.goalies,
+        away: rosters.away.goalies
+      }
+    });
+  }
+};
+
+const startMatch = () => {
+  if (!db) { setError('Firebase not configured'); return }
+  if (!currentUser) { setError('You must be logged in to create a game'); return }
+
+  console.log('startMatch - playerStats:', playerStats); // LÄGG TILL
+  console.log('startMatch - trackingMode:', trackingMode); // LÄGG TILL
 
         // Använd matchCode från state, fallback till localStorage om nödvändigt
         const code = matchCode || localStorage.getItem('tempMatchCode');
@@ -935,7 +1270,10 @@
         localStorage.removeItem('juniorLeagueGame');
 
         const viewerCode = code + '-V';
-        db.ref(`matches/${code}`).set({
+const initialPlayerStats = buildPlayerStatsFromRoster(rosterModalData);
+setPlayerStats(initialPlayerStats);
+        
+db.ref(`matches/${code}`).set({
           homeName,
           awayName,
           currentPeriod: 1,
@@ -944,7 +1282,8 @@
             2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
             3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
           },
-          playerStats: { home: { players: {} }, away: { players: {} } },
+          playerStats: trackingMode === 'advanced' ? initialPlayerStats : { home: { players: {} }, away: { players: {} } },
+
           goalEvents: [],
           penaltyEvents: [],
           otherEvents: [],
@@ -968,11 +1307,17 @@
           // Kicked users (svartlista)
           kickedUsers: {},
           trackingMode,
-          goalieMap,
+          goalieMap: trackingMode === 'advanced' ? { 
+  home: rosterModalData.home.goalies, 
+  away: rosterModalData.away.goalies 
+} : { 
+  home: { starter: '', backup: '' }, 
+  away: { starter: '', backup: '' } 
+},
           activeGoalies,
           viewerCode: viewerCode
         }).then(() => {
-          resetGameState();
+          
           setGameMode('multi');
           localStorage.setItem('gameMode', 'multi');
           setIsMultiplayer(true);
@@ -982,8 +1327,6 @@
           localStorage.removeItem('tempMatchCode');
           localStorage.removeItem('juniorLeagueGame');
 
-          // Reset game state för att starta friskt
-          resetGameState();
 
           // Säkerställ korrekt state
           setGameMode('multi');
@@ -1910,14 +2253,7 @@
         }
       };
 
-      // Parse comma/space separated input into array
-      const parsePlayerInput = (input) => {  // Split by comma or space, filter empty, remove duplicates
-        const nums = input
-          .split(/[,\s]+/)
-          .map(n => n.trim())
-          .filter(n => n !== '' && /^\d+$/.test(n));
-        return [...new Set(nums)];
-      };
+
 
       // Handle smart input parsing
       const handlePlayerInputChange = (value, idx) => {
@@ -2695,15 +3031,12 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   </div>
 
                   {!isViewer && !matchEnded && playerStatsMoment !== 'Goal' && (
-                    <div className="p-3 border-t">
-                      <button
-                        onClick={() => { setAddPlayerTeam(team); setShowAddPlayerModal(true) }}
-                        className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} py-2 rounded font-semibold text-sm`}
-                      >
-                        + Add Player
-                      </button>
-                    </div>
-                  )}
+  <div className="p-3 border-t">
+    <div className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'} py-2`}>
+      💡 Add players via Settings → Manage Rosters
+    </div>
+  </div>
+)}
                 </>
               ) : null}
             </div>
@@ -4326,8 +4659,18 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       }
 
       if (screen === 'create') return (
-        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-          <div className="max-w-md w-full p-6">
+  <>
+    <RosterManagerModal
+      show={showRosterModal}
+      onClose={() => setShowRosterModal(false)}
+      context={rosterModalContext}
+      initialData={rosterModalData}
+      onSave={handleRosterSave}
+      darkMode={darkMode}
+    />
+    
+    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+      <div className="max-w-md w-full p-6">
             <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
               <div className="flex justify-end">
@@ -4434,60 +4777,44 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   </p>
                 </div>
 
-                {/* Goalie Mapping - Always useful, but essential for advanced */}
-                {trackingMode === 'advanced' && (
-                <div className="pt-2 space-y-3">
-                  <label className="block text-sm font-semibold">Goalie Jersey Numbers</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Home</div>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="Starter"
-                        value={goalieMap.home.starter}
-                        onChange={e => setGoalieMap(prev => ({ ...prev, home: { ...prev.home, starter: e.target.value } }))}
-                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
-                      />
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="Backup"
-                        value={goalieMap.home.backup}
-                        onChange={e => setGoalieMap(prev => ({ ...prev, home: { ...prev.home, backup: e.target.value } }))}
-                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Away</div>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="Starter"
-                        value={goalieMap.away.starter}
-                        onChange={e => setGoalieMap(prev => ({ ...prev, away: { ...prev.away, starter: e.target.value } }))}
-                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
-                      />
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="Backup"
-                        value={goalieMap.away.backup}
-                        onChange={e => setGoalieMap(prev => ({ ...prev, away: { ...prev.away, backup: e.target.value } }))}
-                        className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'}`}
-                      />
-                    </div>
-                  </div>
-                </div>
-                )}
-
+{/* Roster Management - Advanced mode only */}
+{trackingMode === 'advanced' && (
+  <div className="pt-2 space-y-3">
+    <label className="block text-sm font-semibold">Team Rosters</label>
+   <button
+  onClick={() => {
+    console.log('Roster button clicked!'); // LÄGG TILL DENNA RAD
+    setRosterModalContext('create');
+    setRosterModalData({
+          home: { 
+            players: defaultHomeRoster || '', 
+            goalies: goalieMap.home 
+          },
+          away: { 
+            players: '', 
+            goalies: goalieMap.away 
+          }
+        });
+        setShowRosterModal(true);
+      }}
+      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+    >
+  <HockeyHelmetIcon />
+  <span>Setup Rosters (Optional)</span>
+</button>
+    <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+      Add players and goalies now, or add them later during the game
+    </p>
+  </div>
+)}
 
               </div>
               <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START GAME</button>
             </div>
-          </div>
-        </div>
-      );
+      </div>
+    </div>
+  </>
+);
 
 
       if (screen === 'created') return (
@@ -4838,7 +5165,16 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
             <audio ref={audioRefs.awayPenalty} src="awayPenalty.mp3" />
             <audio ref={audioRefs.intro} src="intro.mp3" />
 
-            <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+      <RosterManagerModal
+        show={showRosterModal}
+        onClose={() => setShowRosterModal(false)}
+        context={rosterModalContext}
+        initialData={rosterModalData}
+        onSave={handleRosterSave}
+        darkMode={darkMode}
+      />
+
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
               <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-3 py-2 shadow-lg sticky top-0 z-50`}>
                 <div className="max-w-7xl mx-auto">
                   <div className="flex justify-between items-center">
@@ -5293,6 +5629,50 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     </h4>
 
                     <div className="space-y-3">
+      {/* Roster Manager - Advanced mode only */}
+      {trackingMode === 'advanced' && (
+        <div>
+          <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+
+    const currentRoster = {
+      home: { 
+        players: Object.keys(playerStats.home?.players || {})
+          .filter(pNum => playerStats.home.players[pNum].position !== 'GK')
+          .sort((a, b) => parseInt(a) - parseInt(b))
+          .join(', '),
+        goalies: goalieMap.home 
+      },
+      away: { 
+        players: Object.keys(playerStats.away?.players || {})
+          .filter(pNum => playerStats.away.players[pNum].position !== 'GK')
+          .sort((a, b) => parseInt(a) - parseInt(b))
+          .join(', '),
+        goalies: goalieMap.away 
+      }
+    };
+
+    setRosterModalContext('game');
+    setRosterModalData(currentRoster);
+    setShowRosterModal(true);
+  }}
+  disabled={matchEnded}
+  className={`w-full ${matchEnded 
+    ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+    : (darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300')
+  } py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+>
+  <HockeyHelmetIcon />
+  <span>Manage Rosters</span>
+</button>
+
+          <p className={`text-xs mt-1 opacity-60`}>
+            Add or edit players and goalies
+          </p>
+        </div>
+      )}
                       <div>
                         <label className="block text-xs mb-1 opacity-75">Home Team</label>
                         <div className="flex gap-2">
@@ -5497,19 +5877,31 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                       </div>
 
                       <div>
-                        <label className="block text-xs mb-1 opacity-75">Default Home Roster</label>
-                        <input
-                          type="text"
-                          inputMode="decimal"
-                          value={defaultHomeRoster}
-                          onChange={e => setDefaultHomeRoster(e.target.value)}
-                          placeholder="e.g. 2,3,4,7,9"
-                          className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                        />
-                        <p className={`text-xs mt-1 opacity-60`}>
-                          Comma or space separated player numbers
-                        </p>
-                      </div>
+  <label className="block text-xs mb-1 opacity-75">Default Rosters</label>
+  <button
+    onClick={() => {
+      setRosterModalContext('default');
+      setRosterModalData({
+        home: { 
+          players: defaultHomeRoster, 
+          goalies: defaultHomeGoalies 
+        },
+        away: { 
+          players: defaultAwayRoster, 
+          goalies: defaultAwayGoalies 
+        }
+      });
+      setShowRosterModal(true);
+    }}
+    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+  >
+    <span>📝</span>
+    <span>Edit Default Rosters</span>
+  </button>
+  <p className={`text-xs mt-1 opacity-60`}>
+    Pre-fill rosters for new games
+  </p>
+</div>
                     </div>
                   </div>
                 )}
@@ -5687,6 +6079,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   </g>
                 </svg>
               );
+
+
 
               const PenaltyIcon = () => (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
