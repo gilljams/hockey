@@ -2521,7 +2521,9 @@ db.ref(`matches/${code}`).set({
           ['home', 'away'].forEach(team => {
             const teamName = team === 'home' ? homeName : awayName;
             const players = playerStats[team]?.players || {};
-            const playerNums = Object.keys(players).sort((a, b) => parseInt(a) - parseInt(b));
+            const playerNums = Object.keys(players)
+              .filter(pNum => players[pNum].position !== 'GK')
+              .sort((a, b) => parseInt(a) - parseInt(b));
 
             if (playerNums.length === 0) return;
 
@@ -2925,7 +2927,9 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
         const renderPlayerTable = (team) => {
           const teamName = team === 'home' ? homeName : awayName;
           const players = playerStats?.[team]?.players ?? {};
-          const playerNums = Object.keys(players).sort((a, b) => parseInt(a) - parseInt(b));
+          const playerNums = Object.keys(players)
+            .filter(pNum => players[pNum].position !== 'GK')  // Filter out goalies
+            .sort((a, b) => parseInt(a) - parseInt(b));
 
           // Determine which columns to show based on mode and team
           let columnsToShow = activeColumns;
@@ -3828,7 +3832,9 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                                       {(() => {
                                         const team = recordingGoal;
                                         const players = playerStats?.[team]?.players ?? {};
-                                        const playerNums = Object.keys(players).sort((a, b) => parseInt(a) - parseInt(b));
+                                        const playerNums = Object.keys(players)
+                                          .filter(pNum => players[pNum].position !== 'GK')
+                                          .sort((a, b) => parseInt(a) - parseInt(b));
 
                                         if (playerNums.length === 0) {
                                           return (
@@ -3939,7 +3945,9 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                                       {(() => {
                                         const oppTeam = recordingGoal === 'home' ? 'away' : 'home';
                                         const players = playerStats?.[oppTeam]?.players ?? {};
-                                        const playerNums = Object.keys(players).sort((a, b) => parseInt(a) - parseInt(b));
+                                        const playerNums = Object.keys(players)
+                                          .filter(pNum => players[pNum].position !== 'GK')
+                                          .sort((a, b) => parseInt(a) - parseInt(b));
 
                                         if (playerNums.length === 0) {
                                           return (
@@ -6331,7 +6339,9 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                           {['home', 'away'].map(team => {
                             const teamName = team === 'home' ? homeName : awayName;
                             const players = playerStats[team]?.players || {};
-                            const playerNums = Object.keys(players).sort((a, b) => parseInt(a) - parseInt(b));
+                            const playerNums = Object.keys(players)
+                              .filter(pNum => players[pNum].position !== 'GK')
+                              .sort((a, b) => parseInt(a) - parseInt(b));
 
                             if (playerNums.length === 0) return null;
 
