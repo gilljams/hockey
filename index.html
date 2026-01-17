@@ -182,7 +182,7 @@
       // Update rosters when initialData changes
       React.useEffect(() => {
         setRosters(normalizeRosterData(initialData));
-        setActiveTab('home');
+  
       }, [initialData, show]);
 
       const handleSave = () => {
@@ -1288,7 +1288,7 @@ const buildPlayerStatsFromRoster = (rosters) => {
 };
 
 
-      const handleRosterSave = (rosters) => {
+const handleRosterSave = (rosters) => {
   if (rosterModalContext === 'default') {
     // Save as defaults to localStorage
     setDefaultHomeRoster(rosters.home.players);
@@ -1301,6 +1301,10 @@ const buildPlayerStatsFromRoster = (rosters) => {
     localStorage.setItem('defaultAwayRoster', rosters.away.players);
     localStorage.setItem('defaultHomeGoalies', JSON.stringify(rosters.home.goalies));
     localStorage.setItem('defaultAwayGoalies', JSON.stringify(rosters.away.goalies));
+    
+    // Close modal and show success message
+    setShowRosterModal(false);
+    alert('Default rosters saved successfully!');
     return;
   }
 
@@ -1329,8 +1333,7 @@ const buildPlayerStatsFromRoster = (rosters) => {
     });
   });
 
-setPlayerStats(newPlayerStats);
-  console.log('handleRosterSave - newPlayerStats:', newPlayerStats); // LÄGG TILL
+  setPlayerStats(newPlayerStats);
   setRosterModalData(rosters);
   
   // If in game, sync to Firebase
@@ -1343,6 +1346,9 @@ setPlayerStats(newPlayerStats);
       }
     });
   }
+  
+  // Close modal
+  setShowRosterModal(false);
 };
 
 const startMatch = () => {
