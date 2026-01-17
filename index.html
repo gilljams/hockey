@@ -147,6 +147,215 @@
       </div>
     );
 
+    // Normalize roster data structure - defined outside component to avoid recreation
+    const normalizeRosterData = (data) => ({
+      home: {
+        players: data?.home?.players || '',
+        goalies: {
+          starter: data?.home?.goalies?.starter || '',
+          backup: data?.home?.goalies?.backup || ''
+        }
+      },
+      away: {
+        players: data?.away?.players || '',
+        goalies: {
+          starter: data?.away?.goalies?.starter || '',
+          backup: data?.away?.goalies?.backup || ''
+        }
+      }
+    });
+
+    // Parse comma/space separated input into array - defined outside to avoid recreation
+    const parsePlayerInput = (input) => {
+      const nums = input
+        .split(/[,\s]+/)
+        .map(n => n.trim())
+        .filter(n => n !== '' && /^\d+$/.test(n));
+      return [...new Set(nums)];
+    };
+
+    // RosterManagerModal Component - defined outside to prevent re-creation on parent renders
+    const RosterManagerModal = ({ show, onClose, context, initialData, onSave, darkMode }) => {
+      const [rosters, setRosters] = React.useState(() => normalizeRosterData(initialData));
+      const [activeTab, setActiveTab] = React.useState('home');
+
+      // Update rosters when initialData changes
+      React.useEffect(() => {
+        console.log('🎪 RosterManagerModal useEffect triggered');
+        console.log('📥 Received initialData:', initialData);
+        console.log('📥 Received show:', show);
+        const normalized = normalizeRosterData(initialData);
+        console.log('✨ Normalized data:', normalized);
+        setRosters(normalized);
+        setActiveTab('home');
+      }, [initialData, show]);
+
+      const handleSave = () => {
+        onSave(rosters);
+        onClose();
+      };
+
+      const loadDefault = () => {
+        const defaultHome = localStorage.getItem('defaultHomeRoster') || '';
+        const defaultAway = localStorage.getItem('defaultAwayRoster') || '';
+        const defaultHomeGoalies = JSON.parse(localStorage.getItem('defaultHomeGoalies') || '{"starter":"","backup":""}');
+        const defaultAwayGoalies = JSON.parse(localStorage.getItem('defaultAwayGoalies') || '{"starter":"","backup":""}');
+        
+        setRosters({
+          home: { players: defaultHome, goalies: defaultHomeGoalies },
+          away: { players: defaultAway, goalies: defaultAwayGoalies }
+        });
+      };
+
+      const countPlayers = (team) => {
+        const playerNums = parsePlayerInput(rosters[team]?.players || '');
+        const goalies = [rosters[team]?.goalies?.starter, rosters[team]?.goalies?.backup].filter(g => g && g.trim() !== '');
+        return playerNums.length + goalies.length;
+      };
+
+      if (!show) return null;
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
+          <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
+            {/* Header */}
+            <div className={`${darkMode ? 'bg-gray-700 border-b border-gray-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-6 py-4 flex justify-between items-center`}>
+              <h2 className="text-xl font-bold">
+                {context === 'default' ? 'Default Rosters' : context === 'create' ? 'Setup Rosters' : 'Manage Rosters'}
+              </h2>
+              <button onClick={onClose} className={`${darkMode ? 'hover:bg-gray-600' : 'hover:bg-white hover:bg-opacity-20'} p-2 rounded-lg transition-colors`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className={`flex ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+              <button
+                onClick={() => setActiveTab('home')}
+                className={`flex-1 py-3 font-semibold text-sm ${activeTab === 'home' 
+                  ? (darkMode ? 'bg-gray-800 text-white border-b-2 border-blue-500' : 'bg-white text-blue-600 border-b-2 border-blue-600')
+                  : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')
+                }`}
+              >
+                HOME ({countPlayers('home')})
+              </button>
+              <button
+                onClick={() => setActiveTab('away')}
+                className={`flex-1 py-3 font-semibold text-sm ${activeTab === 'away'
+                  ? (darkMode ? 'bg-gray-800 text-white border-b-2 border-blue-500' : 'bg-white text-blue-600 border-b-2 border-blue-600')
+                  : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')
+                }`}
+              >
+                AWAY ({countPlayers('away')})
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Players */}
+              <div>
+                <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Players
+                </label>
+                <textarea
+                  value={rosters[activeTab]?.players || ''}
+                  onChange={(e) => setRosters(prev => ({
+                    ...prev,
+                    [activeTab]: { ...prev[activeTab], players: e.target.value }
+                  }))}
+                  placeholder="e.g. 2, 3, 4, 7, 9, 12, 15, 17, 19, 21, 23, 25"
+                  className={`w-full px-4 py-3 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} font-mono text-sm`}
+                  rows={3}
+                />
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  💡 Comma or space separated player numbers
+                </p>
+              </div>
+
+              {/* Goalies */}
+              <div>
+                <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Goalies
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={`block text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Starter</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={rosters[activeTab]?.goalies?.starter || ''}
+                      onChange={(e) => setRosters(prev => ({
+                        ...prev,
+                        [activeTab]: { 
+                          ...prev[activeTab], 
+                          goalies: { ...prev[activeTab]?.goalies, starter: e.target.value }
+                        }
+                      }))}
+                      placeholder="30"
+                      className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Backup</label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={rosters[activeTab]?.goalies?.backup || ''}
+                      onChange={(e) => setRosters(prev => ({
+                        ...prev,
+                        [activeTab]: { 
+                          ...prev[activeTab], 
+                          goalies: { ...prev[activeTab]?.goalies, backup: e.target.value }
+                        }
+                      }))}
+                      placeholder="35"
+                      className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className={`${darkMode ? 'bg-gray-700 border-t border-gray-600' : 'bg-gray-50 border-t border-gray-200'} px-6 py-4 space-y-3`}>
+              {context !== 'default' && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={loadDefault}
+                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
+                  >
+                    📋 Load Default
+                  </button>
+                  <button
+                    onClick={() => alert('Import feature coming soon!')}
+                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
+                  >
+                    🔗 Import
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+                >
+                  Save ({countPlayers('home') + countPlayers('away')} players)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     const JuniorLeagueApp = () => {
       const [activeTab, setActiveTab] = useState('stats');
       const [expandedEvents, setExpandedEvents] = useState({});
@@ -408,192 +617,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
   </svg>
 );
 
-      // Parse comma/space separated input into array
-      const parsePlayerInput = (input) => {
-        const nums = input
-          .split(/[,\s]+/)
-          .map(n => n.trim())
-          .filter(n => n !== '' && /^\d+$/.test(n));
-        return [...new Set(nums)];
-      };
 
-      const RosterManagerModal = ({ show, onClose, context, initialData, onSave, darkMode }) => {
-      console.log('RosterManagerModal render:', { show, context }); // LÄGG TILL DENNA RAD
-        const [activeTab, setActiveTab] = React.useState('home');
-        const [rosters, setRosters] = React.useState(initialData || {
-          home: { players: '', goalies: { starter: '', backup: '' } },
-          away: { players: '', goalies: { starter: '', backup: '' } }
-        });
 
-        React.useEffect(() => {
-          if (initialData) setRosters(initialData);
-        }, [initialData]);
-
-        const handleSave = () => {
-          onSave(rosters);
-          onClose();
-        };
-
-        const loadDefault = () => {
-          const defaultHome = localStorage.getItem('defaultHomeRoster') || '';
-          const defaultAway = localStorage.getItem('defaultAwayRoster') || '';
-          const defaultHomeGoalies = JSON.parse(localStorage.getItem('defaultHomeGoalies') || '{"starter":"","backup":""}');
-          const defaultAwayGoalies = JSON.parse(localStorage.getItem('defaultAwayGoalies') || '{"starter":"","backup":""}');
-          
-          setRosters({
-            home: { players: defaultHome, goalies: defaultHomeGoalies },
-            away: { players: defaultAway, goalies: defaultAwayGoalies }
-          });
-        };
-
-        const countPlayers = (team) => {
-          const playerNums = parsePlayerInput(rosters[team]?.players || '');
-          const goalies = [rosters[team]?.goalies?.starter, rosters[team]?.goalies?.backup].filter(g => g && g.trim() !== '');
-          return playerNums.length + goalies.length;
-        };
-
-        if (!show) return null;
-
-        return (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col`}>
-              {/* Header */}
-              <div className={`${darkMode ? 'bg-gray-700 border-b border-gray-600' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-6 py-4 flex justify-between items-center`}>
-                <h2 className="text-xl font-bold">
-                  {context === 'default' ? 'Default Rosters' : context === 'create' ? 'Setup Rosters' : 'Manage Rosters'}
-                </h2>
-                <button onClick={onClose} className={`${darkMode ? 'hover:bg-gray-600' : 'hover:bg-white hover:bg-opacity-20'} p-2 rounded-lg transition-colors`}>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Tabs */}
-              <div className={`flex ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
-                <button
-                  onClick={() => setActiveTab('home')}
-                  className={`flex-1 py-3 font-semibold text-sm ${activeTab === 'home' 
-                    ? (darkMode ? 'bg-gray-800 text-white border-b-2 border-blue-500' : 'bg-white text-blue-600 border-b-2 border-blue-600')
-                    : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')
-                  }`}
-                >
-                  HOME ({countPlayers('home')})
-                </button>
-                <button
-                  onClick={() => setActiveTab('away')}
-                  className={`flex-1 py-3 font-semibold text-sm ${activeTab === 'away'
-                    ? (darkMode ? 'bg-gray-800 text-white border-b-2 border-blue-500' : 'bg-white text-blue-600 border-b-2 border-blue-600')
-                    : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-900')
-                  }`}
-                >
-                  AWAY ({countPlayers('away')})
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {/* Players */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Players
-                  </label>
-                  <textarea
-                    value={rosters[activeTab]?.players || ''}
-                    onChange={(e) => setRosters(prev => ({
-                      ...prev,
-                      [activeTab]: { ...prev[activeTab], players: e.target.value }
-                    }))}
-                    placeholder="e.g. 2, 3, 4, 7, 9, 12, 15, 17, 19, 21, 23, 25"
-                    className={`w-full px-4 py-3 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono text-sm`}
-                    rows={3}
-                  />
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    💡 Comma or space separated player numbers
-                  </p>
-                </div>
-
-                {/* Goalies */}
-                <div>
-                  <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Goalies
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={`block text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Starter</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={rosters[activeTab]?.goalies?.starter || ''}
-                        onChange={(e) => setRosters(prev => ({
-                          ...prev,
-                          [activeTab]: { 
-                            ...prev[activeTab], 
-                            goalies: { ...prev[activeTab]?.goalies, starter: e.target.value }
-                          }
-                        }))}
-                        placeholder="30"
-                        className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
-                      />
-                    </div>
-                    <div>
-                      <label className={`block text-xs mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Backup</label>
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        value={rosters[activeTab]?.goalies?.backup || ''}
-                        onChange={(e) => setRosters(prev => ({
-                          ...prev,
-                          [activeTab]: { 
-                            ...prev[activeTab], 
-                            goalies: { ...prev[activeTab]?.goalies, backup: e.target.value }
-                          }
-                        }))}
-                        placeholder="35"
-                        className={`w-full px-3 py-2 border rounded-lg ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300'} font-mono`}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className={`${darkMode ? 'bg-gray-700 border-t border-gray-600' : 'bg-gray-50 border-t border-gray-200'} px-6 py-4 space-y-3`}>
-                {context !== 'default' && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={loadDefault}
-                      className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
-                    >
-                      📋 Load Default
-                    </button>
-                    <button
-                      onClick={() => alert('Import feature coming soon!')}
-                      className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg font-semibold text-sm`}
-                    >
-                      🔗 Import
-                    </button>
-                  </div>
-                )}
-                <div className="flex gap-3">
-                  <button
-                    onClick={onClose}
-                    className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSave}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
-                  >
-                    Save ({countPlayers('home') + countPlayers('away')} players)
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      };
 
  
       // Normalization functions
@@ -681,6 +706,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         setIsCreator(false);
         setSparkleStats({});
         setExpandedPlayerStats({});
+        setShowRosterModal(false);
+        setRosterModalContext('create');
       };
 
       useEffect(() => {
@@ -688,6 +715,19 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
           setActiveTab('stats');
         }
       }, [isViewer, screen]);
+
+      // Load default rosters from localStorage on component mount
+      useEffect(() => {
+        const savedHomeRoster = localStorage.getItem('defaultHomeRoster') || '';
+        const savedAwayRoster = localStorage.getItem('defaultAwayRoster') || '';
+        const savedHomeGoalies = JSON.parse(localStorage.getItem('defaultHomeGoalies') || '{"starter":"","backup":""}');
+        const savedAwayGoalies = JSON.parse(localStorage.getItem('defaultAwayGoalies') || '{"starter":"","backup":""}');
+        
+        setDefaultHomeRoster(savedHomeRoster);
+        setDefaultAwayRoster(savedAwayRoster);
+        setDefaultHomeGoalies(savedHomeGoalies);
+        setDefaultAwayGoalies(savedAwayGoalies);
+      }, []);
 
       // Auth listener
       useEffect(() => {
@@ -1169,7 +1209,7 @@ const buildPlayerStatsFromRoster = (rosters) => {
   const result = { home: { players: {} }, away: { players: {} } };
 
   ['home', 'away'].forEach(team => {
-    const players = parsePlayerInput(rosters[team].players || []);
+    const players = parsePlayerInput(rosters[team].players || '');
     const goalies = [
       rosters[team].goalies?.starter,
       rosters[team].goalies?.backup
@@ -1201,6 +1241,12 @@ const buildPlayerStatsFromRoster = (rosters) => {
     setDefaultAwayRoster(rosters.away.players);
     setDefaultHomeGoalies(rosters.home.goalies);
     setDefaultAwayGoalies(rosters.away.goalies);
+    
+    // Also save to localStorage
+    localStorage.setItem('defaultHomeRoster', rosters.home.players);
+    localStorage.setItem('defaultAwayRoster', rosters.away.players);
+    localStorage.setItem('defaultHomeGoalies', JSON.stringify(rosters.home.goalies));
+    localStorage.setItem('defaultAwayGoalies', JSON.stringify(rosters.away.goalies));
     return;
   }
 
@@ -5164,16 +5210,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
             <audio ref={audioRefs.homePenalty} src="homePenalty.mp3" />
             <audio ref={audioRefs.awayPenalty} src="awayPenalty.mp3" />
             <audio ref={audioRefs.intro} src="intro.mp3" />
-
-      <RosterManagerModal
-        show={showRosterModal}
-        onClose={() => setShowRosterModal(false)}
-        context={rosterModalContext}
-        initialData={rosterModalData}
-        onSave={handleRosterSave}
-        darkMode={darkMode}
-      />
-
+      
       <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
               <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-3 py-2 shadow-lg sticky top-0 z-50`}>
                 <div className="max-w-7xl mx-auto">
@@ -5497,16 +5534,17 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                 </div>
               </div>
 
-              {showSettings && <div className={`${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800'} rounded-lg p-4 mb-4 max-h-[70vh] overflow-y-auto`}>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-lg">Settings</h3>
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} px-4 py-2 rounded font-semibold text-sm`}
-                  >
-                    Close
-                  </button>
-                </div>
+              {showSettings && <div className={`fixed inset-0 z-39 overflow-y-auto p-4 ${darkMode ? 'bg-gray-900 bg-opacity-50' : 'bg-black bg-opacity-30'}`}>
+                <div className={`${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800'} rounded-lg p-4 m-auto max-w-2xl mt-10`}>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-lg">Settings</h3>
+                    <button
+                      onClick={() => setShowSettings(false)}
+                      className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} px-4 py-2 rounded font-semibold text-sm`}
+                    >
+                      Close
+                    </button>
+                  </div>
 
                 {/* MY PREFERENCES - Högst upp */}
                 <div className="mb-6">
@@ -5629,14 +5667,14 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     </h4>
 
                     <div className="space-y-3">
-      {/* Roster Manager - Advanced mode only */}
-      {trackingMode === 'advanced' && (
-        <div>
-          <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
+      {/* Roster Manager - Available for all modes */}
+      <div>
+        <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
 <button
-  onClick={(e) => {
-    e.stopPropagation();
-
+  onClick={() => {
+    console.log('🎯 SETTINGS ROSTER CLICK - Before any processing');
+    
+    // Build current roster from game state
     const currentRoster = {
       home: { 
         players: Object.keys(playerStats.home?.players || {})
@@ -5654,9 +5692,33 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       }
     };
 
+    // If game rosters are empty, use default rosters instead
+    const rosterToUse = (currentRoster.home.players || currentRoster.away.players) 
+      ? currentRoster 
+      : {
+          home: { 
+            players: defaultHomeRoster, 
+            goalies: defaultHomeGoalies 
+          },
+          away: { 
+            players: defaultAwayRoster, 
+            goalies: defaultAwayGoalies 
+          }
+        };
+
+    console.log('📋 Current Roster from game:', currentRoster);
+    console.log('📋 Default Home Roster:', defaultHomeRoster);
+    console.log('📋 Default Away Roster:', defaultAwayRoster);
+    console.log('📋 Using this roster:', rosterToUse);
+    console.log('setRosterModalContext calling with:', 'game');
+    console.log('setRosterModalData calling with:', rosterToUse);
+    console.log('setShowRosterModal calling with:', true);
+    
     setRosterModalContext('game');
-    setRosterModalData(currentRoster);
+    setRosterModalData(rosterToUse);
     setShowRosterModal(true);
+    
+    console.log('✅ All setters called');
   }}
   disabled={matchEnded}
   className={`w-full ${matchEnded 
@@ -5668,11 +5730,10 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
   <span>Manage Rosters</span>
 </button>
 
-          <p className={`text-xs mt-1 opacity-60`}>
-            Add or edit players and goalies
-          </p>
-        </div>
-      )}
+        <p className={`text-xs mt-1 opacity-60`}>
+          Add or edit players and goalies
+        </p>
+      </div>
                       <div>
                         <label className="block text-xs mb-1 opacity-75">Home Team</label>
                         <div className="flex gap-2">
@@ -5933,7 +5994,17 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     Close
                   </button>
                 </div>
-              </div>}
+              </div>
+            </div>}
+
+      <RosterManagerModal
+        show={showRosterModal}
+        onClose={() => setShowRosterModal(false)}
+        context={rosterModalContext}
+        initialData={rosterModalData}
+        onSave={handleRosterSave}
+        darkMode={darkMode}
+      />
 
               <div className="grid grid-cols-2 gap-2 mb-2">
                 {[
