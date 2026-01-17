@@ -364,6 +364,37 @@
       const [darkMode, setDarkMode] = useState(false);
       const [statsCollapsed, setStatsCollapsed] = useState(false);
       const [focusMode, setFocusMode] = useState(null);
+      
+      // Determine default collapsed state based on user role
+      const getDefaultCollapsedState = (isViewerMode, isMultiplayerMode) => {
+        if (isViewerMode) {
+          return {
+            preferences: true,
+            gameSettings: true,
+            gameInfo: false,
+            content: true,
+            account: true
+          };
+        }
+        if (isMultiplayerMode) {
+          return {
+            preferences: true,
+            gameSettings: false,
+            gameInfo: false,
+            content: true,
+            account: true
+          };
+        }
+        return {
+          preferences: true,
+          gameSettings: false,
+          gameInfo: true,
+          content: true,
+          account: true
+        };
+      };
+      
+      const [settingsCollapsed, setSettingsCollapsed] = useState(getDefaultCollapsedState(false, false));
       const [spotifyLoaded, setSpotifyLoaded] = useState(false);
       const [spotifyLoading, setSpotifyLoading] = useState(false);
       const [spotifyFallback, setSpotifyFallback] = useState(false);
@@ -612,10 +643,23 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
   </svg>
 );
 
+      const IconHamburgerMenu = () => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      );
 
-
-
- 
       // Normalization functions
       const normalizePeriodStats = (stats) => {
         const normalized = {};
@@ -706,10 +750,24 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
       };
 
       useEffect(() => {
+        if (showSettings) {
+          document.body.style.overflow = 'hidden';
+        } else {
+          document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+      }, [showSettings]);
+
+      useEffect(() => {
         if (isViewer && screen === 'game') {
           setActiveTab('stats');
         }
       }, [isViewer, screen]);
+
+      // Update settings collapsed state based on user role
+      useEffect(() => {
+        setSettingsCollapsed(getDefaultCollapsedState(isViewer, isMultiplayer));
+      }, [isViewer, isMultiplayer]);
 
       // Load default rosters from localStorage on component mount
       useEffect(() => {
@@ -1197,7 +1255,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         // Lagra koden temporärt så vi kan använda den direkt
         localStorage.setItem('tempMatchCode', code);
 
-        setScreen('created');
+        // Skip the 'created' screen and go directly to the game
+        startMatch();
       };
 
 const buildPlayerStatsFromRoster = (rosters) => {
@@ -5525,459 +5584,422 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     </button>
                   )}
                   <button onClick={() => setStatsCollapsed(!statsCollapsed)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>{statsCollapsed ? <IconChevronDown /> : <IconChevronUp />}</button>
-                  <button onClick={() => setShowSettings(!showSettings)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}><IconSettings /></button>
+                  <button onClick={() => setShowSettings(!showSettings)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}><IconHamburgerMenu /></button>
                 </div>
               </div>
 
-              {showSettings && <div className={`fixed inset-0 z-39 overflow-y-auto p-4 ${darkMode ? 'bg-gray-900 bg-opacity-50' : 'bg-black bg-opacity-30'}`}>
-                <div className={`${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800'} rounded-lg p-4 m-auto max-w-2xl mt-10`}>
+              {showSettings && <div className={`fixed inset-0 z-39 ${darkMode ? 'bg-gray-900 bg-opacity-50' : 'bg-black bg-opacity-30'}`} onClick={() => setShowSettings(false)} />}
+              
+              {showSettings && <div className={`fixed top-20 right-0 h-[calc(100vh-5rem)] w-full max-w-md z-40 overflow-y-auto ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg`}>
+                <div className={`p-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="font-bold text-lg">Settings</h3>
                     <button
                       onClick={() => setShowSettings(false)}
                       className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} px-4 py-2 rounded font-semibold text-sm`}
                     >
-                      Close
+                      ✕
                     </button>
                   </div>
 
-                {/* MY PREFERENCES - Högst upp */}
-                <div className="mb-6">
-                  <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                    My Preferences
-                  </h4>
+                {/* MY PREFERENCES - Collapsible */}
+                <div className="mb-4">
+                  <button
+                    onClick={() => setSettingsCollapsed({ ...settingsCollapsed, preferences: !settingsCollapsed.preferences })}
+                    className={`w-full flex items-center justify-between text-sm font-semibold mb-2 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}
+                  >
+                    <span>My Preferences</span>
+                    {settingsCollapsed.preferences ? <IconChevronDown /> : <IconChevronUp />}
+                  </button>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">Dark Mode</span>
-                      <input
-                        type="checkbox"
-                        checked={darkMode}
-                        onChange={e => setDarkMode(e.target.checked)}
-                        className="w-5 h-5"
-                      />
-                    </label>
+                  {!settingsCollapsed.preferences && (
+                    <div className="space-y-2 ml-2">
+                      <label className="flex items-center justify-between py-2">
+                        <span className="text-sm">Dark Mode</span>
+                        <input
+                          type="checkbox"
+                          checked={darkMode}
+                          onChange={e => setDarkMode(e.target.checked)}
+                          className="w-5 h-5"
+                        />
+                      </label>
 
-                    <label className="flex items-center justify-between py-2">
-                      <span className="text-sm">Keep Screen On</span>
-                      <input
-                        type="checkbox"
-                        checked={keepScreenOn}
-                        onChange={e => setKeepScreenOn(e.target.checked)}
-                        className="w-5 h-5"
-                      />
-                    </label>
-                  </div>
+                      <label className="flex items-center justify-between py-2">
+                        <span className="text-sm">Keep Screen On</span>
+                        <input
+                          type="checkbox"
+                          checked={keepScreenOn}
+                          onChange={e => setKeepScreenOn(e.target.checked)}
+                          className="w-5 h-5"
+                        />
+                      </label>
+                    </div>
+                  )}
                 </div>
 
-                {/* GAME INFO - Endast multiplayer */}
+                {/* GAME INFO - Collapsible, multiplayer only */}
                 {isMultiplayer && (
-                  <div className="mb-6">
-                    <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                      Game Info
-                    </h4>
+                  <div className="mb-4">
+                    <button
+                      onClick={() => setSettingsCollapsed({ ...settingsCollapsed, gameInfo: !settingsCollapsed.gameInfo })}
+                      className={`w-full flex items-center justify-between text-sm font-semibold mb-2 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}
+                    >
+                      <span>Game Info</span>
+                      {settingsCollapsed.gameInfo ? <IconChevronDown /> : <IconChevronUp />}
+                    </button>
 
-                    <div className="space-y-3">
-                      {/* Match Code - Dölj för viewers */}
-                      {!isViewer && (
-                        <div>
-                          <label className="block text-xs mb-1 opacity-75">Match Code</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={matchCode}
-                              readOnly
-                              className={`flex-1 px-3 py-2 border rounded font-mono text-center font-bold ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
-                            />
-                            <button
-                              onClick={copyCode}
-                              className={`px-4 py-2 rounded font-semibold whitespace-nowrap ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
-                            >
-                              Copy
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Viewer Link - Dölj för viewers */}
-                      {!isViewer && (
-                        <div>
-                          <label className="block text-xs mb-1 opacity-75">Viewer Link</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="text"
-                              value={`${window.location.origin}${window.location.pathname}?join=${matchCode}-V`}
-                              readOnly
-                              className={`flex-1 px-3 py-2 border rounded font-mono text-xs ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
-                            />
-                            <button
-                              onClick={() => {
-                                const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
-                                navigator.clipboard.writeText(viewerLink).then(() => {
-                                  alert('Viewer link copied!');
-                                }).catch(() => {
-                                  alert('Failed to copy');
-                                });
-                              }}
-                              className={`px-4 py-2 rounded font-semibold whitespace-nowrap ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
-                            >
-                              Copy
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Connected Users */}
-                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded p-3 text-sm`}>
-                        <div className="flex items-center justify-between">
-                          <span className="opacity-75">Connected Editors:</span>
-                          <span className="font-bold">👥 {connectedUsers}</span>
-                        </div>
-                        {viewerCount > 0 && (
-                          <div className="flex items-center justify-between mt-1">
-                            <span className="opacity-75">Viewers:</span>
-                            <span className="font-bold">👁️ {viewerCount}</span>
+                    {!settingsCollapsed.gameInfo && (
+                      <div className="space-y-3 ml-2">
+                        {/* Match Code - Dölj för viewers */}
+                        {!isViewer && (
+                          <div>
+                            <label className="block text-xs mb-1 opacity-75">Match Code</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={matchCode}
+                                readOnly
+                                className={`flex-1 px-3 py-2 border rounded font-mono text-center font-bold ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
+                              />
+                              <button
+                                onClick={copyCode}
+                                className={`px-4 py-2 rounded font-semibold whitespace-nowrap ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+                              >
+                                Copy
+                              </button>
+                            </div>
                           </div>
                         )}
-                      </div>
 
-                      {/* End Game - endast creator */}
-                      {!matchEnded && isCreator && !isViewer && (
-                        <button
-                          onClick={endMatch}
-                          className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded font-semibold"
-                        >
-                          End Game for All Users
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* TEAM SETTINGS - Endast editors */}
-                {!isViewer && (
-                  <div className="mb-6">
-                    <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                      Team Settings
-                    </h4>
-
-                    <div className="space-y-3">
-      {/* Roster Manager - Available for all modes */}
-      <div>
-        <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
-<button
-  onClick={() => {
-    const currentRoster = {
-      home: { 
-        players: Object.keys(playerStats.home?.players || {})
-          .filter(pNum => playerStats.home.players[pNum].position !== 'GK')
-          .sort((a, b) => parseInt(a) - parseInt(b))
-          .join(', '),
-        goalies: goalieMap.home 
-      },
-      away: { 
-        players: Object.keys(playerStats.away?.players || {})
-          .filter(pNum => playerStats.away.players[pNum].position !== 'GK')
-          .sort((a, b) => parseInt(a) - parseInt(b))
-          .join(', '),
-        goalies: goalieMap.away 
-      }
-    };
-
-    // If game rosters are empty, use default rosters instead
-    const rosterToUse = (currentRoster.home.players || currentRoster.away.players) 
-      ? currentRoster 
-      : {
-          home: { 
-            players: defaultHomeRoster, 
-            goalies: defaultHomeGoalies 
-          },
-          away: { 
-            players: defaultAwayRoster, 
-            goalies: defaultAwayGoalies 
-          }
-        };
-    
-    setRosterModalContext('game');
-    setRosterModalData(rosterToUse);
-    setShowRosterModal(true);
-  }}
-  disabled={matchEnded}
-  className={`w-full ${matchEnded 
-    ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
-    : (darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300')
-  } py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
->
-  <HockeyHelmetIcon />
-  <span>Manage Rosters</span>
-</button>
-
-        <p className={`text-xs mt-1 opacity-60`}>
-          Add or edit players and goalies
-        </p>
-      </div>
-                      <div>
-                        <label className="block text-xs mb-1 opacity-75">Home Team</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={homeName}
-                            onChange={e => { setHomeName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ homeName: e.target.value }) }}
-                            disabled={matchEnded || isViewer}
-                            className={`flex-1 px-3 py-2 border rounded ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                          />
-                          <button
-                            onClick={() => setHomeName('')}
-                            disabled={matchEnded || isViewer}
-                            className={`px-3 py-2 rounded ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs mb-1 opacity-75">Away Team</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={awayName}
-                            onChange={e => { setAwayName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ awayName: e.target.value }) }}
-                            disabled={matchEnded || isViewer}
-                            className={`flex-1 px-3 py-2 border rounded ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                          />
-                          <button
-                            onClick={() => setAwayName('')}
-                            disabled={matchEnded || isViewer}
-                            className={`px-3 py-2 rounded ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-                          >
-                            Clear
-                          </button>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={resetCounters}
-                        disabled={matchEnded || isViewer}
-                        className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-red-400' : 'bg-white hover:bg-gray-50 border border-red-300 text-red-600'} py-2 rounded font-semibold mb-6`}
-                      >
-                        Reset All Stats
-                      </button>
-
-                      {/* TRACKING MODE - In Settings */}
-                      <div className="mb-6">
-                        <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                          Tracking Mode
-                        </h4>
-                        <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                          <button
-                            onClick={() => {
-                              if (trackingMode === 'advanced' && !window.confirm('Switch to Simple mode? Manual team-level adjustments will be enabled, but player-level stats will be hidden.')) return;
-                              setTrackingMode('simple');
-                              if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'simple' })
-                            }}
-                            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'simple'
-                              ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                              : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                          >
-                            SIMPLE
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (trackingMode === 'simple' && !window.confirm('Switch to Advanced mode? Manual team-level adjustments will be disabled. Totals will be derived from player events.')) return;
-                              setTrackingMode('advanced');
-                              if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'advanced' })
-                            }}
-                            className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'advanced'
-                              ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                              : 'text-gray-500 hover:text-gray-700'
-                              }`}
-                          >
-                            ADVANCED
-                          </button>
-                        </div>
-                        <p className={`text-[10px] mt-2 opacity-60 text-center italic`}>
-                          {trackingMode === 'advanced'
-                            ? 'Advanced mode: Totals are auto-calculated from player events.'
-                            : 'Simple mode: Manual + / - buttons are used for team totals.'}
-                        </p>
-                      </div>
-
-                      {/* GOALIE MAPPING - In Settings */}
-                      <div className="mb-6">
-                        <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                          Goalie Mapping
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Home</div>
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              placeholder="Starter #"
-                              value={goalieMap.home.starter}
-                              onChange={e => {
-                                const updated = { ...goalieMap, home: { ...goalieMap.home, starter: e.target.value } };
-                                setGoalieMap(updated);
-                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
-                              }}
-                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                            />
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              placeholder="Backup #"
-                              value={goalieMap.home.backup}
-                              onChange={e => {
-                                const updated = { ...goalieMap, home: { ...goalieMap.home, backup: e.target.value } };
-                                setGoalieMap(updated);
-                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
-                              }}
-                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                            />
+                        {/* Viewer Link - Dölj för viewers */}
+                        {!isViewer && (
+                          <div>
+                            <label className="block text-xs mb-1 opacity-75">Viewer Link</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={`${window.location.origin}${window.location.pathname}?join=${matchCode}-V`}
+                                readOnly
+                                className={`flex-1 px-3 py-2 border rounded font-mono text-xs ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
+                              />
+                              <button
+                                onClick={() => {
+                                  const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
+                                  navigator.clipboard.writeText(viewerLink).then(() => {
+                                    alert('Viewer link copied!');
+                                  }).catch(() => {
+                                    alert('Failed to copy');
+                                  });
+                                }}
+                                className={`px-4 py-2 rounded font-semibold whitespace-nowrap ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+                              >
+                                Copy
+                              </button>
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            <div className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Away</div>
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              placeholder="Starter #"
-                              value={goalieMap.away.starter}
-                              onChange={e => {
-                                const updated = { ...goalieMap, away: { ...goalieMap.away, starter: e.target.value } };
-                                setGoalieMap(updated);
-                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
-                              }}
-                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                            />
-                            <input
-                              type="text"
-                              inputMode="decimal"
-                              placeholder="Backup #"
-                              value={goalieMap.away.backup}
-                              onChange={e => {
-                                const updated = { ...goalieMap, away: { ...goalieMap.away, backup: e.target.value } };
-                                setGoalieMap(updated);
-                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ goalieMap: updated });
-                              }}
-                              className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                            />
+                        )}
+
+                        {/* Connected Users */}
+                        <div className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded p-3 text-sm`}>
+                          <div className="flex items-center justify-between">
+                            <span className="opacity-75">Connected Editors:</span>
+                            <span className="font-bold">👥 {connectedUsers}</span>
                           </div>
+                          {viewerCount > 0 && (
+                            <div className="flex items-center justify-between mt-1">
+                              <span className="opacity-75">Viewers:</span>
+                              <span className="font-bold">👁️ {viewerCount}</span>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* CONTENT - Endast för editors (dölj för viewers) */}
-                {!isViewer && (
-                  <div className="mb-6">
-                    <h4 className={`text-sm font-semibold mb-3 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}>
-                      Content
-                    </h4>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs mb-1 opacity-75">Spotify Playlist URL</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={spotifyPlaylist}
-                            onChange={e => { setSpotifyPlaylist(e.target.value); setSpotifyLoaded(false) }}
-                            placeholder="https://open.spotify.com/playlist/..."
-                            className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                          />
+                        {/* End Game - endast creator */}
+                        {!matchEnded && isCreator && !isViewer && (
                           <button
-                            onClick={() => { setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq'); setSpotifyLoaded(false) }}
-                            className={`px-3 py-2 rounded text-sm whitespace-nowrap ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                            onClick={endMatch}
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded font-semibold"
                           >
-                            Default
+                            End Game for All Users
                           </button>
-                        </div>
+                        )}
                       </div>
-
-                      <div>
-                        <label className="block text-xs mb-1 opacity-75">External Link Title</label>
-                        <input
-                          type="text"
-                          value={externalLinkTitle}
-                          onChange={e => setExternalLinkTitle(e.target.value)}
-                          placeholder="Club Rules"
-                          className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs mb-1 opacity-75">External Link URL</label>
-                        <input
-                          type="text"
-                          value={externalLinkUrl}
-                          onChange={e => setExternalLinkUrl(e.target.value)}
-                          placeholder="https://..."
-                          className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                        />
-                      </div>
-
-                      <div>
-  <label className="block text-xs mb-1 opacity-75">Default Rosters</label>
-  <button
-    onClick={() => {
-      setRosterModalContext('default');
-      setRosterModalData({
-        home: { 
-          players: defaultHomeRoster, 
-          goalies: defaultHomeGoalies 
-        },
-        away: { 
-          players: defaultAwayRoster, 
-          goalies: defaultAwayGoalies 
-        }
-      });
-      setShowRosterModal(true);
-    }}
-    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
-  >
-    <span>📝</span>
-    <span>Edit Default Rosters</span>
-  </button>
-  <p className={`text-xs mt-1 opacity-60`}>
-    Pre-fill rosters for new games
-  </p>
-</div>
-                    </div>
+                    )}
                   </div>
                 )}
 
-                {/* ACCOUNT - Längst ner */}
-                {currentUser && (
-                  <div className={`pt-4 border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                {/* GAME SETTINGS - Collapsible, editors only */}
+                {!isViewer && (
+                  <div className="mb-4">
                     <button
-                      onClick={async () => {
-                        if (window.confirm('Sign out from your account?')) {
-                          await auth.signOut();
-                          setShowSettings(false);
-                          setScreen('start');
-                        }
-                      }}
-                      className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-red-400' : 'bg-gray-100 hover:bg-gray-200 text-red-600'} py-2 rounded font-semibold text-sm`}
+                      onClick={() => setSettingsCollapsed({ ...settingsCollapsed, gameSettings: !settingsCollapsed.gameSettings })}
+                      className={`w-full flex items-center justify-between text-sm font-semibold mb-2 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}
                     >
-                      Sign Out
+                      <span>Game Settings</span>
+                      {settingsCollapsed.gameSettings ? <IconChevronDown /> : <IconChevronUp />}
                     </button>
+
+                    {!settingsCollapsed.gameSettings && (
+                      <div className="space-y-3 ml-2">
+                        {/* Tracking Mode */}
+                        <div>
+                          <label className="block text-xs mb-2 opacity-75 font-semibold">Tracking Mode</label>
+                          <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                            <button
+                              onClick={() => {
+                                if (trackingMode === 'advanced' && !window.confirm('Switch to Simple mode? Manual team-level adjustments will be enabled, but player-level stats will be hidden.')) return;
+                                setTrackingMode('simple');
+                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'simple' })
+                              }}
+                              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'simple'
+                                ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                              SIMPLE
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (trackingMode === 'simple' && !window.confirm('Switch to Advanced mode? Manual team-level adjustments will be disabled. Totals will be derived from player events.')) return;
+                                setTrackingMode('advanced');
+                                if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'advanced' })
+                              }}
+                              className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'advanced'
+                                ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                            >
+                              ADVANCED
+                            </button>
+                          </div>
+                          <p className={`text-[10px] mt-2 opacity-60 text-center italic`}>
+                            {trackingMode === 'advanced'
+                              ? 'Advanced mode: Totals are auto-calculated from player events.'
+                              : 'Simple mode: Manual + / - buttons are used for team totals.'}
+                          </p>
+                        </div>
+
+                        {/* Home Team Name */}
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">Home Team</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={homeName}
+                              onChange={e => { setHomeName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ homeName: e.target.value }) }}
+                              disabled={matchEnded || isViewer}
+                              className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                            <button
+                              onClick={() => setHomeName('')}
+                              disabled={matchEnded || isViewer}
+                              className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Away Team Name */}
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">Away Team</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={awayName}
+                              onChange={e => { setAwayName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ awayName: e.target.value }) }}
+                              disabled={matchEnded || isViewer}
+                              className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                            <button
+                              onClick={() => setAwayName('')}
+                              disabled={matchEnded || isViewer}
+                              className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Team Rosters */}
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
+                          <button
+                            onClick={() => {
+                              const currentRoster = {
+                                home: { 
+                                  players: Object.keys(playerStats.home?.players || {})
+                                    .filter(pNum => playerStats.home.players[pNum].position !== 'GK')
+                                    .sort((a, b) => parseInt(a) - parseInt(b))
+                                    .join(', '),
+                                  goalies: goalieMap.home 
+                                },
+                                away: { 
+                                  players: Object.keys(playerStats.away?.players || {})
+                                    .filter(pNum => playerStats.away.players[pNum].position !== 'GK')
+                                    .sort((a, b) => parseInt(a) - parseInt(b))
+                                    .join(', '),
+                                  goalies: goalieMap.away 
+                                }
+                              };
+
+                              const rosterToUse = (currentRoster.home.players || currentRoster.away.players) 
+                                ? currentRoster 
+                                : {
+                                    home: { 
+                                      players: defaultHomeRoster, 
+                                      goalies: defaultHomeGoalies 
+                                    },
+                                    away: { 
+                                      players: defaultAwayRoster, 
+                                      goalies: defaultAwayGoalies 
+                                    }
+                                  };
+                              
+                              setRosterModalContext('game');
+                              setRosterModalData(rosterToUse);
+                              setShowRosterModal(true);
+                            }}
+                            disabled={matchEnded}
+                            className={`w-full ${matchEnded 
+                              ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+                              : (darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300')
+                            } py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+                          >
+                            <HockeyHelmetIcon />
+                            <span>Manage Rosters</span>
+                          </button>
+                        </div>
+
+                        {/* Reset Stats */}
+                        <button
+                          onClick={resetCounters}
+                          disabled={matchEnded || isViewer}
+                          className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-red-400' : 'bg-white hover:bg-gray-50 border border-red-300 text-red-600'} py-2 rounded font-semibold`}
+                        >
+                          Reset All Stats
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Close knapp längst ner */}
-                <div className="pt-4 mt-4 border-t border-gray-600">
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    className={`w-full ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded font-semibold`}
-                  >
-                    Close
-                  </button>
+                {/* CONTENT - Collapsible, editors only */}
+                {!isViewer && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => setSettingsCollapsed({ ...settingsCollapsed, content: !settingsCollapsed.content })}
+                      className={`w-full flex items-center justify-between text-sm font-semibold mb-2 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}
+                    >
+                      <span>Content</span>
+                      {settingsCollapsed.content ? <IconChevronDown /> : <IconChevronUp />}
+                    </button>
+
+                    {!settingsCollapsed.content && (
+                      <div className="space-y-3 ml-2">
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">Spotify Playlist URL</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={spotifyPlaylist}
+                              onChange={e => { setSpotifyPlaylist(e.target.value); setSpotifyLoaded(false) }}
+                              placeholder="https://open.spotify.com/playlist/..."
+                              className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                            />
+                            <button
+                              onClick={() => { setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq'); setSpotifyLoaded(false) }}
+                              className={`px-3 py-2 rounded text-sm whitespace-nowrap ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                            >
+                              Default
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">External Link Title</label>
+                          <input
+                            type="text"
+                            value={externalLinkTitle}
+                            onChange={e => setExternalLinkTitle(e.target.value)}
+                            placeholder="Club Rules"
+                            className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">External Link URL</label>
+                          <input
+                            type="text"
+                            value={externalLinkUrl}
+                            onChange={e => setExternalLinkUrl(e.target.value)}
+                            placeholder="https://..."
+                            className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs mb-1 opacity-75">Default Rosters</label>
+                          <button
+                            onClick={() => {
+                              setRosterModalContext('default');
+                              setRosterModalData({
+                                home: { 
+                                  players: defaultHomeRoster, 
+                                  goalies: defaultHomeGoalies 
+                                },
+                                away: { 
+                                  players: defaultAwayRoster, 
+                                  goalies: defaultAwayGoalies 
+                                }
+                              });
+                              setShowRosterModal(true);
+                            }}
+                            className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+                          >
+                            <span>📝</span>
+                            <span>Edit Default Rosters</span>
+                          </button>
+                          <p className={`text-xs mt-1 opacity-60`}>
+                            Pre-fill rosters for new games
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ACCOUNT - Collapsible */}
+                {currentUser && (
+                  <div className="mb-4">
+                    <button
+                      onClick={() => setSettingsCollapsed({ ...settingsCollapsed, account: !settingsCollapsed.account })}
+                      className={`w-full flex items-center justify-between text-sm font-semibold mb-2 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}
+                    >
+                      <span>Account</span>
+                      {settingsCollapsed.account ? <IconChevronDown /> : <IconChevronUp />}
+                    </button>
+
+                    {!settingsCollapsed.account && (
+                      <div className="ml-2">
+                        <button
+                          onClick={async () => {
+                            if (window.confirm('Sign out from your account?')) {
+                              await auth.signOut();
+                              setShowSettings(false);
+                              setScreen('start');
+                            }
+                          }}
+                          className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-red-400' : 'bg-gray-100 hover:bg-gray-200 text-red-600'} py-2 rounded font-semibold text-sm`}
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 </div>
-              </div>
-            </div>}
+              </div>}
 
       <RosterManagerModal
         show={showRosterModal}
