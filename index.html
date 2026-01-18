@@ -321,13 +321,13 @@
                     onClick={loadDefault}
                     className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} py-2 rounded-lg font-semibold text-sm`}
                   >
-                    📋 Load Default
+                    Load Default
                   </button>
                   <button
                     onClick={() => alert('Import feature coming soon!')}
                     className={`flex-1 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'} py-2 rounded-lg font-semibold text-sm`}
                   >
-                    🔗 Import
+                    Import
                   </button>
                 </div>
               )}
@@ -612,7 +612,7 @@
           <line x1="13.75" y1="4.53" x2="15.1" y2="3.18" />
           <line x1="11.05" y1="3.41" x2="11.05" y2="1.5" />
         </svg>
-);
+       );
 
 const HockeyHelmetIcon = () => (
   <svg width="20" height="20" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -740,7 +740,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
   setTrackingMode(modeOverride);
 }
 
-        setGoalieMap({
+	    setGoalieMap({
           home: { starter: '', backup: '' },
           away: { starter: '', backup: '' }
         });
@@ -969,7 +969,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         }
       }, [screen]);
 
-      // Handle ?join=XXXXXX-V → open "Join game as viewer" dialog with prefilled code
+      // Handle ?join=XXXXXX-V → open "Join as viewer" dialog with prefilled code
       useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const joinCode = params.get('join');
@@ -1289,7 +1289,6 @@ const buildPlayerStatsFromRoster = (rosters) => {
   return result;
 };
 
-
 const handleRosterSave = (rosters) => {
   if (rosterModalContext === 'default') {
     // Save as defaults to localStorage
@@ -1416,12 +1415,12 @@ db.ref(`matches/${code}`).set({
           kickedUsers: {},
           trackingMode,
           goalieMap: trackingMode === 'advanced' ? { 
-  home: rosterModalData.home.goalies, 
-  away: rosterModalData.away.goalies 
-} : { 
-  home: { starter: '', backup: '' }, 
-  away: { starter: '', backup: '' } 
-},
+            home: rosterModalData.home.goalies, 
+            away: rosterModalData.away.goalies 
+          } : { 
+            home: { starter: '', backup: '' }, 
+            away: { starter: '', backup: '' } 
+          },
           activeGoalies,
           viewerCode: viewerCode
         }).then(() => {
@@ -1478,7 +1477,7 @@ db.ref(`matches/${code}`).set({
               return;
             }
 
-            // Är matchen låst OCH är du inte creator?
+            // Är matchen låst och är du inte creator?
             if (!isViewerCode && d.locked && d.creatorId !== userId.current) {
               setError('This game is locked to new editors');
               return;
@@ -1958,8 +1957,6 @@ db.ref(`matches/${code}`).set({
             <div className="max-w-md w-full p-6">
               <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
-
-
                 <div className="flex justify-end">
                   <button
                     onClick={() => onSuccess()}
@@ -1974,8 +1971,6 @@ db.ref(`matches/${code}`).set({
                     </svg>
                   </button>
                 </div>
-
-
 
                 <div className="text-center mb-8">
                   <h1 className="text-3xl font-bold mb-2">Hockey Scorekeeper</h1>
@@ -2063,7 +2058,6 @@ db.ref(`matches/${code}`).set({
                       {mode === 'login' ? 'Sign up' : 'Login'}
                     </button>
                   </div>
-
 
                 </div>
               </div>
@@ -2201,8 +2195,6 @@ db.ref(`matches/${code}`).set({
           </div>
         );
       };
-
-
 
       const updateStat = (team, stat, delta) => {
         if (isViewer) return;
@@ -2453,7 +2445,6 @@ db.ref(`matches/${code}`).set({
         return { homeScore: hs, awayScore: as, homeSaves: hsv, awaySaves: asv }
       };
 
-
       const calculatePIMFromEvents = (team, player, period = null) => {
 
         // Hoppa över BENCH penalties i spelarstatistik
@@ -2479,7 +2470,6 @@ db.ref(`matches/${code}`).set({
             (period === null || e.period === period)
           ).length;
       };
-
 
       const totals = calcTotals();
       const calcSP = (sv, g) => { const sh = sv + g; return sh === 0 ? '0.0' : ((sv / sh) * 100).toFixed(1) };
@@ -2726,7 +2716,6 @@ db.ref(`matches/${code}`).set({
             ? structuredClone(goalEvents[editingGoalIndex])
             : null;
 
-
           if (isEditing) {
             updatedEvents = goalEvents.map((ev, i) => i === editingGoalIndex ? newEvent : ev);
           } else {
@@ -2885,7 +2874,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
           setGoalMinusPlayers([]);
           setGoalSOGPlayers([]);
           setEditingGoalIndex(null);
-setEditingGoalOriginalPeriod(null);
+          setEditingGoalOriginalPeriod(null);
 
           // Collapse form, expand timeline, highlight new event
           setGoalFormCollapsed(true);
@@ -2908,7 +2897,7 @@ setEditingGoalOriginalPeriod(null);
           setGoalWizardStep(0);
           setRecordingGoal(null);
           setEditingGoalIndex(null);
-setEditingGoalOriginalPeriod(null);
+          setEditingGoalOriginalPeriod(null);
           setGoalScorers([]);
           setGoalAssists([]);
           setGoalPlusPlayers([]);
@@ -2921,7 +2910,7 @@ setEditingGoalOriginalPeriod(null);
           setPenaltyTime('');
           setPenaltyPlayer('');
           setEditingPenaltyIndex(null);
-setEditingPenaltyOriginalPeriod(null);
+          setEditingPenaltyOriginalPeriod(null);
           setOtherWizardOpen(false);
           setOtherTeam(null);
           setOtherEventType('timeout');
@@ -3054,10 +3043,6 @@ setEditingPenaltyOriginalPeriod(null);
                                       if (isAdding && !goalSOGPlayers.includes(playerId)) {
                                         setGoalSOGPlayers(prev => [...prev, playerId]);
                                       }
-                                      // Auto-uncheck SOG when G is unchecked
-                                      if (!isAdding && goalSOGPlayers.includes(playerId)) {
-                                        setGoalSOGPlayers(prev => prev.filter(id => id !== playerId));
-                                      }
                                       // Auto-check + when G is checked
                                       if (isAdding && !goalPlusPlayers.includes(playerId)) {
                                         setGoalPlusPlayers(prev => [...prev, playerId]);
@@ -3093,7 +3078,7 @@ setEditingPenaltyOriginalPeriod(null);
                                         <input
                                           type="checkbox"
                                           checked={isChecked}
-                                          onChange={col === 'SOG' ? undefined : toggleCheckbox}
+                                          onChange={toggleCheckbox}
                                           disabled={col === 'SOG'}
                                           className={col === 'SOG' ? 'w-5 h-5 cursor-not-allowed opacity-50' : 'w-5 h-5 cursor-pointer'}
                                         />
@@ -3148,7 +3133,7 @@ setEditingPenaltyOriginalPeriod(null);
                   {!isViewer && !matchEnded && playerStatsMoment !== 'Goal' && (
   <div className="p-3 border-t">
     <div className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'} py-2`}>
-      💡 Add players via Settings → Manage Rosters
+      💡 Add players via Settings
     </div>
   </div>
 )}
@@ -3297,8 +3282,6 @@ setEditingPenaltyOriginalPeriod(null);
                 </div>
               </div>
 
-
-
             </div>
 
             <div className="max-w-7xl mx-auto p-2">
@@ -3328,7 +3311,7 @@ setEditingPenaltyOriginalPeriod(null);
                         {/* Team Selection */}
                         <div className="mb-4">
                           <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Which team?
+                            Team
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -3452,7 +3435,7 @@ setEditingPenaltyOriginalPeriod(null);
                               setPenaltyTime('');
                               setPenaltyPlayer('');
                               setEditingPenaltyIndex(null);
-setEditingPenaltyOriginalPeriod(null);
+                              setEditingPenaltyOriginalPeriod(null);
                             }}
                             className={darkMode ? 'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white' : 'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
                           >
@@ -3519,7 +3502,7 @@ setEditingPenaltyOriginalPeriod(null);
                               setPenaltyTime('');
                               setPenaltyPlayer('');
                               setEditingPenaltyIndex(null);
-setEditingPenaltyOriginalPeriod(null);
+                              setEditingPenaltyOriginalPeriod(null);
 
                               // Collapse form, expand timeline, highlight new event
                               setPenaltyFormCollapsed(true);
@@ -3574,7 +3557,7 @@ setEditingPenaltyOriginalPeriod(null);
                         {/* Team Selection */}
                         <div className="mb-4">
                           <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Which team?
+                            Team
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -3739,7 +3722,6 @@ setEditingPenaltyOriginalPeriod(null);
                 </div>
               )}
 
-
               {playerStatsMoment === 'Goal' && (
                 <div className="max-w-4xl mx-auto goal-form">
 
@@ -3757,13 +3739,12 @@ setEditingPenaltyOriginalPeriod(null);
                       </button>
                     )}
 
-
                     {!goalFormCollapsed && (
                       <div className="p-6" style={{ animation: 'fadeIn 0.3s ease-in' }}>
 
                         <div className="mb-4">
                           <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Who scored?
+                            Scoring team
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -4004,7 +3985,7 @@ setEditingPenaltyOriginalPeriod(null);
                               setGoalSituation('EQ');
                               setGoalTime('');
                               setEditingGoalIndex(null);
-setEditingGoalOriginalPeriod(null);
+                              setEditingGoalOriginalPeriod(null);
                               setGoalScorers([]);
                               setGoalAssists([]);
                               setGoalPlusPlayers([]);
@@ -4251,7 +4232,6 @@ setEditingGoalOriginalPeriod(null);
               )}
 
 
-
               {playerStatsMoment === 'Penalty' && penaltyEvents.length > 0 && (
                 <div className="max-w-4xl mx-auto mt-2 penalty-timeline">
                   <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
@@ -4294,7 +4274,7 @@ setEditingGoalOriginalPeriod(null);
                                       onClick={() => {
                                         if (matchEnded) return;
                                         const event = penaltyEvents[idx];
-setEditingPenaltyOriginalPeriod(event.period);
+                                        setEditingPenaltyOriginalPeriod(event.period);
                                         setEditingPenaltyIndex(idx);
                                         setPenaltyTeam(event.team);
                                         setPenaltyType(event.penaltyType);
@@ -4722,12 +4702,12 @@ setEditingPenaltyOriginalPeriod(event.period);
                   <span>JOIN GAME</span>
                 </button>
 
-                {/* Join Game as Viewer - always available */}
+                {/* Join as Viewer - always available */}
                 <button
                   onClick={() => setScreen('join')}
                   className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600' : 'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                 >
-                  JOIN GAME AS VIEWER
+                  JOIN AS VIEWER
                 </button>
 
                 {/* Continue Alone - always available */}
@@ -4819,6 +4799,7 @@ setEditingPenaltyOriginalPeriod(event.period);
                   <label className="block text-sm mb-2">Home Team</label>
                   <div className="relative">
                     <input
+                      ref={homeTeamInputRef}
                       type="text"
                       value={homeName}
                       onChange={e => setHomeName(e.target.value)}
@@ -4927,7 +4908,7 @@ setEditingPenaltyOriginalPeriod(event.period);
   <span>Setup Rosters (Optional)</span>
 </button>
     <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-      Add players and goalies now, or add them later during the game
+      Add players now or add them later during the game
     </p>
   </div>
 )}
@@ -5013,8 +4994,7 @@ setEditingPenaltyOriginalPeriod(event.period);
 
 
               <div className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6 text-sm`}>
-                <div className="font-semibold mb-2">Two ways to join:</div>
-                <div className="space-y-2">
+                 <div className="space-y-2">
                   <div>
                     <span className="font-bold">Editor code (ABC123):</span>
                     <div className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Full editing rights {!currentUser && '(requires login)'}</div>
@@ -5456,7 +5436,7 @@ setEditingPenaltyOriginalPeriod(event.period);
                     {!settingsCollapsed.content && (
                       <div className="space-y-3 ml-2">
                         <div>
-                          <label className="block text-xs mb-1 opacity-75">Spotify Playlist URL</label>
+                          <label className="block text-xs mb-1 opacity-75">Spotify Playlist</label>
                           <div className="flex gap-2">
                             <input
                               type="text"
@@ -5515,7 +5495,7 @@ setEditingPenaltyOriginalPeriod(event.period);
                             }}
                             className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
                           >
-                            <span>📝</span>
+                            <HockeyHelmetIcon />
                             <span>Edit Default Rosters</span>
                           </button>
                           <p className={`text-xs mt-1 opacity-60`}>
@@ -5527,6 +5507,7 @@ setEditingPenaltyOriginalPeriod(event.period);
                   </div>
                 )}
 
+					
                 {/* ACCOUNT - Collapsible */}
                 {currentUser && (
                   <div className="mb-4">
@@ -5814,12 +5795,15 @@ setEditingPenaltyOriginalPeriod(event.period);
                 return 'Event';
               };
 
-              const hasDetails = (event) => {
+const hasDetails = (event) => {
                 if (event.type === 'goal') {
                   return (event.scorers?.length > 0 || event.assists?.length > 0 || event.plus?.length > 0 || event.minus?.length > 0);
                 }
                 if (event.type === 'penalty') {
                   return (event.player || event.infraction);
+                }
+                if (event.type === 'other' && event.eventType === 'goalieSwitch') {
+                  return true;
                 }
                 return false;
               };
@@ -5906,7 +5890,7 @@ setEditingPenaltyOriginalPeriod(event.period);
                                         </div>
                                       </div>
 
-                                      {/* Expanded details */}
+{/* Expanded details */}
                                       {isExpanded && canExpand && (
                                         <div className={`mt-2 sm:mt-3 pt-2 sm:pt-3 border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'} text-[10px] sm:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                                           {event.type === 'goal' && (
@@ -5936,6 +5920,35 @@ setEditingPenaltyOriginalPeriod(event.period);
                                               )}
                                             </div>
                                           )}
+
+                                        {event.type === 'other' && event.eventType === 'goalieSwitch' && (
+                                            <div className="space-y-1">
+                                              {(() => {
+                                                // Count switches UP TO (but not including) this event to determine who was active
+                                                const switchesBeforeThis = otherEvents.filter(e => 
+                                                  e.eventType === 'goalieSwitch' && 
+                                                  e.team === event.team && 
+                                                  e.timestamp < event.timestamp
+                                                );
+                                                
+                                                // Starter is active if even number of switches before this one
+                                                const wasStarter = switchesBeforeThis.length % 2 === 0;
+                                                const outGoalie = wasStarter ? goalieMap[event.team]?.starter : goalieMap[event.team]?.backup;
+                                                const inGoalie = wasStarter ? goalieMap[event.team]?.backup : goalieMap[event.team]?.starter;
+                                                
+                                                return (
+                                                  <>
+                                                    <div>
+                                                      <span className="font-semibold">Out:</span> {outGoalie ? `#${outGoalie}` : (wasStarter ? 'Starter' : 'Backup')}
+                                                    </div>
+                                                    <div>
+                                                      <span className="font-semibold">In:</span> {inGoalie ? `#${inGoalie}` : (wasStarter ? 'Backup' : 'Starter')}
+                                                    </div>
+                                                  </>
+                                                );
+                                              })()}
+                                            </div>
+                                          )}
                                         </div>
                                       )}
                                     </div>
@@ -5954,8 +5967,9 @@ setEditingPenaltyOriginalPeriod(event.period);
 
                         {/* Period Marker at BOTTOM with whistle icon */}
 <div className="relative flex items-center justify-center h-12 mb-6">
-  {/* Startande målvakter - ÖVER period marker */}
-  <div className="absolute bottom-full mb-4 w-full">
+ 
+ {/* Startande målvakter - ÖVER period marker */}
+<div className="absolute bottom-full mb-4 w-full">
     <div className="relative">
       {/* Center line */}
       <div className={`absolute left-1/2 top-0 bottom-0 w-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-x-1/2`}></div>
@@ -5965,7 +5979,19 @@ setEditingPenaltyOriginalPeriod(event.period);
         <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
           <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
           <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-            #{goalieMap.home?.starter || '?'}
+            {(() => {
+              // Check for goalie switches in previous periods
+              const switchesBeforePeriod = otherEvents.filter(e => 
+                e.eventType === 'goalieSwitch' && 
+                e.team === 'home' && 
+                e.period < period
+              );
+              // Count switches to determine active goalie
+              const isStarterActive = switchesBeforePeriod.length % 2 === 0;
+              const activeGoalieNum = isStarterActive ? goalieMap.home?.starter : goalieMap.home?.backup;
+              
+              return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
+            })()}
           </span>
         </div>
       </div>
@@ -5975,13 +6001,24 @@ setEditingPenaltyOriginalPeriod(event.period);
         <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
           <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
           <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-            #{goalieMap.away?.starter || '?'}
+            {(() => {
+              // Check for goalie switches in previous periods
+              const switchesBeforePeriod = otherEvents.filter(e => 
+                e.eventType === 'goalieSwitch' && 
+                e.team === 'away' && 
+                e.period < period
+              );
+              // Count switches to determine active goalie
+              const isStarterActive = switchesBeforePeriod.length % 2 === 0;
+              const activeGoalieNum = isStarterActive ? goalieMap.away?.starter : goalieMap.away?.backup;
+              
+              return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
+            })()}
           </span>
         </div>
       </div>
     </div>
   </div>
-
   {/* Whistle icon on the center line */}
   <div className={`relative z-10 p-1.5 rounded-full border-2 ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-600'}`}>
     <WhistleIcon />
@@ -6128,7 +6165,6 @@ setEditingPenaltyOriginalPeriod(event.period);
               {Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map(p => {
                 p = parseInt(p);
                 const ps = periodStats[p];
-
                 const renderTeamStats = (team) => {
                   const isHome = team === 'home';
                   const name = isHome ? homeName : awayName;
