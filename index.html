@@ -969,7 +969,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         }
       }, [screen]);
 
-      // Handle ?join=XXXXXX-V → open "Join as viewer" dialog with prefilled code
+      // Handle ?join=XXXXXX-V → open "Join game as viewer" dialog with prefilled code
       useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const joinCode = params.get('join');
@@ -1262,13 +1262,18 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
       };
 
 const buildPlayerStatsFromRoster = (rosters) => {
+  // Safety check - if no rosters provided, return empty structure
+  if (!rosters || !rosters.home || !rosters.away) {
+    return { home: { players: {} }, away: { players: {} } };
+  }
+
   const result = { home: { players: {} }, away: { players: {} } };
 
   ['home', 'away'].forEach(team => {
-    const players = parsePlayerInput(rosters[team].players || '');
+    const players = parsePlayerInput(rosters[team]?.players || '');
     const goalies = [
-      rosters[team].goalies?.starter,
-      rosters[team].goalies?.backup
+      rosters[team]?.goalies?.starter,
+      rosters[team]?.goalies?.backup
     ].filter(Boolean);
 
     [...players, ...goalies].forEach(num => {
@@ -1356,9 +1361,6 @@ const startMatch = () => {
   if (!db) { setError('Firebase not configured'); return }
   if (!currentUser) { setError('You must be logged in to create a game'); return }
 
-  console.log('startMatch - playerStats:', playerStats); // LÄGG TILL
-  console.log('startMatch - trackingMode:', trackingMode); // LÄGG TILL
-
         // Använd matchCode från state, fallback till localStorage om nödvändigt
         const code = matchCode || localStorage.getItem('tempMatchCode');
 
@@ -1377,20 +1379,32 @@ const startMatch = () => {
         localStorage.removeItem('juniorLeagueGame');
 
         const viewerCode = code + '-V';
-const initialPlayerStats = buildPlayerStatsFromRoster(rosterModalData);
-setPlayerStats(initialPlayerStats);
+
+        // Build player stats SYNCHRONOUSLY before creating match
+        const initialPlayerStats = trackingMode === 'advanced' 
+          ? buildPlayerStatsFromRoster(rosterModalData)
+          : { home: { players: {} }, away: { players: {} } };
+
+        const initialGoalieMap = trackingMode === 'advanced'
+          ? { 
+              home: rosterModalData.home.goalies, 
+              away: rosterModalData.away.goalies 
+            }
+          : { 
+              home: { starter: '', backup: '' }, 
+              away: { starter: '', backup: '' } 
+            };
         
 db.ref(`matches/${code}`).set({
           homeName,
           awayName,
           currentPeriod: 1,
-          periodStats: {
+periodStats: {
             1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
             2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
             3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
           },
-          playerStats: trackingMode === 'advanced' ? initialPlayerStats : { home: { players: {} }, away: { players: {} } },
-
+          playerStats: initialPlayerStats,
           goalEvents: [],
           penaltyEvents: [],
           otherEvents: [],
@@ -1414,31 +1428,24 @@ db.ref(`matches/${code}`).set({
           // Kicked users (svartlista)
           kickedUsers: {},
           trackingMode,
-          goalieMap: trackingMode === 'advanced' ? { 
-            home: rosterModalData.home.goalies, 
-            away: rosterModalData.away.goalies 
-          } : { 
-            home: { starter: '', backup: '' }, 
-            away: { starter: '', backup: '' } 
-          },
+          goalieMap: initialGoalieMap,
           activeGoalies,
           viewerCode: viewerCode
-        }).then(() => {
+}).then(() => {
+          // Set player stats locally to match what we sent to Firebase
+          setPlayerStats(initialPlayerStats);
+          setGoalieMap(initialGoalieMap);
           
           setGameMode('multi');
           localStorage.setItem('gameMode', 'multi');
           setIsMultiplayer(true);
           setIsCreator(true);
-          localStorage.removeItem('juniorLeagueGame');
+          
           // Rensa ALL temp-data
           localStorage.removeItem('tempMatchCode');
           localStorage.removeItem('juniorLeagueGame');
 
-
           // Säkerställ korrekt state
-          setGameMode('multi');
-          setIsMultiplayer(true);
-          setIsCreator(true);
           setMatchCode(code);
 
           // Spara multiplayer session
@@ -2420,18 +2427,41 @@ db.ref(`matches/${code}`).set({
         setPlayingSound(null);
       };
 
-      const resetCounters = () => {
+const resetCounters = () => {
         if (window.confirm('Reset all stats?')) {
-          const ns = { 1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }, 2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }, 3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 } };
+          const ns = { 
+            1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0, homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }, awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } } }, 
+            2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0, homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }, awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } } }, 
+            3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0, homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }, awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } } } 
+          };
           setPeriodStats(ns);
           setCurrentPeriod(1);
           setPlayerStats({ home: { players: {} }, away: { players: {} } });
           setGoalEvents([]);
           setPenaltyEvents([]);
           setOtherEvents([]);
-          if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: ns, currentPeriod: 1, playerStats: { home: { players: {} }, away: { players: {} } }, goalEvents: [], penaltyEvents: [], otherEvents: [] });
+          setActiveGoalies({ home: 'starter', away: 'starter' }); // Reset active goalies
+          if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: ns, currentPeriod: 1, playerStats: { home: { players: {} }, away: { players: {} } }, goalEvents: [], penaltyEvents: [], otherEvents: [], activeGoalies: { home: 'starter', away: 'starter' } });
           else localStorage.removeItem('juniorLeagueGame')
         }
+      };
+
+// Calculate total goalie stats across all periods
+      const calcGoalieStats = (team, goalie) => {
+        let saves = 0;
+        let ga = 0;
+        
+        Object.keys(periodStats).forEach(p => {
+          if (periodStats[p]?.[team + 'Goalie']?.[goalie]) {
+            saves += periodStats[p][team + 'Goalie'][goalie].saves || 0;
+            ga += periodStats[p][team + 'Goalie'][goalie].ga || 0;
+          }
+        });
+        
+        const shotsAgainst = saves + ga;
+        const svPct = shotsAgainst === 0 ? '0.0' : ((saves / shotsAgainst) * 100).toFixed(1);
+        
+        return { saves, ga, shotsAgainst, svPct };
       };
 
       const calcTotals = () => {
@@ -3176,17 +3206,26 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                       </button>
                     )}
                     {!periodStats[4] && currentPeriod === 3 && (
-                      <button
-                        onClick={() => {
-                          const updated = { ...periodStats, 4: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 } };
-                          setPeriodStats(updated);
-                          setCurrentPeriod(4);
-                          if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: updated, currentPeriod: 4 });
-                        }}
-                        disabled={isViewer}
-                        className={`px-3 py-1 rounded font-bold text-base ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
-                      >
-                        +OT
+<button
+                            onClick={() => {
+                              const updated = { 
+                                ...periodStats, 
+                                4: { 
+                                  homeScore: 0, 
+                                  awayScore: 0, 
+                                  homeSaves: 0, 
+                                  awaySaves: 0,
+                                  homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } },
+                                  awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }
+                                } 
+                              };
+                              setPeriodStats(updated);
+                              setCurrentPeriod(4);
+                              if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: updated, currentPeriod: 4 });
+                            }}
+                            disabled={isViewer}
+                            className={`px-3 py-1 rounded font-bold text-xs ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                          >                        +OT
                       </button>
                     )}
 
@@ -3311,7 +3350,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         {/* Team Selection */}
                         <div className="mb-4">
                           <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Team
+                            Which team?
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -3557,7 +3596,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         {/* Team Selection */}
                         <div className="mb-4">
                           <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Team
+                            Which team?
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -3744,7 +3783,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
                         <div className="mb-4">
                           <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Scoring team
+                            Who scored?
                           </label>
                           <div className="grid grid-cols-2 gap-3">
                             <button
@@ -4702,12 +4741,12 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   <span>JOIN GAME</span>
                 </button>
 
-                {/* Join as Viewer - always available */}
+                {/* Join Game as Viewer - always available */}
                 <button
                   onClick={() => setScreen('join')}
                   className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border-2 border-gray-600' : 'bg-white border-2 border-gray-300 hover:bg-gray-50'} py-3 rounded-xl font-semibold shadow-lg`}
                 >
-                  JOIN AS VIEWER
+                  JOIN GAME AS VIEWER
                 </button>
 
                 {/* Continue Alone - always available */}
@@ -4908,7 +4947,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
   <span>Setup Rosters (Optional)</span>
 </button>
     <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-      Add players now or add them later during the game
+      Add players and goalies now, or add them later during the game
     </p>
   </div>
 )}
@@ -4994,7 +5033,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
 
               <div className={`${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 mb-6 text-sm`}>
-                 <div className="space-y-2">
+                <div className="font-semibold mb-2">Two ways to join:</div>
+                <div className="space-y-2">
                   <div>
                     <span className="font-bold">Editor code (ABC123):</span>
                     <div className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Full editing rights {!currentUser && '(requires login)'}</div>
@@ -5077,18 +5117,28 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   }} disabled={matchEnded || isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>{p}</button>)}
                   {periodStats[4] && <button onClick={() => { setCurrentPeriod(4); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: 4 }) }} disabled={matchEnded || isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod === 4 ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>OT</button>}
                   {!periodStats[4] && currentPeriod === 3 && (
-                    <button
-                      onClick={() => {
-                        const updated = { ...periodStats, 4: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 } };
-                        setPeriodStats(updated);
-                        setCurrentPeriod(4);
-                        if (isMultiplayer && matchRef.current && !matchEnded) {
-                          matchRef.current.update({ periodStats: updated, currentPeriod: 4 });
-                        }
-                      }}
-                      disabled={matchEnded || isViewer}
-                      className={`px-3 py-1 rounded font-bold text-xs ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
-                    >
+                   <button
+                        onClick={() => {
+                          const updated = { 
+                            ...periodStats, 
+                            4: { 
+                              homeScore: 0, 
+                              awayScore: 0, 
+                              homeSaves: 0, 
+                              awaySaves: 0,
+                              homeGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } },
+                              awayGoalie: { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } }
+                            } 
+                          };
+                          setPeriodStats(updated);
+                          setCurrentPeriod(4);
+                          if (isMultiplayer && matchRef.current && !matchEnded) {
+                            matchRef.current.update({ periodStats: updated, currentPeriod: 4 });
+                          }
+                        }}
+                        disabled={matchEnded || isViewer}
+                        className={`px-3 py-1 rounded font-bold text-xs ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                      >
                       +OT
                     </button>
                   )}
@@ -5436,7 +5486,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     {!settingsCollapsed.content && (
                       <div className="space-y-3 ml-2">
                         <div>
-                          <label className="block text-xs mb-1 opacity-75">Spotify Playlist</label>
+                          <label className="block text-xs mb-1 opacity-75">Spotify Playlist URL</label>
                           <div className="flex gap-2">
                             <input
                               type="text"
@@ -6165,6 +6215,7 @@ const hasDetails = (event) => {
               {Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map(p => {
                 p = parseInt(p);
                 const ps = periodStats[p];
+
                 const renderTeamStats = (team) => {
                   const isHome = team === 'home';
                   const name = isHome ? homeName : awayName;
