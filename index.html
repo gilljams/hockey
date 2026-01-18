@@ -751,7 +751,24 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         setRosterModalContext('create');
       };
 
-      useEffect(() => {
+ 
+useEffect(() => {
+  const setVh = () => {
+    document.documentElement.style.setProperty(
+      '--vh',
+      `${window.innerHeight * 0.01}px`
+    );
+  };
+
+  setVh();
+  window.addEventListener('resize', setVh);
+  return () => window.removeEventListener('resize', setVh);
+}, []);
+
+
+
+
+     useEffect(() => {
         if (showSettings) {
           document.body.style.overflow = 'hidden';
         } else {
@@ -1654,7 +1671,8 @@ periodStats: {
         };
 
         return (
-          <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+          <div className={`min-h-[calc(var(--vh)*100)] ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-4 shadow-lg`}>
               <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-3">
@@ -1960,7 +1978,8 @@ periodStats: {
         };
 
         return (
-          <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+          <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
             <div className="max-w-md w-full p-6">
               <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
@@ -2099,7 +2118,7 @@ periodStats: {
         };
 
         return (
-          <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+          <div className={`min-h-[calc(var(--vh)*100)] ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-blue-600'} text-white p-4`}>
               <div className="max-w-6xl mx-auto flex justify-between items-center">
                 <h2 className="font-bold text-lg">Admin – Games</h2>
@@ -3202,7 +3221,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
 
         return (
-          <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+          <div className={`min-h-[calc(var(--vh)*100)] ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-3 py-2 shadow-lg sticky top-0 z-50`}>
               <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-3">
@@ -4655,7 +4675,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
       // Show loading while checking auth
       if (authLoading) return (
-        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+        <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
           <div className="text-center">
             <div className={`animate-spin inline-block w-12 h-12 border-4 ${darkMode ? 'border-gray-600 border-t-white' : 'border-gray-300 border-t-blue-600'} rounded-full mb-4`}></div>
             <div className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading...</div>
@@ -4673,7 +4694,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       );
 
       if (showReconnectPrompt) return (
-        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+        <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <h3 className="text-xl font-bold mb-3">Reconnect to game</h3>
@@ -4690,7 +4712,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       );
 
       if (screen === 'start') return (
-        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+        <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <div className="text-center mb-8">
@@ -4845,7 +4868,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       darkMode={darkMode}
     />
     
-    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+    <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
       <div className="max-w-md w-full p-6">
             <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
@@ -4995,7 +5019,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
 
       if (screen === 'created') return (
-        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+        <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
@@ -5045,7 +5070,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       );
 
       if (screen === 'join') return (
-        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+        <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
           <div className="max-w-md w-full p-6">
             <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
               <div className="flex justify-end">
@@ -5110,7 +5136,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
 
       return (
-        <div className={`min-h-screen pb-20 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+        <div className={`min-h-[calc(var(--vh)*100)] pb-20 ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
+
           {isViewer && <div className="bg-yellow-500 text-gray-900 px-2 py-1 text-center font-semibold text-xs">
             VIEWER MODE
           </div>}
