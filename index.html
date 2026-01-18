@@ -2203,6 +2203,20 @@ periodStats: {
         );
       };
 
+      // Haptic feedback for mobile devices
+      const triggerHaptic = (type = 'light') => {
+        if ('vibrate' in navigator) {
+          // Vibration patterns: [vibrate, pause, vibrate, ...]
+          if (type === 'light') {
+            navigator.vibrate(10); // Short tap
+          } else if (type === 'medium') {
+            navigator.vibrate(20); // Medium tap
+          } else if (type === 'success') {
+            navigator.vibrate([10, 50, 10]); // Double tap for success
+          }
+        }
+      };
+
       const updateStat = (team, stat, delta) => {
         if (isViewer) return;
         if (isMultiplayer && !currentUser) {
@@ -2258,10 +2272,14 @@ periodStats: {
           ns[currentPeriod][team + stat] = Math.max(0, (ns[currentPeriod][team + stat] || 0) + delta);
         }
 
-        setPeriodStats(ns);
+       setPeriodStats(ns);
         const k = `${team}${stat}${currentPeriod}`;
         setSparkleStats(p => ({ ...p, [k]: true }));
         setTimeout(() => setSparkleStats(p => ({ ...p, [k]: false })), 600);
+        
+        // Haptic feedback
+        triggerHaptic('light');
+        
         if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: ns })
       };
 
@@ -2325,6 +2343,13 @@ periodStats: {
             setSparkleStats(p => ({ ...p, [k]: false }));
           });
         }, 600);
+
+        // Haptic feedback - stronger for goals
+        if (stat === 'G') {
+          triggerHaptic('success');
+        } else {
+          triggerHaptic('light');
+        }
 
         if (isMultiplayer && matchRef.current) matchRef.current.update({ playerStats: newStats });
 
@@ -2906,13 +2931,15 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
           setEditingGoalIndex(null);
           setEditingGoalOriginalPeriod(null);
 
+          // Haptic feedback for goal saved
+          triggerHaptic('success');
+
           // Collapse form, expand timeline, highlight new event
           setGoalFormCollapsed(true);
           setGoalTimelineCollapsed(false);
           const eventId = `goal-${isEditing ? editingGoalIndex : goalEvents.length}`;
           setHighlightEventId(eventId);
           setTimeout(() => setHighlightEventId(null), 2000);
-
           // Scroll to timeline
           setTimeout(() => {
             const timelineEl = document.querySelector('.goal-timeline');
@@ -3543,8 +3570,11 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                               setEditingPenaltyIndex(null);
                               setEditingPenaltyOriginalPeriod(null);
 
+                              // Haptic feedback for penalty saved
+                              triggerHaptic('medium');
+
                               // Collapse form, expand timeline, highlight new event
-                              setPenaltyFormCollapsed(true);
+                               setPenaltyFormCollapsed(true);
                               setPenaltyTimelineCollapsed(false);
                               const eventId = `penalty-${isEditing ? editingPenaltyIndex : penaltyEvents.length}`;
                               setHighlightEventId(eventId);
@@ -3729,6 +3759,9 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                               setOtherEventType('timeout');
                               setOtherTime('');
                               setEditingOtherIndex(null);
+
+                               // Haptic feedback for event saved
+                              triggerHaptic('light');
 
                               // Collapse form, expand timeline, highlight new event
                               setOtherFormCollapsed(true);
