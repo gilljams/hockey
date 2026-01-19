@@ -398,7 +398,7 @@
       const [showShootout, setShowShootout] = useState(false);
       const [showSettings, setShowSettings] = useState(false);
       const [darkMode, setDarkMode] = useState(false);
-      const [statsCollapsed, setStatsCollapsed] = useState(false);
+      const [statsCollapsed, setStatsCollapsed] = useState(trackingMode === 'advanced');
       const [focusMode, setFocusMode] = useState(null);
       
       // Determine default collapsed state based on user role
@@ -819,6 +819,11 @@ useEffect(() => {
           setActiveTab('stats');
         }
       }, [isViewer, screen]);
+
+      // Update statsCollapsed when trackingMode changes
+      useEffect(() => {
+        setStatsCollapsed(trackingMode === 'advanced');
+      }, [trackingMode]);
 
       // Update settings collapsed state based on user role
       useEffect(() => {
