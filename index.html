@@ -5852,7 +5852,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     onClick={swapSides}
                     disabled={isViewer || matchEnded}
                     className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${
-                      isViewer || matchEnded 
+                      (isViewer || matchEnded)
                         ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
                         : (darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
                     }`}
