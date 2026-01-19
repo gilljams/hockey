@@ -5240,21 +5240,11 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
           <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white p-3 shadow-lg sticky top-0 z-50`}>
             <div className="max-w-6xl mx-auto">
-              {isMultiplayer && <div className="mb-2 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {!matchEnded && <span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded text-xs font-bold"><span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>LIVE</span>}
-                  {matchEnded && <span className="bg-gray-500 px-2 py-1 rounded text-xs font-bold">GAME ENDED</span>}
-                  <span className="text-xs">👥 {connectedUsers}</span>
-                  {!isViewer && viewerCount > 0 && <span className="text-xs">👁️ {viewerCount}</span>}
-
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-2 py-1 rounded font-mono font-bold text-xs transition-colors`}
-                  >
-                    {matchCode}
-                  </button>
-                </div>
+             {isMultiplayer && <div className="mb-2 flex items-center gap-2 flex-wrap">
+                {!matchEnded && <span className="flex items-center gap-1 bg-red-500 px-2 py-1 rounded text-xs font-bold"><span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>LIVE</span>}
+                {matchEnded && <span className="bg-gray-500 px-2 py-1 rounded text-xs font-bold">GAME ENDED</span>}
+                <span className="text-xs">👥 {connectedUsers}</span>
+                {!isViewer && viewerCount > 0 && <span className="text-xs">👁️ {viewerCount}</span>}
               </div>}
 
               <div className="flex justify-between items-center mb-2">
