@@ -405,9 +405,9 @@
       const getDefaultCollapsedState = (isViewerMode, isMultiplayerMode) => {
         if (isViewerMode) {
           return {
-            preferences: true,
+            preferences: false,
             gameSettings: true,
-            gameInfo: false,
+            gameInfo: true,
             content: true,
             account: true
           };
@@ -415,15 +415,15 @@
         if (isMultiplayerMode) {
           return {
             preferences: true,
-            gameSettings: false,
-            gameInfo: false,
+            gameSettings: true,
+            gameInfo: true,
             content: true,
             account: true
           };
         }
         return {
           preferences: true,
-          gameSettings: false,
+          gameSettings: true,
           gameInfo: true,
           content: true,
           account: true
@@ -5346,7 +5346,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     onClick={() => setSettingsCollapsed({ ...settingsCollapsed, preferences: !settingsCollapsed.preferences })}
                     className={`w-full flex items-center justify-between text-sm font-semibold mb-2 pb-2 border-b ${darkMode ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-700'}`}
                   >
-                    <span>My Preferences</span>
+                    <span>Preferences</span>
                     {settingsCollapsed.preferences ? <IconChevronDown /> : <IconChevronUp />}
                   </button>
 
