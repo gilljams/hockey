@@ -3323,7 +3323,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                           if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: p });
                         }}
                         disabled={matchEnded || isViewer}
-                        className={`px-3 py-1 rounded font-bold text-base ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                        className={`px-3 py-1 rounded font-bold ${currentPeriod === p ? 'bg-yellow-400 text-gray-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                       >
                         {p}
                       </button>
@@ -3335,7 +3335,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                           if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: 4 });
                         }}
                         disabled={isViewer}
-                        className={`px-3 py-1 rounded font-bold text-base ${currentPeriod === 4 ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                        className={`px-3 py-1 rounded font-bold ${currentPeriod === 4 ? 'bg-yellow-400 text-gray-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+
                       >
                         OT
                       </button>
@@ -3359,7 +3360,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                               if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ periodStats: updated, currentPeriod: 4 });
                             }}
                             disabled={isViewer}
-                            className={`px-3 py-1 rounded font-bold text-xs ${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                            className={`px-3 py-1 rounded-lg font-bold transition-all ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`}
                           >                        +OT
                       </button>
                     )}
@@ -3386,7 +3387,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         resetModeState();
                         setPlayerStatsMoment(m.key);
                       }}
-                      className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === m.key ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                      className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === m.key ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                     >
                       {m.label}
                     </button>
@@ -3403,7 +3404,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         setGoalTimelineCollapsed(false);
                       }
                     }}
-                    className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                    className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                   >
                     Goal
                   </button>
@@ -3422,7 +3423,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     }}
                     disabled={false}
                     className={`px-3 py-1 rounded text-sm font-bold ${penaltyWizardOpen
-                      ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900')
+                      ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900')
                       : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'
                       }`}
                   >
@@ -3443,7 +3444,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     }}
                     disabled={false}
                     className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Other'
-                      ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-blue-900')
+                      ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900')
                       : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'
                       }`}
                   >
@@ -4792,7 +4793,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
               </p>
               <div className="flex gap-3">
                 <button onClick={reconnectToMatch} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold">Reconnect</button>
-                <button onClick={startNewSession} className={`flex-1 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold`}>Start Screen</button>
+                <button onClick={startNewSession} className={`flex-1 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300 active:bg-gray-400'} py-3 rounded-lg font-semibold transition-colors`}>Start Screen</button>
               </div>
             </div>
           </div>
@@ -4838,7 +4839,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                 {!currentUser && (
                   <button
                     onClick={() => { setForceAuth(true) }}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2"
+                    className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 rounded-xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2 transition-colors"
                   >
                     <span>🔐</span>
                     <span>LOGIN / CREATE ACCOUNT</span>
@@ -5098,7 +5099,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 )}
 
               </div>
-              <button onClick={createMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">START GAME</button>
+              <button onClick={startMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
             </div>
       </div>
     </div>
@@ -5151,7 +5152,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
 
               {error && <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
 
-              <button onClick={startMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
+              <button onClick={startMatch} className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-colors">CONTINUE TO GAME</button>
             </div>
           </div>
         </div>
@@ -5216,7 +5217,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   </div>
                 )}
               </div>}
-              <button onClick={joinMatch} disabled={!(inputCode.length === 6 || (inputCode.length === 8 && inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONNECT</button>
+              <button onClick={joinMatch} disabled={!(inputCode.length === 6 || (inputCode.length === 8 && inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-colors">CONNECT</button>
             </div>
           </div>
         </div>
@@ -5262,8 +5263,8 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   {[1, 2, 3].map(p => <button key={p} onClick={() => {
                     setCurrentPeriod(p);
                     if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: p })
-                  }} disabled={matchEnded || isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod === p ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>{p}</button>)}
-                  {periodStats[4] && <button onClick={() => { setCurrentPeriod(4); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: 4 }) }} disabled={matchEnded || isViewer} className={`px-3 py-1 rounded font-bold text-xs ${currentPeriod === 4 ? 'bg-yellow-400 text-blue-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>OT</button>}
+                  }} disabled={matchEnded || isViewer} className={`px-3 py-1 rounded font-bold ${currentPeriod === p ? 'bg-yellow-400 text-gray-900' : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}>{p}</button>)}
+                  {periodStats[4] && <button onClick={() => { setCurrentPeriod(4); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ currentPeriod: 4 }) }} disabled={matchEnded || isViewer} className={`px-3 py-1 rounded-lg font-bold transition-all ${currentPeriod === 4 ? 'bg-yellow-400 text-gray-900 shadow-sm' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-white bg-opacity-20 hover:bg-opacity-30'}`}>OT</button>}
                   {!periodStats[4] && currentPeriod === 3 && (
                    <button
                         onClick={() => {
@@ -5333,7 +5334,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     <h3 className="font-bold text-lg">Settings</h3>
                     <button
                       onClick={() => setShowSettings(false)}
-                      className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} px-4 py-2 rounded font-semibold text-sm`}
+                      className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500 active:bg-gray-400' : 'bg-gray-200 hover:bg-gray-300 active:bg-gray-400'} px-4 py-2 rounded font-semibold text-sm transition-colors`}
                     >
                       ✕
                     </button>
@@ -5779,12 +5780,12 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         </div>
                         <div className="flex items-center justify-center gap-3 mb-2">
                           <button onClick={() => updateStat(tm.team, 'Score', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
-                          <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Score${currentPeriod}`] ? 'sparkle' : ''}`}>
+                          <div className={`text-4xl font-bold min-w-[3rem] text-center tabular-nums ${sparkleStats[`${tm.team}Score${currentPeriod}`] ? 'sparkle' : ''}`}>
                             {tm.score}
                           </div>
                           <button onClick={() => updateStat(tm.team, 'Score', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
                         </div>
-                        <div className="text-xs opacity-75 text-center">
+                        <div className="text-xs opacity-75 text-center tabular-nums">
                           ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Score']}{i < arr.length - 1 ? '-' : ''}</span>)})
                         </div>
                       </div>
@@ -5822,12 +5823,12 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         </div>
                         <div className="flex items-center justify-center gap-3 mb-2">
                           <button onClick={() => updateStat(tm.team, 'Saves', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
-                          <div className={`text-4xl font-bold min-w-[3rem] text-center ${sparkleStats[`${tm.team}Saves${currentPeriod}`] ? 'sparkle' : ''}`}>
+                          <div className={`text-4xl font-bold min-w-[3rem] text-center tabular-nums ${sparkleStats[`${tm.team}Saves${currentPeriod}`] ? 'sparkle' : ''}`}>
                             {tm.saves}
                           </div>
                           <button onClick={() => updateStat(tm.team, 'Saves', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
                         </div>
-                        <div className="text-xs opacity-75 text-center">
+                        <div className="text-xs opacity-75 text-center tabular-nums">
                           ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Saves']}{i < arr.length - 1 ? '-' : ''}</span>)})
                         </div>
                       </div>
@@ -6439,7 +6440,7 @@ const hasDetails = (event) => {
                         {p <= 3 ? `Period ${p}` : `Overtime`}
                       </h3>
                       {currentPeriod === p && (
-                        <span className={`${darkMode ? 'text-yellow-500 border border-yellow-500/30' : 'bg-yellow-400 text-blue-900'} px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest font-bold`}>
+                        <span className={`${darkMode ? 'text-yellow-500 border border-yellow-500/30' : 'bg-yellow-400 text-gray-900'} px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest font-bold`}>
                           LIVE
                         </span>
                       )}
