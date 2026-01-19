@@ -5282,35 +5282,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     </button>
                   )}
                 </div>
-                <div className="flex gap-2">
-                  {!isMultiplayer && (
-                    <button onClick={exitToStart} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>
-                      <IconBack />
-                    </button>
-                  )}
-                  {isViewer && (
-                    <button onClick={() => {
-                      localStorage.removeItem('multiplayerMatch');
-                      resetGameState();
-                      setIsMultiplayer(false);
-                      setIsViewer(false);
-                      setMatchCode('');
-                      setScreen('start');
-                    }} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>
-                      <IconBack />
-                    </button>
-                  )}
-                  {isMultiplayer && !isViewer && (
-                    <button onClick={() => {
-                      localStorage.removeItem('multiplayerMatch');
-                      resetGameState(trackingMode);
-                      setIsMultiplayer(false);
-                      setMatchCode('');
-                      setScreen('start');
-                    }} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>
-                      <IconBack />
-                    </button>
-                  )}
+             <div className="flex gap-2">
                   <button onClick={() => setStatsCollapsed(!statsCollapsed)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>{statsCollapsed ? <IconChevronDown /> : <IconChevronUp />}</button>
                   <button onClick={() => setShowSettings(!showSettings)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}><IconHamburgerMenu /></button>
                 </div>
@@ -5329,6 +5301,39 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                       ✕
                     </button>
                   </div>
+
+                {/* Back to Start Button */}
+                <button
+                  onClick={() => {
+                    if (isMultiplayer && !isViewer) {
+                      localStorage.removeItem('multiplayerMatch');
+                      resetGameState(trackingMode);
+                      setIsMultiplayer(false);
+                      setMatchCode('');
+                    } else if (isViewer) {
+                      localStorage.removeItem('multiplayerMatch');
+                      resetGameState();
+                      setIsMultiplayer(false);
+                      setIsViewer(false);
+                      setMatchCode('');
+                    } else {
+                      // Single player mode
+                      if (window.confirm('Exit to start screen? Your game data will be removed')) {
+                        localStorage.removeItem('juniorLeagueGame');
+                        resetGameState();
+                        setGoalEvents([]);
+                      } else {
+                        return;
+                      }
+                    }
+                    setShowSettings(false);
+                    setScreen('start');
+                  }}
+                  className={`w-full mb-4 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 border border-gray-500' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors`}
+                >
+                  <IconBack />
+                  <span>BACK TO START</span>
+                </button>
 
                 {/* MY PREFERENCES - Collapsible */}
                 <div className="mb-4">
