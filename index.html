@@ -3387,7 +3387,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         resetModeState();
                         setPlayerStatsMoment(m.key);
                       }}
-                      className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === m.key ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                      className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === m.key ? (darkMode ? 'bg-yellow-400 text-gray-900' : 'bg-yellow-400 text-gray-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                     >
                       {m.label}
                     </button>
@@ -3404,7 +3404,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                         setGoalTimelineCollapsed(false);
                       }
                     }}
-                    className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
+                    className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Goal' ? (darkMode ? 'bg-yellow-400 text-gray-900' : 'bg-yellow-400 text-gray-900') : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'}`}
                   >
                     Goal
                   </button>
@@ -3423,7 +3423,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     }}
                     disabled={false}
                     className={`px-3 py-1 rounded text-sm font-bold ${penaltyWizardOpen
-                      ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900')
+                      ? (darkMode ? 'bg-yellow-400 text-gray-900' : 'bg-yellow-400 text-gray-900')
                       : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'
                       }`}
                   >
@@ -3444,7 +3444,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     }}
                     disabled={false}
                     className={`px-3 py-1 rounded text-sm font-bold ${playerStatsMoment === 'Other'
-                      ? (darkMode ? 'bg-gray-600 text-white' : 'bg-yellow-400 text-gray-900')
+                      ? (darkMode ? 'bg-yellow-400 text-gray-900' : 'bg-yellow-400 text-gray-900')
                       : darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20'
                       }`}
                   >
@@ -5842,7 +5842,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   <button 
                     onClick={() => setShowPlayerStats(true)} 
                     className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${
-                      darkMode ? 'bg-blue-700 hover:bg-blue-600 active:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
+                      darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
                     }`}
                   >
                     ⛶ PLAYER EVENTS
@@ -5854,7 +5854,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${
                       isViewer || matchEnded 
                         ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
-                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 active:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
+                        : (darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
                     }`}
                   >
                     ⇄ SWAP SIDES
@@ -6727,10 +6727,13 @@ const hasDetails = (event) => {
                 })()}
               </div>
 
+
+
               <div className="grid grid-cols-3 gap-3 mt-4">
-                <button onClick={copyStats} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Copy Stats</button>
-                <button onClick={downloadCSV} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Export CSV</button>
-                <button onClick={shareStats} className={`${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white border-gray-200'} border-2 py-3 rounded-lg font-semibold`}>Share</button>
+                <button onClick={copyStats} 
+className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'} py-3 rounded-lg font-semibold`}>Copy Stats</button>
+                <button onClick={downloadCSV} className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'} py-3 rounded-lg font-semibold`}>Export CSV</button>
+                <button onClick={shareStats} className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'} py-3 rounded-lg font-semibold`}>Share</button>
               </div>
 
             </div>}
