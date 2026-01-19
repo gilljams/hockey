@@ -5836,19 +5836,24 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 mt-2">
+      <div className="grid grid-cols-2 gap-2 mt-2">
                 {trackingMode === 'advanced' ? (
-                  <button onClick={() => setShowPlayerStats(true)} className={`${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} py-2.5 rounded-lg text-sm font-bold text-white shadow-lg col-span-2`}>
+                  <button 
+                    onClick={() => setShowPlayerStats(true)} 
+                    className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${
+                      darkMode ? 'bg-blue-700 hover:bg-blue-600 active:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
+                    }`}
+                  >
                     ⛶ PLAYER EVENTS
                   </button>
                 ) : (
                   <button 
                     onClick={swapSides}
                     disabled={isViewer || matchEnded}
-                    className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-all ${
+                    className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${
                       isViewer || matchEnded 
                         ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
-                        : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200')
+                        : (darkMode ? 'bg-blue-700 hover:bg-blue-600 active:bg-blue-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
                     }`}
                   >
                     ⇄ SWAP SIDES
