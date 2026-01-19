@@ -104,6 +104,42 @@
     .pulse-blue {
       animation: pulse-blue 1s infinite;
     }
+
+    @keyframes slideOutLeft {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(-100%); opacity: 0; }
+    }
+
+    @keyframes slideInFromRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOutRight {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+
+    @keyframes slideInFromLeft {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .swap-home-out {
+      animation: slideOutLeft 0.3s ease-in-out forwards;
+    }
+
+    .swap-home-in {
+      animation: slideInFromRight 0.3s ease-in-out forwards;
+    }
+
+    .swap-away-out {
+      animation: slideOutRight 0.3s ease-in-out forwards;
+    }
+
+    .swap-away-in {
+      animation: slideInFromLeft 0.3s ease-in-out forwards;
+    }
   </style>
 </head>
 
@@ -452,6 +488,7 @@
       const [expandedPlayerStats, setExpandedPlayerStats] = useState({});
       const [collapsedPlayerTables, setCollapsedPlayerTables] = useState({});
       const [showRosterModal, setShowRosterModal] = useState(false);
+      const [isSwapping, setIsSwapping] = useState(false);
       const [rosterModalContext, setRosterModalContext] = useState('create');
       const [rosterModalData, setRosterModalData] = useState({
         home: { players: '', goalies: { starter: '', backup: '' } },
@@ -2469,6 +2506,57 @@ periodStats: {
         });
         setIntroPlaying(false);
         setPlayingSound(null);
+      };
+
+const swapSides = () => {
+        if (isViewer || matchEnded) return;
+        if (isMultiplayer && !currentUser) {
+          alert('You must be logged in to edit multiplayer games');
+          return;
+        }
+        
+        // Trigger animation
+        setIsSwapping(true);
+        
+        // Wait for animation to reach midpoint, then swap data
+        setTimeout(() => {
+          // Swap team names
+          const tempName = homeName;
+          setHomeName(awayName);
+          setAwayName(tempName);
+          
+          // Swap all period stats
+          const newPeriodStats = { ...periodStats };
+          Object.keys(newPeriodStats).forEach(period => {
+            const tempHomeScore = newPeriodStats[period].homeScore;
+            const tempHomeSaves = newPeriodStats[period].homeSaves;
+            const tempHomeGoalie = newPeriodStats[period].homeGoalie;
+            
+            newPeriodStats[period].homeScore = newPeriodStats[period].awayScore;
+            newPeriodStats[period].homeSaves = newPeriodStats[period].awaySaves;
+            newPeriodStats[period].homeGoalie = newPeriodStats[period].awayGoalie;
+            
+            newPeriodStats[period].awayScore = tempHomeScore;
+            newPeriodStats[period].awaySaves = tempHomeSaves;
+            newPeriodStats[period].awayGoalie = tempHomeGoalie;
+          });
+          setPeriodStats(newPeriodStats);
+          
+          // Sync to Firebase if multiplayer
+          if (isMultiplayer && matchRef.current && !matchEnded) {
+            matchRef.current.update({ 
+              homeName: awayName, 
+              awayName: homeName,
+              periodStats: newPeriodStats 
+            });
+          }
+          
+          // End animation after data is swapped
+          setTimeout(() => setIsSwapping(false), 300);
+        }, 300); // Halfway through 600ms animation
+        
+        // Haptic feedback
+        triggerHaptic('medium');
       };
 
 const resetCounters = () => {
@@ -5666,8 +5754,15 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                   { name: awayName, score: totals.awayScore, saves: totals.awaySaves, team: 'away' }
                 ].map((tm, idx) => {
                   const currentPeriodScore = periodStats[currentPeriod]?.[tm.team + 'Score'] ?? 0;
+                  
+                  // Determine animation class
+                  let animationClass = '';
+                  if (isSwapping) {
+                    animationClass = tm.team === 'home' ? 'swap-home-out' : 'swap-away-out';
+                  }
+                  
                   return (
-                    <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3`}>
+                    <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 ${animationClass}`}>
                       <div className="text-sm font-semibold mb-3 text-left">{tm.name}</div>
 
                       <div>
@@ -5698,15 +5793,22 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                 })}
               </div>
 
-              {!statsCollapsed && (
+             {!statsCollapsed && (
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   {[
                     { saves: totals.homeSaves, team: 'home' },
                     { saves: totals.awaySaves, team: 'away' }
                   ].map((tm, idx) => {
                     const currentPeriodSaves = periodStats[currentPeriod]?.[tm.team + 'Saves'] ?? 0;
+                    
+                    // Determine animation class
+                    let animationClass = '';
+                    if (isSwapping) {
+                      animationClass = tm.team === 'home' ? 'swap-home-out' : 'swap-away-out';
+                    }
+                    
                     return (
-                      <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3`}>
+                      <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 ${animationClass}`}>
                         <div className="text-sm mb-2 text-center">
                           {isViewer ? (
                             <span className="font-semibold">Saves</span>
@@ -5740,13 +5842,17 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                     ⛶ PLAYER EVENTS
                   </button>
                 ) : (
-<>
-  <div className="col-span-2 text-center text-[9px] opacity-40 py-2">
-    SIMPLE MODE
-  </div>
-  <div className="col-span-2 h-[1px] invisible"></div>
-</>
-
+                  <button 
+                    onClick={swapSides}
+                    disabled={isViewer || matchEnded}
+                    className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-all ${
+                      isViewer || matchEnded 
+                        ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
+                        : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200')
+                    }`}
+                  >
+                    ⇄ SWAP SIDES
+                  </button>
                 )}
               </div>
             </div>
