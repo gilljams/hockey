@@ -6674,12 +6674,11 @@ const hasDetails = (event) => {
                 );
               })}
 
-              <div className="flex justify-between items-center mb-6 relative z-10">
+             <div className="flex justify-between items-center mb-6 relative z-10">
   <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-wide ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>MATCH SUMMARY</h3>
-  {matchEnded && (
-    <div className={`${darkMode ? 'border border-gray-600 text-gray-400' : 'bg-gray-100 text-gray-800'} px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase`}>FINAL</div>
-  )}
+  <div className={`${darkMode ? 'border border-gray-600 text-gray-400' : 'bg-gray-100 text-gray-800'} px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase`}>FINAL</div>
 </div>
+
 
                 <div className="grid grid-cols-2 gap-4">
                   {['home', 'away'].map(team => {
