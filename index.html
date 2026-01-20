@@ -3155,7 +3155,9 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
       {(playerStatsMoment === 'FO/SOG' || !collapsedPlayerTables[team]) ? (
         <>
           <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-            <table className={`w-full ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+            <table
+  className={`w-full table-fixed ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}
+>
               <thead className={`${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-50 text-gray-700'} sticky top-[1px] z-20`}>
                 <tr>
                   <th className={`pl-4 pr-2 py-3 text-center text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-50 text-gray-700'} z-10`}>#</th>
