@@ -3084,229 +3084,229 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
         };
 
         const renderPlayerTable = (team) => {
-          const teamName = team === 'home' ? homeName : awayName;
-          const players = playerStats?.[team]?.players ?? {};
-          const playerNums = Object.keys(players)
-            .filter(pNum => players[pNum].position !== 'GK')  // Filter out goalies
-            .sort((a, b) => parseInt(a) - parseInt(b));
+  const teamName = team === 'home' ? homeName : awayName;
+  const players = playerStats?.[team]?.players ?? {};
+  const playerNums = Object.keys(players)
+    .filter(pNum => players[pNum].position !== 'GK')  // Filter out goalies
+    .sort((a, b) => parseInt(a) - parseInt(b));
 
-          // Determine which columns to show based on mode and team
-          let columnsToShow = activeColumns;
+  // Determine which columns to show based on mode and team
+  let columnsToShow = activeColumns;
 
-          // Goal wizard mode: scoring team får fler kolumner, opponent får bara -
-          if (playerStatsMoment === 'Goal' && goalWizardStep === 2 && recordingGoal) {
-            if (team === recordingGoal) {
-              columnsToShow = ['G', 'A', '+', 'SOG'];
-            } else {
-              columnsToShow = ['-'];
-            }
-          }
-          // Penalty mode shows all penalty columns for both teams (no special logic needed)
+  // Goal wizard mode: scoring team får fler kolumner, opponent får bara -
+  if (playerStatsMoment === 'Goal' && goalWizardStep === 2 && recordingGoal) {
+    if (team === recordingGoal) {
+      columnsToShow = ['G', 'A', '+', 'SOG'];
+    } else {
+      columnsToShow = ['-'];
+    }
+  }
+  // Penalty mode shows all penalty columns for both teams (no special logic needed)
 
-          // Map display column names to actual stat names
-          const getActualStatName = (col) => {
-            if (col === '+') return 'OnIce+';
-            if (col === '-') return 'OnIce-';
-            return col;
-          };
+  // Map display column names to actual stat names
+  const getActualStatName = (col) => {
+    if (col === '+') return 'OnIce+';
+    if (col === '-') return 'OnIce-';
+    return col;
+  };
 
-          return (
-            <div
-              className={`
-    ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}
-    rounded-lg shadow-lg overflow-hidden
-  `}
+  return (
+    <div
+      className={`
+        ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}
+        rounded-lg shadow-lg overflow-hidden
+      `}
+    >
+      <div className={`px-4 py-3 ${darkMode ? 'border-b border-gray-700' : 'border-b border-gray-200'} flex items-center justify-between`}>
+        <div className="flex items-center gap-3 flex-1">
+          <h3 className={`text-sm font-semibold truncate ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+            {teamName}
+          </h3>
+          {playerStatsMoment === 'Goal' && goalWizardStep === 2 && (
+            <span className={`text-xs whitespace-nowrap ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {editingGoalIndex !== null ? '(edit)' : `(${goalEvents.filter(e => e.team === team).length} goals)`}
+            </span>
+          )}
+          {playerStatsMoment === 'FO/SOG' && (
+            <button
+              onClick={() => {
+                if (matchEnded) return;
+                const otherTeam = team === 'home' ? 'away' : 'home';
+                setPlayerStatsEditMode(prev => ({
+                  ...prev,
+                  [team]: !prev[team],
+                  [otherTeam]: false  // Auto-toggle off the other team
+                }));
+              }}
+              disabled={matchEnded}
+              className={`text-xs px-2 py-1 rounded transition-all whitespace-nowrap ${matchEnded
+                ? (darkMode ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
+                : playerStatsEditMode[team]
+                  ? (darkMode ? 'bg-yellow-900 bg-opacity-60 text-yellow-200' : 'bg-yellow-100 text-yellow-800 font-semibold')
+                  : (darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
+                }`}
             >
+              {playerStatsEditMode[team] ? '✎ Edit ON' : '✎ Edit'}
+            </button>
+          )}
+        </div>
+      </div>
 
-              <div className="px-4 py-3 border-b flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <h3 className={`text-sm font-semibold truncate ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                    {teamName}
-                  </h3>
-                  {playerStatsMoment === 'Goal' && goalWizardStep === 2 && (
-                    <span className={`text-xs whitespace-nowrap ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {editingGoalIndex !== null ? '(edit)' : `(${goalEvents.filter(e => e.team === team).length} goals)`}
-                    </span>
-                  )}
-                  {playerStatsMoment === 'FO/SOG' && (
-                    <button
-                      onClick={() => {
-                        if (matchEnded) return;
-                        const otherTeam = team === 'home' ? 'away' : 'home';
-                        setPlayerStatsEditMode(prev => ({
-                          ...prev,
-                          [team]: !prev[team],
-                          [otherTeam]: false  // Auto-toggle off the other team
-                        }));
-                      }}
-                      disabled={matchEnded}
-                      className={`text-xs px-2 py-1 rounded transition-all whitespace-nowrap ${matchEnded
-                        ? (darkMode ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
-                        : playerStatsEditMode[team]
-                          ? (darkMode ? 'bg-yellow-900 bg-opacity-60 text-yellow-200' : 'bg-yellow-100 text-yellow-800 font-semibold')
-                          : (darkMode ? 'bg-gray-700 text-gray-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')
-                        }`}
-                    >
-                      {playerStatsEditMode[team] ? '✎ Edit ON' : '✎ Edit'}
-                    </button>
-                  )}
-                </div>
-              </div>
+      {(playerStatsMoment === 'FO/SOG' || !collapsedPlayerTables[team]) ? (
+        <>
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+            <table className={`w-full ${darkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+              <thead className={`${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-50 text-gray-700'} sticky top-[1px] z-20`}>
+                <tr>
+                  <th className={`pl-4 pr-2 py-3 text-center text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-50 text-gray-700'} z-10`}>#</th>
+                  {columnsToShow.map(col => (
+                    <th key={col} className={`px-2 py-3 text-center text-xs font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{col}</th>
+                  ))}
+                  {playerStatsEditMode[team] && <th className={`pr-4 pl-2 py-3 text-center text-xs font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}></th>}
+                </tr>
+              </thead>
+              <tbody>
+                {playerNums.length === 0 ? (
+                  <tr>
+                    <td colSpan={columnsToShow.length + (playerStatsEditMode[team] ? 2 : 1)} className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      No players added yet
+                    </td>
+                  </tr>
+                ) : playerNums.map(pNum => {
+                  const pData = players[pNum];
+                  const currentPeriodStats = pData?.periods?.[currentPeriod] ?? { 'G': 0, 'A': 0, 'OnIce+': 0, 'OnIce-': 0, 'FO+': 0, 'FO-': 0, 'SOG': 0 };
 
-              {(playerStatsMoment === 'FO/SOG' || !collapsedPlayerTables[team]) ? (
-                <>
-                  <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-                    <table className={`w-full ${darkMode ? 'text-gray-200' : ''}`}>
-                      <thead className={`${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100'} sticky top-[1px] z-20`}>
-                        <tr>
-                          <th className={`px-3 py-3 text-center text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100'} z-10`}>#</th>
-                          {columnsToShow.map(col => (
-                            <th key={col} className={`px-1 py-3 text-center text-xs font-semibold ${darkMode ? 'text-gray-200' : ''}`}>{col}</th>
-                          ))}
-                          {playerStatsEditMode[team] && <th className={`px-1 py-3 text-center text-xs font-semibold ${darkMode ? 'text-gray-200' : ''}`}></th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {playerNums.length === 0 ? (
-                          <tr>
-                            <td colSpan={columnsToShow.length + (playerStatsEditMode[team] ? 2 : 1)} className={`text-center py-8 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                              No players added yet
-                            </td>
-                          </tr>
-                        ) : playerNums.map(pNum => {
-                          const pData = players[pNum];
-                          const currentPeriodStats = pData?.periods?.[currentPeriod] ?? { 'G': 0, 'A': 0, 'OnIce+': 0, 'OnIce-': 0, 'FO+': 0, 'FO-': 0, 'SOG': 0 };
+                  return (
+                    <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-100 hover:bg-gray-50'} transition-colors group`}>
+                      <td className={`pl-4 pr-2 py-2 font-bold sticky left-0 ${darkMode ? 'bg-gray-800 group-hover:bg-gray-700' : 'bg-white group-hover:bg-gray-50'} z-10 transition-colors text-center`}>{pNum}</td>
+                      {columnsToShow.map(col => {
+                        const actualStat = getActualStatName(col);
+                        const isPIM = col === 'PIM';
+
+                        // Beräkna PIM från events för denna spelare i nuvarande period
+                        const calculatedPIM = isPIM ? calculatePIMFromEvents(team, pNum, currentPeriod) : 0;
+                        const isGoalMode = playerStatsMoment === 'Goal' && goalWizardStep === 2;
+
+                        // Goal wizard checkbox mode
+                        if (isGoalMode && !isPIM) {
+                          const isChecked =
+                            (col === 'G' && goalScorers.includes(`${team}-${pNum}`)) ||
+                            (col === 'A' && goalAssists.includes(`${team}-${pNum}`)) ||
+                            (col === '+' && goalPlusPlayers.includes(`${team}-${pNum}`)) ||
+                            (col === '-' && goalMinusPlayers.includes(`${team}-${pNum}`)) ||
+                            (col === 'SOG' && goalSOGPlayers.includes(`${team}-${pNum}`));
+
+                          const toggleCheckbox = () => {
+                            const playerId = `${team}-${pNum}`;
+                            if (col === 'G') {
+                              const isAdding = !goalScorers.includes(playerId);
+                              setGoalScorers(prev =>
+                                isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+                              );
+                              // Auto-check SOG when G is checked
+                              if (isAdding && !goalSOGPlayers.includes(playerId)) {
+                                setGoalSOGPlayers(prev => [...prev, playerId]);
+                              }
+                              // Auto-check + when G is checked
+                              if (isAdding && !goalPlusPlayers.includes(playerId)) {
+                                setGoalPlusPlayers(prev => [...prev, playerId]);
+                              }
+                            } else if (col === 'A') {
+                              const isAdding = !goalAssists.includes(playerId);
+                              setGoalAssists(prev =>
+                                isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+                              );
+                              // Auto-check + when A is checked
+                              if (isAdding && !goalPlusPlayers.includes(playerId)) {
+                                setGoalPlusPlayers(prev => [...prev, playerId]);
+                              }
+
+                            } else if (col === '+') {
+                              setGoalPlusPlayers(prev =>
+                                prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                              );
+                            } else if (col === '-') {
+                              setGoalMinusPlayers(prev =>
+                                prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                              );
+                            } else if (col === 'SOG') {
+                              setGoalSOGPlayers(prev =>
+                                prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                              );
+                            }
+                          };
 
                           return (
-                            <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors group`}>
-                              <td className={`px-3 py-2 font-bold sticky left-0 ${darkMode ? 'bg-gray-800' : 'bg-white'} ${darkMode ? 'group-hover:bg-gray-700' : 'group-hover:bg-gray-50'} z-10 transition-colors text-center`}>{pNum}</td>
-                              {columnsToShow.map(col => {
-                                const actualStat = getActualStatName(col);
-                                const isPIM = col === 'PIM';
-
-                                // Beräkna PIM från events för denna spelare i nuvarande period
-                                const calculatedPIM = isPIM ? calculatePIMFromEvents(team, pNum, currentPeriod) : 0;
-                                const isGoalMode = playerStatsMoment === 'Goal' && goalWizardStep === 2;
-
-                                // Goal wizard checkbox mode
-                                if (isGoalMode && !isPIM) {
-                                  const isChecked =
-                                    (col === 'G' && goalScorers.includes(`${team}-${pNum}`)) ||
-                                    (col === 'A' && goalAssists.includes(`${team}-${pNum}`)) ||
-                                    (col === '+' && goalPlusPlayers.includes(`${team}-${pNum}`)) ||
-                                    (col === '-' && goalMinusPlayers.includes(`${team}-${pNum}`)) ||
-                                    (col === 'SOG' && goalSOGPlayers.includes(`${team}-${pNum}`));
-
-                                  const toggleCheckbox = () => {
-                                    const playerId = `${team}-${pNum}`;
-                                    if (col === 'G') {
-                                      const isAdding = !goalScorers.includes(playerId);
-                                      setGoalScorers(prev =>
-                                        isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
-                                      );
-                                      // Auto-check SOG when G is checked
-                                      if (isAdding && !goalSOGPlayers.includes(playerId)) {
-                                        setGoalSOGPlayers(prev => [...prev, playerId]);
-                                      }
-                                      // Auto-check + when G is checked
-                                      if (isAdding && !goalPlusPlayers.includes(playerId)) {
-                                        setGoalPlusPlayers(prev => [...prev, playerId]);
-                                      }
-                                    } else if (col === 'A') {
-                                      const isAdding = !goalAssists.includes(playerId);
-                                      setGoalAssists(prev =>
-                                        isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
-                                      );
-                                      // Auto-check + when A is checked
-                                      if (isAdding && !goalPlusPlayers.includes(playerId)) {
-                                        setGoalPlusPlayers(prev => [...prev, playerId]);
-                                      }
-
-                                    } else if (col === '+') {
-                                      setGoalPlusPlayers(prev =>
-                                        prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
-                                      );
-                                    } else if (col === '-') {
-                                      setGoalMinusPlayers(prev =>
-                                        prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
-                                      );
-                                    } else if (col === 'SOG') {
-                                      setGoalSOGPlayers(prev =>
-                                        prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
-                                      );
-                                    }
-                                  };
-
-                                  return (
-                                    <td key={col} className="px-1 py-1">
-                                      <div className="flex items-center justify-center">
-                                        <input
-                                          type="checkbox"
-                                          checked={isChecked}
-                                          onChange={toggleCheckbox}
-                                          disabled={col === 'SOG'}
-                                          className={col === 'SOG' ? 'w-5 h-5 cursor-not-allowed opacity-50' : 'w-5 h-5 cursor-pointer'}
-                                        />
-                                      </div>
-                                    </td>
-                                  );
-                                }
-
-                                // Normal mode (original code)
-                                return (
-                                  <td key={col} className="px-1 py-3">
-                                    <div className="flex items-center justify-center gap-1">
-                                      {playerStatsEditMode[team] && !isPIM && (
-                                        <button
-                                          onClick={() => updatePlayerStat(team, pNum, actualStat, -1)}
-                                          disabled={matchEnded || isViewer}
-                                          className={`w-7 h-7 rounded flex items-center justify-center text-sm font-bold transition-all ${darkMode ? 'bg-red-900 hover:bg-red-800 text-red-100 disabled:opacity-50' : 'bg-red-200 hover:bg-red-300 text-red-900 disabled:opacity-50'}`}
-                                        >−</button>
-                                      )}
-                                      <div
-                                        onClick={isPIM ? undefined : () => updatePlayerStat(team, pNum, actualStat, 1)}
-                                        className={`min-w-[2.2rem] h-7 px-1 rounded border flex items-center justify-center transition-all text-sm ${isPIM
-                                          ? (darkMode ? 'bg-gray-700 text-gray-400 border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-300 cursor-default')
-                                          : (matchEnded || isViewer)
-                                            ? (darkMode ? 'bg-blue-900 bg-opacity-20 text-blue-300 border-blue-800 cursor-not-allowed' : 'bg-blue-50 text-blue-700 border-blue-300 cursor-not-allowed')
-                                            : (darkMode ? 'bg-blue-900 bg-opacity-20 text-blue-200 border-blue-800 hover:bg-opacity-30 cursor-pointer' : 'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100 cursor-pointer')
-                                          } ${!isPIM && sparkleStats[`${team}${pNum}${actualStat}${currentPeriod}`] ? 'sparkle' : ''}`}
-                                      >
-                                        <span className="text-sm font-bold">{isPIM ? calculatedPIM : (currentPeriodStats[actualStat] || 0)}</span>
-                                      </div>
-
-                                    </div>
-                                  </td>
-                                );
-                              })}
-                              {playerStatsEditMode[team] && (
-                                <td className="px-1 py-3">
-                                  <button
-                                    onClick={() => removePlayer(team, pNum)}
-                                    disabled={matchEnded || isViewer}
-                                    className={`w-7 h-7 rounded flex items-center justify-center text-lg font-bold transition-all ${darkMode ? 'bg-red-900 hover:bg-red-800 text-red-100 disabled:opacity-50' : 'bg-red-200 hover:bg-red-300 text-red-900 disabled:opacity-50'}`}
-                                  >×</button>
-                                </td>
-                              )}
-                            </tr>
+                            <td key={col} className="px-2 py-1">
+                              <div className="flex items-center justify-center">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={toggleCheckbox}
+                                  disabled={col === 'SOG'}
+                                  className={col === 'SOG' ? 'w-5 h-5 cursor-not-allowed opacity-50' : 'w-5 h-5 cursor-pointer'}
+                                />
+                              </div>
+                            </td>
                           );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                        }
 
-                  {!isViewer && !matchEnded && playerStatsMoment !== 'Goal' && (
-  <div className="p-3 border-t">
-    <div className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'} py-2`}>
-      💡 Add players via Settings
-    </div>
-  </div>
-)}
-                </>
-              ) : null}
+                        // Normal mode (original code)
+                        return (
+                          <td key={col} className="px-2 py-3">
+                            <div className="flex items-center justify-center gap-1">
+                              {playerStatsEditMode[team] && !isPIM && (
+                                <button
+                                  onClick={() => updatePlayerStat(team, pNum, actualStat, -1)}
+                                  disabled={matchEnded || isViewer}
+                                  className={`w-7 h-7 rounded flex items-center justify-center text-sm font-bold transition-all ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 disabled:opacity-50' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-50'}`}
+                                >−</button>
+                              )}
+                              <div
+                                onClick={isPIM ? undefined : () => updatePlayerStat(team, pNum, actualStat, 1)}
+                                className={`min-w-[2.2rem] h-7 px-1 rounded border flex items-center justify-center transition-all text-sm ${isPIM
+                                  ? (darkMode ? 'bg-gray-800 text-gray-400 border-gray-700 cursor-default' : 'bg-gray-50 text-gray-600 border-gray-200 cursor-default')
+                                  : (matchEnded || isViewer)
+                                    ? (darkMode ? 'bg-gray-800 text-gray-400 border-gray-700 cursor-not-allowed' : 'bg-gray-50 text-gray-600 border-gray-200 cursor-not-allowed')
+                                    : (darkMode ? 'bg-gray-700 text-gray-200 border-gray-600 hover:bg-gray-600 cursor-pointer' : 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50 cursor-pointer')
+                                  } ${!isPIM && sparkleStats[`${team}${pNum}${actualStat}${currentPeriod}`] ? 'sparkle' : ''}`}
+                              >
+                                <span className="text-sm font-bold">{isPIM ? calculatedPIM : (currentPeriodStats[actualStat] || 0)}</span>
+                              </div>
+
+                            </div>
+                          </td>
+                        );
+                      })}
+                      {playerStatsEditMode[team] && (
+                        <td className="pr-4 pl-2 py-3">
+                          <button
+                            onClick={() => removePlayer(team, pNum)}
+                            disabled={matchEnded || isViewer}
+                            className={`w-7 h-7 rounded flex items-center justify-center text-lg font-bold transition-all ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 disabled:opacity-50' : 'bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-50'}`}
+                          >×</button>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {!isViewer && !matchEnded && playerStatsMoment !== 'Goal' && (
+            <div className={`p-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+              <div className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'} py-2`}>
+                💡 Add players via Settings
+              </div>
             </div>
-          );
-        };
+          )}
+        </>
+      ) : null}
+    </div>
+  );
+};
+
 
 
         return (
