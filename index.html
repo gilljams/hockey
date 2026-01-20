@@ -4959,153 +4959,258 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
     />
     
     <div className={`min-h-[calc(var(--vh)*100)] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-
       <div className="max-w-md w-full p-6">
-            <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
+        <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-2xl shadow-2xl p-8`}>
 
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setScreen('start')}
-                  className={`p-2 rounded-lg transition-colors ${darkMode
-                    ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300'
-                    : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+          <div className="flex justify-end">
+            <button
+              onClick={() => setScreen('start')}
+              className={`p-2 rounded-lg transition-colors ${darkMode
+                ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-300'
+                : 'hover:bg-gray-100 text-gray-600 hover:text-gray-800'
+                }`}
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <h2 className="text-2xl font-bold mb-6">New Game</h2>
+          <div className="space-y-4 mb-6">
+
+            <div>
+              <label className="block text-sm mb-2">Home Team</label>
+              <div className="relative">
+                <input
+                  ref={homeTeamInputRef}
+                  type="text"
+                  value={homeName}
+                  onChange={e => setHomeName(e.target.value)}
+                  placeholder="Enter home team name"
+                  className={`w-full px-4 py-3 pr-10 border rounded-lg
+    ${darkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+                      : 'border-gray-300 placeholder-gray-400'
                     }`}
-                  aria-label="Close"
+                />
+                {homeName && (
+                  <button
+                    type="button"
+                    onClick={() => setHomeName('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2
+               text-gray-400 hover:text-gray-600 text-xl font-light"
+                    aria-label="Clear home team"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-2">Away Team</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={awayName}
+                  onChange={e => setAwayName(e.target.value)}
+                  placeholder="Enter away team name"
+                  className={`w-full px-4 py-3 pr-10 border rounded-lg
+    ${darkMode
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+                      : 'border-gray-300 placeholder-gray-400'
+                    }`}
+                />
+                {awayName && (
+                  <button
+                    type="button"
+                    onClick={() => setAwayName('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2
+               text-gray-400 hover:text-gray-600 text-xl font-light"
+                    aria-label="Clear away team"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tracking Mode Selection */}
+            <div className="pt-2">
+              <label className="block text-sm mb-2">Tracking Mode</label>
+              <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                <button
+                  onClick={() => setTrackingMode('simple')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'simple'
+                    ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  SIMPLE
+                </button>
+                <button
+                  onClick={() => setTrackingMode('advanced')}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'advanced'
+                    ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  ADVANCED
                 </button>
               </div>
-
-              <h2 className="text-2xl font-bold mb-6">New Game</h2>
-              <div className="space-y-4 mb-6">
-
-                <div>
-                  <label className="block text-sm mb-2">Home Team</label>
-                  <div className="relative">
-                    <input
-                      ref={homeTeamInputRef}
-                      type="text"
-                      value={homeName}
-                      onChange={e => setHomeName(e.target.value)}
-                      placeholder="Enter home team name"
-                      className={`w-full px-4 py-3 pr-10 border rounded-lg
-        ${darkMode
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
-                          : 'border-gray-300 placeholder-gray-400'
-                        }`}
-                    />
-                    {homeName && (
-                      <button
-                        type="button"
-                        onClick={() => setHomeName('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2
-                   text-gray-400 hover:text-gray-600 text-xl font-light"
-                        aria-label="Clear home team"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm mb-2">Away Team</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={awayName}
-                      onChange={e => setAwayName(e.target.value)}
-                      placeholder="Enter away team name"
-                      className={`w-full px-4 py-3 pr-10 border rounded-lg
-        ${darkMode
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
-                          : 'border-gray-300 placeholder-gray-400'
-                        }`}
-                    />
-                    {awayName && (
-                      <button
-                        type="button"
-                        onClick={() => setAwayName('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2
-                   text-gray-400 hover:text-gray-600 text-xl font-light"
-                        aria-label="Clear away team"
-                      >
-                        ×
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tracking Mode Selection */}
-                <div className="pt-2">
-                  <label className="block text-sm mb-2">Tracking Mode</label>
-                  <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                    <button
-                      onClick={() => setTrackingMode('simple')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'simple'
-                        ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                        : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                      SIMPLE
-                    </button>
-                    <button
-                      onClick={() => setTrackingMode('advanced')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'advanced'
-                        ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                        : 'text-gray-500 hover:text-gray-700'
-                        }`}
-                    >
-                      ADVANCED
-                    </button>
-                  </div>
-                  <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {trackingMode === 'simple'
-                      ? 'Team-level only. Minimalist and fast.'
-                      : 'Player-level. Totals derived from events.'}
-                  </p>
-                </div>
-
-{/* Roster Management - Advanced mode only */}
-{trackingMode === 'advanced' && (
-  <div className="pt-2 space-y-3">
-    <label className="block text-sm font-semibold">Team Rosters</label>
-   <button
-  onClick={() => {
-    console.log('Roster button clicked!'); // LÄGG TILL DENNA RAD
-    setRosterModalContext('create');
-    setRosterModalData({
-          home: { 
-            players: defaultHomeRoster || '', 
-            goalies: goalieMap.home 
-          },
-          away: { 
-            players: '', 
-            goalies: goalieMap.away 
-          }
-        });
-        setShowRosterModal(true);
-      }}
-      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
-    >
-  <HockeyHelmetIcon />
-  <span>Setup Rosters (Optional)</span>
-</button>
-    <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-      Add players and goalies now, or add them later during the game
-    </p>
-  </div>
-)}
-
-              </div>
-              <button onClick={startMatch} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg">CONTINUE TO GAME</button>
+              <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {trackingMode === 'simple'
+                  ? 'Team-level only. Minimalist and fast.'
+                  : 'Player-level. Totals derived from events.'}
+              </p>
             </div>
+
+            {/* Roster Management - Advanced mode only */}
+            {trackingMode === 'advanced' && (
+              <div className="pt-2 space-y-3">
+                <label className="block text-sm font-semibold">Team Rosters</label>
+                <button
+                  onClick={() => {
+                    setRosterModalContext('create');
+                    setRosterModalData({
+                      home: { 
+                        players: defaultHomeRoster || '', 
+                        goalies: goalieMap.home 
+                      },
+                      away: { 
+                        players: '', 
+                        goalies: goalieMap.away 
+                      }
+                    });
+                    setShowRosterModal(true);
+                  }}
+                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+                >
+                  <HockeyHelmetIcon />
+                  <span>Setup Rosters (Optional)</span>
+                </button>
+                <p className={`text-[10px] mt-1.5 px-1 opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  Add players and goalies now, or add them later during the game
+                </p>
+              </div>
+            )}
+
+          </div>
+          <button 
+            onClick={() => {
+              if (!db) { 
+                setError('Firebase not configured'); 
+                return;
+              }
+              if (!currentUser) { 
+                setError('You must be logged in to create a game'); 
+                return;
+              }
+
+              // Skapa matchkod
+              const code = genCode();
+              
+              // Sätt state
+              setMatchCode(code);
+              setGameMode('multi');
+              localStorage.setItem('gameMode', 'multi');
+              setIsViewer(false);
+              setIsCreator(true);
+              setMatchEnded(false);
+
+              // Rensa old data
+              localStorage.removeItem('juniorLeagueGame');
+              localStorage.removeItem('tempMatchCode');
+
+              const viewerCode = code + '-V';
+
+              // Build player stats
+              const initialPlayerStats = trackingMode === 'advanced' 
+                ? buildPlayerStatsFromRoster(rosterModalData)
+                : { home: { players: {} }, away: { players: {} } };
+
+              const initialGoalieMap = trackingMode === 'advanced'
+                ? { 
+                    home: rosterModalData.home.goalies, 
+                    away: rosterModalData.away.goalies 
+                  }
+                : { 
+                    home: { starter: '', backup: '' }, 
+                    away: { starter: '', backup: '' } 
+                  };
+
+              // Skapa matchen i Firebase
+              db.ref(`matches/${code}`).set({
+                homeName,
+                awayName,
+                currentPeriod: 1,
+                periodStats: {
+                  1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
+                  2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
+                  3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
+                },
+                playerStats: initialPlayerStats,
+                goalEvents: [],
+                penaltyEvents: [],
+                otherEvents: [],
+                ended: false,
+                createdAt: Date.now(),
+                creatorId: userId.current,
+                ownerEmail: currentUser.email,
+                locked: false,
+                users: {
+                  [userId.current]: {
+                    joinedAt: Date.now(),
+                    role: 'editor'
+                  }
+                },
+                viewers: {},
+                kickedUsers: {},
+                trackingMode,
+                goalieMap: initialGoalieMap,
+                activeGoalies,
+                viewerCode: viewerCode
+              }).then(() => {
+                // Set local state
+                setPlayerStats(initialPlayerStats);
+                setGoalieMap(initialGoalieMap);
+                setIsMultiplayer(true);
+                
+                // Save to localStorage
+                localStorage.setItem('multiplayerMatch', JSON.stringify({ 
+                  code: code, 
+                  timestamp: Date.now(), 
+                  isViewer: false, 
+                  gameMode: 'multi' 
+                }));
+
+                // Go to game
+                setScreen('game');
+                
+                if (window.gtag) gtag('event', 'match_created', { match_code: code });
+              }).catch(e => {
+                setError('Failed to create game: ' + e.message);
+                console.error('Firebase error:', e);
+              });
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg"
+          >
+            CREATE & START GAME
+          </button>
+          
+          {error && (
+            <div className="mt-4 bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded text-sm">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   </>
 );
+
 
 
       if (screen === 'created') return (
