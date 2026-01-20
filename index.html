@@ -1289,36 +1289,37 @@ useEffect(() => {
       };
 
       const createMatch = () => {
-        // Check if user is logged in
-        if (!currentUser) {
-          alert('You must be logged in to create a game');
-          setScreen('start');
-          return;
-        }
+  // Check if user is logged in
+  if (!currentUser) {
+    alert('You must be logged in to create a game');
+    setScreen('start');
+    return;
+  }
 
-        // Rensa ALL single-game data när vi går till multi
-        localStorage.removeItem('juniorLeagueGame');
-        localStorage.removeItem('tempMatchCode');
+  // Rensa ALL single-game data när vi går till multi
+  localStorage.removeItem('juniorLeagueGame');
+  localStorage.removeItem('tempMatchCode');
 
-        const code = genCode();
+  const code = genCode();
 
-        // Rensa error innan vi försöker
-        setError('');
+  // Rensa error innan vi försöker
+  setError('');
 
-        // Uppdatera state OCH navigera
-        setMatchCode(code);
-        setMatchEnded(false);
-        setIsViewer(false);
-        setIsCreator(true);
-        setGameMode('multi');
-        localStorage.setItem('gameMode', 'multi');
+  // Uppdatera state OCH navigera
+  setMatchCode(code);
+  setMatchEnded(false);
+  setIsViewer(false);
+  setIsCreator(true);
+  setGameMode('multi');
+  localStorage.setItem('gameMode', 'multi');
 
-        // Lagra koden temporärt så vi kan använda den direkt
-        localStorage.setItem('tempMatchCode', code);
+  // Lagra koden temporärt så vi kan använda den direkt
+  localStorage.setItem('tempMatchCode', code);
 
-        // Skip the 'created' screen and go directly to the game
-        startMatch();
-      };
+  // Gå till create-skärmen (inte direkt till game)
+  setScreen('create');
+};
+
 
 const buildPlayerStatsFromRoster = (rosters) => {
   // Safety check - if no rosters provided, return empty structure
@@ -1420,100 +1421,95 @@ const startMatch = () => {
   if (!db) { setError('Firebase not configured'); return }
   if (!currentUser) { setError('You must be logged in to create a game'); return }
 
-        // Använd matchCode från state, fallback till localStorage om nödvändigt
-        const code = matchCode || localStorage.getItem('tempMatchCode');
+  // Använd matchCode från state, fallback till localStorage om nödvändigt
+  const code = matchCode || localStorage.getItem('tempMatchCode');
 
-        if (!code) {
-          setError('Match code not found. Please try again.');
-          return;
-        }
+  if (!code) {
+    setError('Match code not found. Please try again.');
+    return;
+  }
 
-        // Säkerställ att vi är i multi-mode
-        if (gameMode !== 'multi') {
-          setGameMode('multi');
-          localStorage.setItem('gameMode', 'multi');
-        }
+  // Säkerställ att vi är i multi-mode
+  if (gameMode !== 'multi') {
+    setGameMode('multi');
+    localStorage.setItem('gameMode', 'multi');
+  }
 
-        // Rensa all single-game data
-        localStorage.removeItem('juniorLeagueGame');
+  // Rensa all single-game data
+  localStorage.removeItem('juniorLeagueGame');
 
-        const viewerCode = code + '-V';
+  const viewerCode = code + '-V';
 
-        // Build player stats SYNCHRONOUSLY before creating match
-        const initialPlayerStats = trackingMode === 'advanced' 
-          ? buildPlayerStatsFromRoster(rosterModalData)
-          : { home: { players: {} }, away: { players: {} } };
+  // Build player stats SYNCHRONOUSLY before creating match
+  const initialPlayerStats = trackingMode === 'advanced' 
+    ? buildPlayerStatsFromRoster(rosterModalData)
+    : { home: { players: {} }, away: { players: {} } };
 
-        const initialGoalieMap = trackingMode === 'advanced'
-          ? { 
-              home: rosterModalData.home.goalies, 
-              away: rosterModalData.away.goalies 
-            }
-          : { 
-              home: { starter: '', backup: '' }, 
-              away: { starter: '', backup: '' } 
-            };
-        
-db.ref(`matches/${code}`).set({
-          homeName,
-          awayName,
-          currentPeriod: 1,
-periodStats: {
-            1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
-            2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
-            3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
-          },
-          playerStats: initialPlayerStats,
-          goalEvents: [],
-          penaltyEvents: [],
-          otherEvents: [],
-          ended: false,
-          createdAt: Date.now(),
-          creatorId: userId.current,
-          ownerEmail: currentUser.email,
-          locked: false,
-
-          // Strukturerad users-lista
-          users: {
-            [userId.current]: {
-              joinedAt: Date.now(),
-              role: 'editor'
-            }
-          },
-
-          // Viewers lista
-          viewers: {},
-
-          // Kicked users (svartlista)
-          kickedUsers: {},
-          trackingMode,
-          goalieMap: initialGoalieMap,
-          activeGoalies,
-          viewerCode: viewerCode
-}).then(() => {
-          // Set player stats locally to match what we sent to Firebase
-          setPlayerStats(initialPlayerStats);
-          setGoalieMap(initialGoalieMap);
-          
-          setGameMode('multi');
-          localStorage.setItem('gameMode', 'multi');
-          setIsMultiplayer(true);
-          setIsCreator(true);
-          
-          // Rensa ALL temp-data
-          localStorage.removeItem('tempMatchCode');
-          localStorage.removeItem('juniorLeagueGame');
-
-          // Säkerställ korrekt state
-          setMatchCode(code);
-
-          // Spara multiplayer session
-          localStorage.setItem('multiplayerMatch', JSON.stringify({ code: code, timestamp: Date.now(), isViewer: false, gameMode: 'multi' }));
-
-          setScreen('game');
-          if (window.gtag) gtag('event', 'match_created', { match_code: code });
-        }).catch(e => setError('Failed: ' + e.message))
+  const initialGoalieMap = trackingMode === 'advanced'
+    ? { 
+        home: rosterModalData.home.goalies, 
+        away: rosterModalData.away.goalies 
+      }
+    : { 
+        home: { starter: '', backup: '' }, 
+        away: { starter: '', backup: '' } 
       };
+
+  db.ref(`matches/${code}`).set({
+    homeName,
+    awayName,
+    currentPeriod: 1,
+    periodStats: {
+      1: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
+      2: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 },
+      3: { homeScore: 0, awayScore: 0, homeSaves: 0, awaySaves: 0 }
+    },
+    playerStats: initialPlayerStats,
+    goalEvents: [],
+    penaltyEvents: [],
+    otherEvents: [],
+    ended: false,
+    createdAt: Date.now(),
+    creatorId: userId.current,
+    ownerEmail: currentUser.email,
+    locked: false,
+    users: {
+      [userId.current]: {
+        joinedAt: Date.now(),
+        role: 'editor'
+      }
+    },
+    viewers: {},
+    kickedUsers: {},
+    trackingMode,
+    goalieMap: initialGoalieMap,
+    activeGoalies,
+    viewerCode: viewerCode
+  }).then(() => {
+    // Set player stats locally to match what we sent to Firebase
+    setPlayerStats(initialPlayerStats);
+    setGoalieMap(initialGoalieMap);
+    
+    setGameMode('multi');
+    localStorage.setItem('gameMode', 'multi');
+    setIsMultiplayer(true);
+    setIsCreator(true);
+    
+    // Rensa ALL temp-data
+    localStorage.removeItem('tempMatchCode');
+    localStorage.removeItem('juniorLeagueGame');
+
+    // Säkerställ korrekt state
+    setMatchCode(code);
+
+    // Spara multiplayer session
+    localStorage.setItem('multiplayerMatch', JSON.stringify({ code: code, timestamp: Date.now(), isViewer: false, gameMode: 'multi' }));
+
+    setScreen('game');
+    if (window.gtag) gtag('event', 'match_created', { match_code: code });
+  }).catch(e => setError('Failed: ' + e.message))
+};
+
 
       const joinMatch = () => {
         if (!db) { setError('Firebase not configured'); return }
