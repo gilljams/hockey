@@ -3295,14 +3295,7 @@ if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
               </tbody>
             </table>
           </div>
-
-          {!isViewer && !matchEnded && playerStatsMoment !== 'Goal' && (
-            <div className={`p-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <div className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-600'} py-2`}>
-                💡 Add players via Settings
-              </div>
-            </div>
-          )}
+          
         </>
       ) : null}
     </div>
