@@ -6506,8 +6506,11 @@ const hasDetails = (event) => {
 
             </div>}
 
-            {activeTab === 'stats' && <div>
-              {Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map(p => {
+          {activeTab === 'stats' && <div>
+  {Object.keys(periodStats)
+    .filter(p => parseInt(p) <= currentPeriod)  // Visa bara perioder som är aktiva eller passerade
+    .sort((a, b) => parseInt(a) - parseInt(b))
+    .map(p => {
                 p = parseInt(p);
                 const ps = periodStats[p];
 
