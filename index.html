@@ -448,8 +448,6 @@
       const [inputCode, setInputCode] = useState('');
       const [connectedUsers, setConnectedUsers] = useState(1);
       const [isMultiplayer, setIsMultiplayer] = useState(false);
-      const [expandedGoalieStats, setExpandedGoalieStats] = useState({ home: false, away: false });
-      const [selectedGoalieStats, setSelectedGoalieStats] = useState({ home: 'total', away: 'total' });
       const [gameMode, setGameMode] = useState(localStorage.getItem('gameMode') || 'single');
       const [trackingMode, setTrackingMode] = useState(localStorage.getItem('trackingMode') || 'simple');
       const [goalieMap, setGoalieMap] = useState({
@@ -486,6 +484,7 @@
       const [addPlayerTeam, setAddPlayerTeam] = useState('');
       const [addPlayerNumbers, setAddPlayerNumbers] = useState(['']);
       const [expandedPlayerStats, setExpandedPlayerStats] = useState({});
+      const [expandedGoalieStats, setExpandedGoalieStats] = useState({});
       const [collapsedPlayerTables, setCollapsedPlayerTables] = useState({});
       const [showRosterModal, setShowRosterModal] = useState(false);
       const [isSwapping, setIsSwapping] = useState(false);
@@ -6691,6 +6690,87 @@ const hasDetails = (event) => {
                         </div>
                       );
                     })()}
+                    
+                    
+                    
+                    
+               {/* NEW: Goalie statistics expansion */}
+{trackingMode === 'advanced' && (
+  <div className="mt-4 pt-4 border-t">
+    <button
+      onClick={() => setExpandedGoalieStats(prev => ({ ...prev, [p]: !prev[p] }))}
+      className={`w-full text-left font-semibold text-sm ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-800'} px-3 py-2 rounded flex items-center justify-between`}
+    >
+      <span>Goalie Statistics</span>
+      <span>{expandedGoalieStats[p] ? <IconChevronUp /> : <IconChevronDown />}</span>
+    </button>
+
+    {expandedGoalieStats[p] && (
+      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+        {['home', 'away'].map(team => {
+          const teamName = team === 'home' ? homeName : awayName;
+          const goalieData = periodStats[p]?.[team + 'Goalie'];
+          
+          if (!goalieData) return null;
+
+          // Check if there's any goalie data for this period
+          const hasData = (goalieData.starter?.saves > 0 || goalieData.starter?.ga > 0 || 
+                          goalieData.backup?.saves > 0 || goalieData.backup?.ga > 0);
+          
+          if (!hasData) return null;
+
+          return (
+            <div key={team} className={`${darkMode ? 'bg-gray-700/40 border-gray-700/60' : 'bg-gray-50/50 border-gray-100'} border-l-4 ${team === 'home' ? 'border-l-blue-500' : 'border-l-red-500'} border rounded-r-xl p-3`}>
+              <div className={`font-black mb-2 uppercase tracking-wider text-xs ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>{teamName}</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className={`${darkMode ? 'border-b border-gray-700 text-gray-400' : 'bg-gray-50 text-gray-500'} text-[10px] uppercase tracking-widest`}>
+                      <th className="text-left px-2 py-2 font-bold">Goalie</th>
+                      <th className="text-center px-2 py-2 font-bold">SA</th>
+                      <th className="text-center px-2 py-2 font-bold">SV</th>
+                      <th className="text-center px-2 py-2 font-bold">GA</th>
+                      <th className="text-center px-2 py-2 font-bold">SV%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['starter', 'backup'].map(goalieType => {
+                      const stats = goalieData[goalieType];
+                      const goalieNum = goalieMap[team]?.[goalieType];
+                      
+                      // Only show if this goalie has played (has saves or GA)
+                      if (!stats || (stats.saves === 0 && stats.ga === 0)) return null;
+                      
+                      const sa = stats.saves + stats.ga;
+                      const svPct = sa === 0 ? '-' : ((stats.saves / sa) * 100).toFixed(1);
+                      
+                      return (
+                        <tr key={goalieType} className={`border-t ${darkMode ? 'border-gray-700/50 hover:bg-gray-700/30 text-gray-300' : 'border-gray-100 hover:bg-gray-50 text-gray-700'} transition-colors tabular-nums`}>
+                          <td className="px-2 py-2 text-xs">
+                            {goalieNum ? `#${goalieNum}` : (goalieType === 'starter' ? 'Starter' : 'Backup')}
+                          </td>
+                          <td className="text-center px-2 py-2 text-xs">{sa}</td>
+                          <td className="text-center px-2 py-2 text-xs font-bold">{stats.saves}</td>
+                          <td className="text-center px-2 py-2 text-xs">{stats.ga}</td>
+                          <td className="text-center px-2 py-2 text-xs font-bold">{svPct}{svPct !== '-' ? '%' : ''}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
+)}  
+                    
+                    
+                    
+                    
+                    
                   </div>
                 );
                             })}
