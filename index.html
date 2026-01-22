@@ -710,19 +710,26 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
       );
 
       const IconHamburgerMenu = () => (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="w-6 h-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      );
+
+      const IconClose = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      );
+
+      const IconLogout = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      );
+
+      const IconStop = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+          <rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} />
         </svg>
       );
 
@@ -4994,9 +5001,13 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                             setScreen('start');
                           }
                         }}
-                        className={`w-full text-sm ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'} py-2 font-semibold`}
+                        className={`w-full mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode
+                          ? 'bg-gray-700 hover:bg-red-900/40 text-red-400 border border-gray-600'
+                          : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-100'
+                          }`}
                       >
-                        SIGN OUT
+                        <IconLogout />
+                        LOG OUT
                       </button>
                     )}
 
@@ -5082,9 +5093,13 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 {currentUser && isAdmin && (
                   <button
                     onClick={() => setScreen('admin')}
-                    className={`w-full text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'} py-2 rounded font-semibold`}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm tracking-widest transition-all ${darkMode
+                      ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200'
+                      }`}
                   >
-                    🔒 Admin Panel
+                    <span>🔒</span>
+                    ADMIN PANEL
                   </button>
                 )}
 
@@ -5563,7 +5578,9 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setStatsCollapsed(!statsCollapsed)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}>{statsCollapsed ? <IconChevronDown /> : <IconChevronUp />}</button>
-                  <button onClick={() => setShowSettings(!showSettings)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center`}><IconHamburgerMenu /></button>
+                  <button onClick={() => setShowSettings(!showSettings)} className={`${darkMode ? 'bg-gray-700' : 'bg-white bg-opacity-20 hover:bg-opacity-30'} px-3 py-1 min-h-[32px] rounded flex items-center justify-center transition-all duration-300`}>
+                    {showSettings ? <IconClose /> : <IconHamburgerMenu />}
+                  </button>
                 </div>
               </div>
 
@@ -5575,9 +5592,10 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     <h3 className="font-bold text-lg">Settings</h3>
                     <button
                       onClick={() => setShowSettings(false)}
-                      className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500 active:bg-gray-400' : 'bg-gray-200 hover:bg-gray-300 active:bg-gray-400'} px-4 py-2 rounded font-semibold text-sm transition-colors`}
+                      className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'} p-2 rounded-lg transition-colors`}
+                      aria-label="Close settings"
                     >
-                      ✕
+                      <IconClose />
                     </button>
                   </div>
 
@@ -5608,10 +5626,13 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       setShowSettings(false);
                       setScreen('start');
                     }}
-                    className={`w-full mb-4 ${darkMode ? 'bg-gray-600 hover:bg-gray-500 border border-gray-500' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-3 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-colors`}
+                    className={`w-full mb-6 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm tracking-widest transition-all ${darkMode
+                      ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800 border border-gray-200'
+                      }`}
                   >
                     <IconBack />
-                    <span>BACK TO START</span>
+                    BACK TO START
                   </button>
 
                   {/* MY PREFERENCES - Collapsible */}
@@ -5675,9 +5696,9 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                 />
                                 <button
                                   onClick={copyCode}
-                                  className={`px-4 py-2 rounded font-semibold whitespace-nowrap ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+                                  className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
                                 >
-                                  Copy
+                                  COPY
                                 </button>
                               </div>
                             </div>
@@ -5703,9 +5724,9 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                       alert('Failed to copy');
                                     });
                                   }}
-                                  className={`px-4 py-2 rounded font-semibold whitespace-nowrap ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white`}
+                                  className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
                                 >
-                                  Copy
+                                  COPY
                                 </button>
                               </div>
                             </div>
@@ -5729,9 +5750,13 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                           {!matchEnded && isCreator && !isViewer && (
                             <button
                               onClick={endMatch}
-                              className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded font-semibold"
+                              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm tracking-widest transition-all ${darkMode
+                                ? 'bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-900/50'
+                                : 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20'
+                                }`}
                             >
-                              End Game for All Users
+                              <IconStop />
+                              END GAME FOR ALL USERS
                             </button>
                           )}
                         </div>
