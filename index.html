@@ -733,6 +733,12 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         </svg>
       );
 
+      const IconRefresh = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      );
+
       // Normalization functions
       const normalizePeriodStats = (stats) => {
         const normalized = {};
@@ -5024,10 +5030,10 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 {!currentUser && (
                   <button
                     onClick={() => { setForceAuth(true) }}
-                    className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 rounded-xl font-semibold text-lg shadow-lg flex items-center justify-center gap-2 transition-colors"
+                    className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-bold text-sm tracking-widest shadow-lg flex items-center justify-center gap-3 transition-all"
                   >
-                    <span>🔐</span>
-                    <span>LOGIN / CREATE ACCOUNT</span>
+                    <IconLogout />
+                    LOGIN / CREATE ACCOUNT
                   </button>
                 )}
 
@@ -5383,7 +5389,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       console.error('Firebase error:', e);
                     });
                   }}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm tracking-widest shadow-lg transition-all"
                 >
                   CREATE & START GAME
                 </button>
@@ -5446,7 +5452,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
               {error && <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">{error}</div>}
 
-              <button onClick={startMatch} className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-colors">CONTINUE TO GAME</button>
+              <button onClick={startMatch} className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-bold text-sm tracking-widest shadow-lg transition-all">CONTINUE TO GAME</button>
             </div>
           </div>
         </div>
@@ -5511,7 +5517,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                   </div>
                 )}
               </div>}
-              <button onClick={joinMatch} disabled={!(inputCode.length === 6 || (inputCode.length === 8 && inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-colors">CONNECT</button>
+              <button onClick={joinMatch} disabled={!(inputCode.length === 6 || (inputCode.length === 8 && inputCode.endsWith('-V')))} className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-400 text-white py-3 rounded-xl font-bold text-sm tracking-widest shadow-lg transition-all">CONNECT</button>
             </div>
           </div>
         </div>
@@ -5646,26 +5652,28 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     </button>
 
                     {!settingsCollapsed.preferences && (
-                      <div className="space-y-2 ml-2">
-                        <label className="flex items-center justify-between py-2">
-                          <span className="text-sm">Dark Mode</span>
-                          <input
-                            type="checkbox"
-                            checked={darkMode}
-                            onChange={e => setDarkMode(e.target.checked)}
-                            className="w-5 h-5"
-                          />
-                        </label>
+                      <div className={`mt-2 p-3 rounded-xl transition-all ${darkMode ? 'bg-gray-800/40' : 'bg-gray-50/80 border border-gray-100 shadow-sm'}`}>
+                        <div className="space-y-1">
+                          <label className="flex items-center justify-between py-2 px-1">
+                            <span className="text-sm font-medium">Dark Mode</span>
+                            <input
+                              type="checkbox"
+                              checked={darkMode}
+                              onChange={e => setDarkMode(e.target.checked)}
+                              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          </label>
 
-                        <label className="flex items-center justify-between py-2">
-                          <span className="text-sm">Keep Screen On</span>
-                          <input
-                            type="checkbox"
-                            checked={keepScreenOn}
-                            onChange={e => setKeepScreenOn(e.target.checked)}
-                            className="w-5 h-5"
-                          />
-                        </label>
+                          <label className="flex items-center justify-between py-2 px-1">
+                            <span className="text-sm font-medium">Keep Screen On</span>
+                            <input
+                              type="checkbox"
+                              checked={keepScreenOn}
+                              onChange={e => setKeepScreenOn(e.target.checked)}
+                              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                          </label>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -5682,83 +5690,85 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       </button>
 
                       {!settingsCollapsed.gameInfo && (
-                        <div className="space-y-3 ml-2">
-                          {/* Match Code - Dölj för viewers */}
-                          {!isViewer && (
-                            <div>
-                              <label className="block text-xs mb-1 opacity-75">Match Code</label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={matchCode}
-                                  readOnly
-                                  className={`flex-1 px-3 py-2 border rounded font-mono text-center font-bold ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
-                                />
-                                <button
-                                  onClick={copyCode}
-                                  className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
-                                >
-                                  COPY
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Viewer Link - Dölj för viewers */}
-                          {!isViewer && (
-                            <div>
-                              <label className="block text-xs mb-1 opacity-75">Viewer Link</label>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={`${window.location.origin}${window.location.pathname}?join=${matchCode}-V`}
-                                  readOnly
-                                  className={`flex-1 px-3 py-2 border rounded font-mono text-xs ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
-                                />
-                                <button
-                                  onClick={() => {
-                                    const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
-                                    navigator.clipboard.writeText(viewerLink).then(() => {
-                                      alert('Viewer link copied!');
-                                    }).catch(() => {
-                                      alert('Failed to copy');
-                                    });
-                                  }}
-                                  className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
-                                >
-                                  COPY
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Connected Users */}
-                          <div className={`${darkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded p-3 text-sm`}>
-                            <div className="flex items-center justify-between">
-                              <span className="opacity-75">Connected Editors:</span>
-                              <span className="font-bold">👥 {connectedUsers}</span>
-                            </div>
-                            {viewerCount > 0 && (
-                              <div className="flex items-center justify-between mt-1">
-                                <span className="opacity-75">Viewers:</span>
-                                <span className="font-bold">👁️ {viewerCount}</span>
+                        <div className={`mt-2 p-3 rounded-xl transition-all ${darkMode ? 'bg-gray-800/40' : 'bg-gray-50/80 border border-gray-100 shadow-sm'}`}>
+                          <div className="space-y-4">
+                            {/* Match Code - Dölj för viewers */}
+                            {!isViewer && (
+                              <div>
+                                <label className="block text-xs mb-2 opacity-75 font-semibold tracking-wide uppercase">Match Code</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={matchCode}
+                                    readOnly
+                                    className={`flex-1 px-3 py-2 border rounded-lg font-mono text-center font-bold ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                  />
+                                  <button
+                                    onClick={copyCode}
+                                    className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
+                                  >
+                                    COPY
+                                  </button>
+                                </div>
                               </div>
                             )}
-                          </div>
 
-                          {/* End Game - endast creator */}
-                          {!matchEnded && isCreator && !isViewer && (
-                            <button
-                              onClick={endMatch}
-                              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm tracking-widest transition-all ${darkMode
-                                ? 'bg-red-900/40 hover:bg-red-900/60 text-red-400 border border-red-900/50'
-                                : 'bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20'
-                                }`}
-                            >
-                              <IconStop />
-                              END GAME FOR ALL USERS
-                            </button>
-                          )}
+                            {/* Viewer Link - Dölj för viewers */}
+                            {!isViewer && (
+                              <div>
+                                <label className="block text-xs mb-2 opacity-75 font-semibold tracking-wide uppercase">Viewer Link</label>
+                                <div className="flex gap-2">
+                                  <input
+                                    type="text"
+                                    value={`${window.location.origin}${window.location.pathname}?join=${matchCode}-V`}
+                                    readOnly
+                                    className={`flex-1 px-3 py-2 border rounded-lg font-mono text-[10px] ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
+                                      navigator.clipboard.writeText(viewerLink).then(() => {
+                                        alert('Viewer link copied!');
+                                      }).catch(() => {
+                                        alert('Failed to copy');
+                                      });
+                                    }}
+                                    className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
+                                  >
+                                    COPY
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Connected Users */}
+                            <div className={`${darkMode ? 'bg-gray-900/40' : 'bg-white border border-gray-100'} rounded-lg p-3 text-sm shadow-sm`}>
+                              <div className="flex items-center justify-between">
+                                <span className="opacity-75 font-medium">Connected Editors:</span>
+                                <span className="font-bold">👥 {connectedUsers}</span>
+                              </div>
+                              {viewerCount > 0 && (
+                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-500/10">
+                                  <span className="opacity-75 font-medium">Viewers:</span>
+                                  <span className="font-bold">👁️ {viewerCount}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* End Game - endast creator */}
+                            {!matchEnded && isCreator && !isViewer && (
+                              <button
+                                onClick={endMatch}
+                                className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode
+                                  ? 'bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/30'
+                                  : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-100'
+                                  }`}
+                              >
+                                <IconStop />
+                                END GAME FOR ALL USERS
+                              </button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -5776,145 +5786,151 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       </button>
 
                       {!settingsCollapsed.gameSettings && (
-                        <div className="space-y-3 ml-2">
-                          {/* Tracking Mode */}
-                          <div>
-                            <label className="block text-xs mb-2 opacity-75 font-semibold">Tracking Mode</label>
-                            <div className={`flex p-1 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                        <div className={`mt-2 p-3 rounded-xl transition-all ${darkMode ? 'bg-gray-800/40' : 'bg-gray-50/80 border border-gray-100 shadow-sm'}`}>
+                          <div className="space-y-4">
+                            {/* Tracking Mode */}
+                            <div>
+                              <label className="block text-xs mb-2 opacity-75 font-semibold tracking-wide uppercase">Tracking Mode</label>
+                              <div className={`flex p-1 rounded-xl shadow-inner ${darkMode ? 'bg-gray-900/50' : 'bg-gray-200/50'}`}>
+                                <button
+                                  onClick={() => {
+                                    if (trackingMode === 'advanced' && !window.confirm('Switch to Simple mode? Manual team-level adjustments will be enabled, but player-level stats will be hidden.')) return;
+                                    setTrackingMode('simple');
+                                    if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'simple' })
+                                  }}
+                                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${trackingMode === 'simple'
+                                    ? (darkMode ? 'bg-gray-600 text-white shadow-md' : 'bg-white text-blue-600 shadow-sm')
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                  SIMPLE
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (trackingMode === 'simple' && !window.confirm('Switch to Advanced mode? Manual team-level adjustments will be disabled. Totals will be derived from player events.')) return;
+                                    setTrackingMode('advanced');
+                                    if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'advanced' })
+                                  }}
+                                  className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${trackingMode === 'advanced'
+                                    ? (darkMode ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-blue-600 shadow-sm')
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                                >
+                                  ADVANCED
+                                </button>
+                              </div>
+                              <p className={`text-[10px] mt-2 opacity-50 text-center italic leading-tight`}>
+                                {trackingMode === 'advanced'
+                                  ? 'Advanced mode: Totals are auto-calculated from player events.'
+                                  : 'Simple mode: Manual + / - buttons are used for team totals.'}
+                              </p>
+                            </div>
+
+                            {/* Home Team Name */}
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">Home Team</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={homeName}
+                                  onChange={e => { setHomeName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ homeName: e.target.value }) }}
+                                  disabled={matchEnded || isViewer}
+                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                />
+                                <button
+                                  onClick={() => setHomeName('')}
+                                  disabled={matchEnded || isViewer}
+                                  className={`px-3 py-2 rounded-lg text-xs font-bold ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Away Team Name */}
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">Away Team</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={awayName}
+                                  onChange={e => { setAwayName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ awayName: e.target.value }) }}
+                                  disabled={matchEnded || isViewer}
+                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                />
+                                <button
+                                  onClick={() => setAwayName('')}
+                                  disabled={matchEnded || isViewer}
+                                  className={`px-3 py-2 rounded-lg text-xs font-bold ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Team Rosters */}
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">Team Rosters</label>
                               <button
                                 onClick={() => {
-                                  if (trackingMode === 'advanced' && !window.confirm('Switch to Simple mode? Manual team-level adjustments will be enabled, but player-level stats will be hidden.')) return;
-                                  setTrackingMode('simple');
-                                  if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'simple' })
-                                }}
-                                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'simple'
-                                  ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                                  : 'text-gray-500 hover:text-gray-700'
-                                  }`}
-                              >
-                                SIMPLE
-                              </button>
-                              <button
-                                onClick={() => {
-                                  if (trackingMode === 'simple' && !window.confirm('Switch to Advanced mode? Manual team-level adjustments will be disabled. Totals will be derived from player events.')) return;
-                                  setTrackingMode('advanced');
-                                  if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'advanced' })
-                                }}
-                                className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${trackingMode === 'advanced'
-                                  ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                                  : 'text-gray-500 hover:text-gray-700'
-                                  }`}
-                              >
-                                ADVANCED
-                              </button>
-                            </div>
-                            <p className={`text-[10px] mt-2 opacity-60 text-center italic`}>
-                              {trackingMode === 'advanced'
-                                ? 'Advanced mode: Totals are auto-calculated from player events.'
-                                : 'Simple mode: Manual + / - buttons are used for team totals.'}
-                            </p>
-                          </div>
-
-                          {/* Home Team Name */}
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">Home Team</label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={homeName}
-                                onChange={e => { setHomeName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ homeName: e.target.value }) }}
-                                disabled={matchEnded || isViewer}
-                                className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                              />
-                              <button
-                                onClick={() => setHomeName('')}
-                                disabled={matchEnded || isViewer}
-                                className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-                              >
-                                Clear
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Away Team Name */}
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">Away Team</label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                value={awayName}
-                                onChange={e => { setAwayName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ awayName: e.target.value }) }}
-                                disabled={matchEnded || isViewer}
-                                className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                              />
-                              <button
-                                onClick={() => setAwayName('')}
-                                disabled={matchEnded || isViewer}
-                                className={`px-3 py-2 rounded text-sm ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
-                              >
-                                Clear
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Team Rosters */}
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">Team Rosters</label>
-                            <button
-                              onClick={() => {
-                                const currentRoster = {
-                                  home: {
-                                    players: Object.keys(playerStats.home?.players || {})
-                                      .filter(pNum => playerStats.home.players[pNum].position !== 'GK')
-                                      .sort((a, b) => parseInt(a) - parseInt(b))
-                                      .join(', '),
-                                    goalies: goalieMap.home
-                                  },
-                                  away: {
-                                    players: Object.keys(playerStats.away?.players || {})
-                                      .filter(pNum => playerStats.away.players[pNum].position !== 'GK')
-                                      .sort((a, b) => parseInt(a) - parseInt(b))
-                                      .join(', '),
-                                    goalies: goalieMap.away
-                                  }
-                                };
-
-                                const rosterToUse = (currentRoster.home.players || currentRoster.away.players)
-                                  ? currentRoster
-                                  : {
+                                  const currentRoster = {
                                     home: {
-                                      players: defaultHomeRoster,
-                                      goalies: defaultHomeGoalies
+                                      players: Object.keys(playerStats.home?.players || {})
+                                        .filter(pNum => playerStats.home.players[pNum].position !== 'GK')
+                                        .sort((a, b) => parseInt(a) - parseInt(b))
+                                        .join(', '),
+                                      goalies: goalieMap.home
                                     },
                                     away: {
-                                      players: defaultAwayRoster,
-                                      goalies: defaultAwayGoalies
+                                      players: Object.keys(playerStats.away?.players || {})
+                                        .filter(pNum => playerStats.away.players[pNum].position !== 'GK')
+                                        .sort((a, b) => parseInt(a) - parseInt(b))
+                                        .join(', '),
+                                      goalies: goalieMap.away
                                     }
                                   };
 
-                                setRosterModalContext('game');
-                                setRosterModalData(rosterToUse);
-                                setShowRosterModal(true);
-                              }}
-                              disabled={matchEnded}
-                              className={`w-full ${matchEnded
-                                ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-400 cursor-not-allowed')
-                                : (darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300')
-                                } py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
+                                  const rosterToUse = (currentRoster.home.players || currentRoster.away.players)
+                                    ? currentRoster
+                                    : {
+                                      home: {
+                                        players: defaultHomeRoster,
+                                        goalies: defaultHomeGoalies
+                                      },
+                                      away: {
+                                        players: defaultAwayRoster,
+                                        goalies: defaultAwayGoalies
+                                      }
+                                    };
+
+                                  setRosterModalContext('game');
+                                  setRosterModalData(rosterToUse);
+                                  setShowRosterModal(true);
+                                }}
+                                disabled={matchEnded}
+                                className={`w-full ${matchEnded
+                                  ? (darkMode ? 'bg-gray-800 text-gray-600 cursor-not-allowed border-gray-700' : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200')
+                                  : (darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600' : 'bg-white hover:bg-gray-50 border border-gray-200')
+                                  } py-2 rounded-lg font-bold text-xs tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all`}
+                              >
+                                <HockeyHelmetIcon />
+                                <span>MANAGE ROSTERS</span>
+                              </button>
+                            </div>
+
+                            {/* Reset Stats */}
+                            <button
+                              onClick={resetCounters}
+                              disabled={matchEnded || isViewer}
+                              className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode
+                                ? 'bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/30'
+                                : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-100'
+                                }`}
                             >
-                              <HockeyHelmetIcon />
-                              <span>Manage Rosters</span>
+                              <IconRefresh />
+                              RESET ALL STATS
                             </button>
                           </div>
-
-                          {/* Reset Stats */}
-                          <button
-                            onClick={resetCounters}
-                            disabled={matchEnded || isViewer}
-                            className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600 text-red-400' : 'bg-white hover:bg-gray-50 border border-red-300 text-red-600'} py-2 rounded font-semibold`}
-                          >
-                            Reset All Stats
-                          </button>
                         </div>
                       )}
                     </div>
@@ -5932,73 +5948,72 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       </button>
 
                       {!settingsCollapsed.content && (
-                        <div className="space-y-3 ml-2">
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">Spotify Playlist</label>
-                            <div className="flex gap-2">
+                        <div className={`mt-2 p-3 rounded-xl transition-all ${darkMode ? 'bg-gray-800/40' : 'bg-gray-50/80 border border-gray-100 shadow-sm'}`}>
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">Spotify Playlist</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={spotifyPlaylist}
+                                  onChange={e => { setSpotifyPlaylist(e.target.value); setSpotifyLoaded(false) }}
+                                  placeholder="https://open.spotify.com/playlist/..."
+                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                />
+                                <button
+                                  onClick={() => { setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq'); setSpotifyLoaded(false) }}
+                                  className={`px-3 py-2 rounded-lg text-xs font-bold ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
+                                >
+                                  Default
+                                </button>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">External Link Title</label>
                               <input
                                 type="text"
-                                value={spotifyPlaylist}
-                                onChange={e => { setSpotifyPlaylist(e.target.value); setSpotifyLoaded(false) }}
-                                placeholder="https://open.spotify.com/playlist/..."
-                                className={`flex-1 px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
+                                value={externalLinkTitle}
+                                onChange={e => setExternalLinkTitle(e.target.value)}
+                                placeholder="Club Rules"
+                                className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
                               />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">External Link URL</label>
+                              <input
+                                type="text"
+                                value={externalLinkUrl}
+                                onChange={e => setExternalLinkUrl(e.target.value)}
+                                placeholder="https://..."
+                                className={`w-full px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs mb-1.5 opacity-75 font-semibold tracking-wide uppercase">Default Rosters</label>
                               <button
-                                onClick={() => { setSpotifyPlaylist('https://open.spotify.com/playlist/3HunXm4QT4dxcOz6eAljak?si=mKiXLeNMQM6ioJivpWP-EQ&pi=lAZXLD_QSPmpq'); setSpotifyLoaded(false) }}
-                                className={`px-3 py-2 rounded text-sm whitespace-nowrap ${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'}`}
+                                onClick={() => {
+                                  setRosterModalContext('default');
+                                  setRosterModalData({
+                                    home: {
+                                      players: defaultHomeRoster,
+                                      goalies: defaultHomeGoalies
+                                    },
+                                    away: {
+                                      players: defaultAwayRoster,
+                                      goalies: defaultAwayGoalies
+                                    }
+                                  });
+                                  setShowRosterModal(true);
+                                }}
+                                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border border-gray-600' : 'bg-white hover:bg-gray-50 border border-gray-200'} py-2 rounded-lg font-bold text-xs tracking-widest shadow-sm flex items-center justify-center gap-2 transition-all`}
                               >
-                                Default
+                                <HockeyHelmetIcon />
+                                <span>EDIT DEFAULT ROSTERS</span>
                               </button>
                             </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">External Link Title</label>
-                            <input
-                              type="text"
-                              value={externalLinkTitle}
-                              onChange={e => setExternalLinkTitle(e.target.value)}
-                              placeholder="Club Rules"
-                              className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">External Link</label>
-                            <input
-                              type="text"
-                              value={externalLinkUrl}
-                              onChange={e => setExternalLinkUrl(e.target.value)}
-                              placeholder="https://..."
-                              className={`w-full px-3 py-2 border rounded text-sm ${darkMode ? 'bg-gray-800 border-gray-600 text-white' : 'border-gray-300'}`}
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs mb-1 opacity-75">Default Rosters</label>
-                            <button
-                              onClick={() => {
-                                setRosterModalContext('default');
-                                setRosterModalData({
-                                  home: {
-                                    players: defaultHomeRoster,
-                                    goalies: defaultHomeGoalies
-                                  },
-                                  away: {
-                                    players: defaultAwayRoster,
-                                    goalies: defaultAwayGoalies
-                                  }
-                                });
-                                setShowRosterModal(true);
-                              }}
-                              className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' : 'bg-gray-100 hover:bg-gray-200 border border-gray-300'} py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2`}
-                            >
-                              <HockeyHelmetIcon />
-                              <span>Edit Default Rosters</span>
-                            </button>
-                            <p className={`text-xs mt-1 opacity-60`}>
-                              Pre-fill rosters for new games
-                            </p>
                           </div>
                         </div>
                       )}
@@ -6018,7 +6033,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       </button>
 
                       {!settingsCollapsed.account && (
-                        <div className="ml-2">
+                        <div className={`mt-2 p-3 rounded-xl transition-all ${darkMode ? 'bg-gray-800/40' : 'bg-gray-50/80 border border-gray-100 shadow-sm'}`}>
                           <button
                             onClick={async () => {
                               if (window.confirm('Sign out from your account?')) {
@@ -6027,9 +6042,13 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                 setScreen('start');
                               }
                             }}
-                            className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-red-400' : 'bg-gray-100 hover:bg-gray-200 text-red-600'} py-2 rounded font-semibold text-sm`}
+                            className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode
+                              ? 'bg-gray-800 hover:bg-red-900/40 text-red-400 border border-gray-600'
+                              : 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-100'
+                              }`}
                           >
-                            Sign Out
+                            <IconLogout />
+                            LOG OUT
                           </button>
                         </div>
                       )}
