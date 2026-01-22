@@ -2944,25 +2944,39 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
           if (trackingMode === 'advanced') {
             setPeriodStats(prev => {
-              const next = { ...prev };
+              const next = structuredClone(prev);
 
-              // Remove old goal if editing
+              // Remove old goal GA and score if editing
               if (isEditing && oldEvent) {
                 const pOld = oldEvent.period;
-                next[pOld] = {
-                  ...next[pOld],
-                  homeScore: next[pOld].homeScore - (oldEvent.team === 'home' ? 1 : 0),
-                  awayScore: next[pOld].awayScore - (oldEvent.team === 'away' ? 1 : 0)
-                };
+                const scoringTeam = oldEvent.team;
+                const goalieTeam = scoringTeam === 'home' ? 'away' : 'home';
+
+                // Decrement score
+                next[pOld][scoringTeam + 'Score'] = Math.max(0, next[pOld][scoringTeam + 'Score'] - 1);
+
+                // Decrement GA for the goalie (we assume the active one for simplicity, 
+                // as the app doesn't store per-event goalie mapping yet)
+                const activeGoalieAtTime = activeGoalies[goalieTeam];
+                if (next[pOld][goalieTeam + 'Goalie'] && next[pOld][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                  next[pOld][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[pOld][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+                }
               }
 
-              // Add new goal
+              // Add new goal GA and score
               const pNew = newEvent.period;
-              next[pNew] = {
-                ...next[pNew],
-                homeScore: next[pNew].homeScore + (newEvent.team === 'home' ? 1 : 0),
-                awayScore: next[pNew].awayScore + (newEvent.team === 'away' ? 1 : 0)
-              };
+              const scoringTeamNew = newEvent.team;
+              const goalieTeamNew = scoringTeamNew === 'home' ? 'away' : 'home';
+
+              // Increment score
+              next[pNew][scoringTeamNew + 'Score'] = (next[pNew][scoringTeamNew + 'Score'] || 0) + 1;
+
+              // Increment GA for the goalie
+              const activeGoalieAtTimeNew = activeGoalies[goalieTeamNew];
+              if (!next[pNew][goalieTeamNew + 'Goalie']) {
+                next[pNew][goalieTeamNew + 'Goalie'] = { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } };
+              }
+              next[pNew][goalieTeamNew + 'Goalie'][activeGoalieAtTimeNew].ga = (next[pNew][goalieTeamNew + 'Goalie'][activeGoalieAtTimeNew].ga || 0) + 1;
 
               return next;
             });
@@ -2974,13 +2988,28 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
             if (isEditing && oldEvent) {
               const pOld = oldEvent.period;
-              next[pOld].homeScore -= oldEvent.team === 'home' ? 1 : 0;
-              next[pOld].awayScore -= oldEvent.team === 'away' ? 1 : 0;
+              const scoringTeam = oldEvent.team;
+              const goalieTeam = scoringTeam === 'home' ? 'away' : 'home';
+
+              next[pOld][scoringTeam + 'Score'] = Math.max(0, next[pOld][scoringTeam + 'Score'] - 1);
+
+              const activeGoalieAtTime = activeGoalies[goalieTeam];
+              if (next[pOld][goalieTeam + 'Goalie'] && next[pOld][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                next[pOld][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[pOld][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+              }
             }
 
             const pNew = newEvent.period;
-            next[pNew].homeScore += newEvent.team === 'home' ? 1 : 0;
-            next[pNew].awayScore += newEvent.team === 'away' ? 1 : 0;
+            const scoringTeamNew = newEvent.team;
+            const goalieTeamNew = scoringTeamNew === 'home' ? 'away' : 'home';
+
+            next[pNew][scoringTeamNew + 'Score'] = (next[pNew][scoringTeamNew + 'Score'] || 0) + 1;
+
+            const activeGoalieAtTimeNew = activeGoalies[goalieTeamNew];
+            if (!next[pNew][goalieTeamNew + 'Goalie']) {
+              next[pNew][goalieTeamNew + 'Goalie'] = { starter: { saves: 0, ga: 0 }, backup: { saves: 0, ga: 0 } };
+            }
+            next[pNew][goalieTeamNew + 'Goalie'][activeGoalieAtTimeNew].ga = (next[pNew][goalieTeamNew + 'Goalie'][activeGoalieAtTimeNew].ga || 0) + 1;
 
             matchRef.current.update({ periodStats: next });
           }
@@ -4350,17 +4379,21 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                         // Advanced mode: remove goal from team score
                                         if (trackingMode === 'advanced') {
                                           setPeriodStats(prev => {
+                                            const next = structuredClone(prev);
                                             const p = eventToDelete.period;
                                             const wasHome = eventToDelete.team === 'home';
+                                            const goalieTeam = wasHome ? 'away' : 'home';
 
-                                            return {
-                                              ...prev,
-                                              [p]: {
-                                                ...prev[p],
-                                                homeScore: prev[p].homeScore - (wasHome ? 1 : 0),
-                                                awayScore: prev[p].awayScore - (wasHome ? 0 : 1)
-                                              }
-                                            };
+                                            // Decrement score
+                                            next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
+
+                                            // Decrement GA for the goalie
+                                            const activeGoalieAtTime = activeGoalies[goalieTeam];
+                                            if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                                              next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+                                            }
+
+                                            return next;
                                           });
                                         }
 
@@ -4370,16 +4403,21 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                         setGoalEvents(updatedEvents);
 
                                         if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
-                                          matchRef.current.update({
-                                            periodStats: {
-                                              ...periodStats,
-                                              [eventToDelete.period]: {
-                                                ...periodStats[eventToDelete.period],
-                                                homeScore: periodStats[eventToDelete.period].homeScore - (eventToDelete.team === 'home' ? 1 : 0),
-                                                awayScore: periodStats[eventToDelete.period].awayScore - (eventToDelete.team === 'away' ? 1 : 0)
-                                              }
-                                            }
-                                          });
+                                          const next = structuredClone(periodStats);
+                                          const p = eventToDelete.period;
+                                          const wasHome = eventToDelete.team === 'home';
+                                          const goalieTeam = wasHome ? 'away' : 'home';
+
+                                          // Decrement score
+                                          next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
+
+                                          // Decrement GA for the goalie
+                                          const activeGoalieAtTime = activeGoalies[goalieTeam];
+                                          if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                                            next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+                                          }
+
+                                          matchRef.current.update({ periodStats: next });
                                         }
 
 
