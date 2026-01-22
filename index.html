@@ -2695,39 +2695,139 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
       const genReport = () => {
         const d = new Date().toLocaleDateString();
-        let r = `Game Report - ${d}\n${homeName} ${totals.homeScore} - ${totals.awayScore} ${awayName}\n\nPERIOD BREAKDOWN:\n`;
+        const t = calcTotals();
+        let report = `=== GAME REPORT - ${d} ===\n`;
+        report += `${homeName} ${t.homeScore} - ${t.awayScore} ${awayName}\n\n`;
+
+        // Section 2: Team Totals
+        report += `TEAM TOTALS:\n`;
+        const homeSOG = t.awaySaves + t.homeScore;
+        const awaySOG = t.homeSaves + t.awayScore;
+        report += `${homeName}: ${t.homeScore} G, ${homeSOG} SOG, ${t.homeSaves} SVS (${calcSP(t.homeSaves, t.awayScore)}%)\n`;
+        report += `${awayName}: ${t.awayScore} G, ${awaySOG} SOG, ${t.awaySaves} SVS (${calcSP(t.awaySaves, t.homeScore)}%)\n\n`;
+
+        // Section 3: Period Breakdown
+        report += `PERIOD BREAKDOWN:\n`;
         Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).forEach(p => {
           const ps = periodStats[p];
-          const pLabel = parseInt(p) <= 3 ? `Period ${p}` : `OT`;
-          r += `${pLabel}: ${homeName} ${ps.homeScore}-${ps.awayScore} ${awayName}\n`;
+          if (!ps) return;
+          const pLabel = parseInt(p) <= 3 ? `P${p}` : `OT`;
+          const pHomeSOG = (ps.awaySaves || 0) + (ps.homeScore || 0);
+          const pAwaySOG = (ps.homeSaves || 0) + (ps.awayScore || 0);
+          report += `${pLabel}: ${homeName} ${ps.homeScore} (${pHomeSOG} SOG) - ${ps.awayScore} (${pAwaySOG} SOG) ${awayName}\n`;
         });
-        r += `\nGOALIE STATS:\n${homeName}: ${totals.homeSaves} saves, ${totals.homeSaves + totals.awayScore} shots against, ${calcSP(totals.homeSaves, totals.awayScore)}%\n`;
-        r += `${awayName}: ${totals.awaySaves} saves, ${totals.awaySaves + totals.homeScore} shots against, ${calcSP(totals.awaySaves, totals.homeScore)}%\n`;
-        return r;
+        report += `\n`;
+
+        // Section 4: Goalie Stats
+        report += `GOALIE STATISTICS:\n`;
+        ['home', 'away'].forEach(team => {
+          const teamName = team === 'home' ? homeName : awayName;
+          const gStats = team === 'home' ? t.homeGoalie : t.awayGoalie;
+          let teamGoalies = [];
+
+          ['starter', 'backup'].forEach(role => {
+            const data = gStats[role];
+            if ((data.saves || 0) > 0 || (data.ga || 0) > 0) {
+              const gNum = goalieMap?.[team]?.[role] || (role === 'starter' ? 'Start' : 'Back');
+              teamGoalies.push(`#${gNum} (${role}): ${data.saves} SVS / ${data.ga} GA (${calcSP(data.saves, data.ga)}%)`);
+            }
+          });
+          if (teamGoalies.length > 0) {
+            report += `${teamName}: ${teamGoalies.join(', ')}\n`;
+          }
+        });
+        report += `\n`;
+
+        // Section 5: Player Totals
+        if (playerStats.home?.players || playerStats.away?.players) {
+          report += `INDIVIDUAL TOTALS:\n`;
+          ['home', 'away'].forEach(team => {
+            const teamName = team === 'home' ? homeName : awayName;
+            const players = playerStats[team]?.players || {};
+            const playerLines = Object.keys(players)
+              .filter(pNum => players[pNum].position !== 'GK')
+              .sort((a, b) => parseInt(a) - parseInt(b))
+              .map(pNum => {
+                const pData = players[pNum];
+                const g = pData.total['G'] || 0;
+                const a = pData.total['A'] || 0;
+                const points = g + a;
+                const plusMinus = (pData.total['OnIce+'] || 0) - (pData.total['OnIce-'] || 0);
+                const pmFormatted = plusMinus > 0 ? `+${plusMinus}` : plusMinus;
+                return `#${pNum} (${points}p: ${g}+${a}, ${pmFormatted})`;
+              });
+
+            if (playerLines.length > 0) {
+              report += `${teamName}: ${playerLines.join(', ')}\n`;
+            }
+          });
+        }
+
+        return report;
       };
 
       const generateCSV = () => {
         let csv = '';
         const d = new Date().toLocaleDateString();
+        const t = calcTotals();
 
-        csv += `Game Report,${d}\n`;
-        csv += `${homeName},${totals.homeScore},${awayName},${totals.awayScore}\n\n`;
+        // Section 1: Match Summary
+        csv += `MATCH SUMMARY\n`;
+        csv += `Date,${d}\n`;
+        csv += `Home Team,${homeName}\n`;
+        csv += `Away Team,${awayName}\n`;
+        csv += `Final Score,${t.homeScore} - ${t.awayScore}\n\n`;
 
-        csv += `Period Breakdown\n`;
-        csv += `Period,${homeName},${awayName}\n`;
+        // Section 2: Team Statistics (Totals)
+        csv += `TEAM STATISTICS (TOTALS)\n`;
+        csv += `Team,Goals,SOG,Saves,SVS%\n`;
+        const homeSOG = t.awaySaves + t.homeScore;
+        const awaySOG = t.homeSaves + t.awayScore;
+        csv += `${homeName},${t.homeScore},${homeSOG},${t.homeSaves},${calcSP(t.homeSaves, t.awayScore)}%\n`;
+        csv += `${awayName},${t.awayScore},${awaySOG},${t.awaySaves},${calcSP(t.awaySaves, t.homeScore)}%\n\n`;
+
+        // Section 3: Team Statistics (Period Breakdown)
+        csv += `TEAM STATISTICS (PERIOD BREAKDOWN)\n`;
+        csv += `Period,Team,Goals,SOG,Saves\n`;
         Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).forEach(p => {
           const ps = periodStats[p];
+          if (!ps) return;
           const pLabel = parseInt(p) <= 3 ? `Period ${p}` : `OT`;
-          csv += `${pLabel},${ps.homeScore},${ps.awayScore}\n`;
+
+          // Home period
+          const pHomeSOG = (ps.awaySaves || 0) + (ps.homeScore || 0);
+          csv += `${pLabel},${homeName},${ps.homeScore || 0},${pHomeSOG},${ps.homeSaves || 0}\n`;
+
+          // Away period
+          const pAwaySOG = (ps.homeSaves || 0) + (ps.awayScore || 0);
+          csv += `${pLabel},${awayName},${ps.awayScore || 0},${pAwaySOG},${ps.awaySaves || 0}\n`;
         });
+        csv += `\n`;
 
-        csv += `\nGoalie Statistics\n`;
-        csv += `Team,Saves,Shots Against,Save %\n`;
-        csv += `${homeName},${totals.homeSaves},${totals.homeSaves + totals.awayScore},${calcSP(totals.homeSaves, totals.awayScore)}%\n`;
-        csv += `${awayName},${totals.awaySaves},${totals.awaySaves + totals.homeScore},${calcSP(totals.awaySaves, totals.homeScore)}%\n`;
+        // Section 4: Individual Goalie Statistics (Totals)
+        csv += `INDIVIDUAL GOALIE STATISTICS (TOTALS)\n`;
+        csv += `Team,#,Role,GA,Saves,SA,SVS%\n`;
 
+        ['home', 'away'].forEach(team => {
+          const teamName = team === 'home' ? homeName : awayName;
+          const gStats = team === 'home' ? t.homeGoalie : t.awayGoalie;
+
+          ['starter', 'backup'].forEach(role => {
+            const data = gStats[role];
+            const hasData = (data.saves || 0) > 0 || (data.ga || 0) > 0;
+            if (hasData) {
+              const gNum = goalieMap?.[team]?.[role] || (role === 'starter' ? 'Start' : 'Back');
+              const sa = (data.saves || 0) + (data.ga || 0);
+              csv += `${teamName},${gNum},${role.toUpperCase()},${data.ga || 0},${data.saves || 0},${sa},${calcSP(data.saves || 0, data.ga || 0)}%\n`;
+            }
+          });
+        });
+        csv += `\n`;
+
+        // Section 5: Individual Player Statistics (Totals)
         if (playerStats.home?.players || playerStats.away?.players) {
-          csv += `\nPlayer Statistics\n`;
+          csv += `INDIVIDUAL PLAYER STATISTICS (TOTALS)\n`;
+          csv += `Team,#,G,A,TP,+/-,SOG,FO%,FO+,FO-\n`;
 
           ['home', 'away'].forEach(team => {
             const teamName = team === 'home' ? homeName : awayName;
@@ -2736,35 +2836,19 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               .filter(pNum => players[pNum].position !== 'GK')
               .sort((a, b) => parseInt(a) - parseInt(b));
 
-            if (playerNums.length === 0) return;
-
-            csv += `\n${teamName}\n`;
-            csv += `Player #,Period,G,A,OnIce+,OnIce-,+/-,FO+,FO-,FO%,SOG\n`;
-
             playerNums.forEach(pNum => {
               const pData = players[pNum];
-
-              Object.keys(pData.periods).sort((a, b) => parseInt(a) - parseInt(b)).forEach(period => {
-                const pLabel = parseInt(period) <= 3 ? `P${period}` : `OT`;
-                const stats = pData.periods[period];
-                const onIcePlus = stats['OnIce+'] || 0;
-                const onIceMinus = stats['OnIce-'] || 0;
-                const plusMinus = onIcePlus - onIceMinus;
-                const foPlus = stats['FO+'] || 0;
-                const foMinus = stats['FO-'] || 0;
-                const foTotal = foPlus + foMinus;
-                const foPct = foTotal === 0 ? '-' : ((foPlus / foTotal) * 100).toFixed(1);
-                csv += `${pNum},${pLabel},${stats['G'] || 0},${stats['A'] || 0},${onIcePlus},${onIceMinus},${plusMinus},${foPlus},${foMinus},${foPct},${stats['SOG'] || 0}\n`;
-              });
-
-              const totalOnIcePlus = pData.total['OnIce+'];
-              const totalOnIceMinus = pData.total['OnIce-'];
-              const totalPlusMinus = totalOnIcePlus - totalOnIceMinus;
-              const totalFoPlus = pData.total['FO+'];
-              const totalFoMinus = pData.total['FO-'];
+              const totalG = pData.total['G'] || 0;
+              const totalA = pData.total['A'] || 0;
+              const totalTP = totalG + totalA;
+              const totalPlusMinus = (pData.total['OnIce+'] || 0) - (pData.total['OnIce-'] || 0);
+              const totalSOG = pData.total['SOG'] || 0;
+              const totalFoPlus = pData.total['FO+'] || 0;
+              const totalFoMinus = pData.total['FO-'] || 0;
               const totalFoTotal = totalFoPlus + totalFoMinus;
               const totalFoPct = totalFoTotal === 0 ? '-' : ((totalFoPlus / totalFoTotal) * 100).toFixed(1);
-              csv += `${pNum},TOTAL,${pData.total['G']},${pData.total['A']},${totalOnIcePlus},${totalOnIceMinus},${totalPlusMinus},${totalFoPlus},${totalFoMinus},${totalFoPct},${pData.total['SOG']}\n`;
+
+              csv += `${teamName},${pNum},${totalG},${totalA},${totalTP},${totalPlusMinus},${totalSOG},${totalFoPct},${totalFoPlus},${totalFoMinus}\n`;
             });
           });
         }
