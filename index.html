@@ -556,6 +556,13 @@
       const [otherFormCollapsed, setOtherFormCollapsed] = useState(false);
       const [otherTimelineCollapsed, setOtherTimelineCollapsed] = useState(true);
       const [highlightEventId, setHighlightEventId] = useState(null);
+
+      // Announcement Wizard State
+      const [announcementWizardOpen, setAnnouncementWizardOpen] = useState(false);
+      const [announcementTitle, setAnnouncementTitle] = useState('');
+      const [announcementMessage, setAnnouncementMessage] = useState('');
+      const [announcementTime, setAnnouncementTime] = useState('');
+      const [editingAnnouncementIndex, setEditingAnnouncementIndex] = useState(null);
       const audioRefs = { homeGoal: useRef(null), awayGoal: useRef(null), homePenalty: useRef(null), awayPenalty: useRef(null), intro: useRef(null) };
       const [introPlaying, setIntroPlaying] = useState(false);
       const matchRef = useRef(null);
@@ -737,6 +744,12 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
       const IconRefresh = () => (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      );
+
+      const IconMegaphone = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-5 h-5">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
         </svg>
       );
 
@@ -4101,404 +4114,470 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 </div>
               )}
 
-              {playerStatsMoment === 'Goal' && (
-                <div className="max-w-4xl mx-auto goal-form">
 
-                  <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
+              {/* Header */}
 
-                    {!matchEnded && (
-                      <button
-                        onClick={() => setGoalFormCollapsed(!goalFormCollapsed)}
-                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                      >
-                        <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'Add Goal'}</span>
-                        <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
-                          <IconChevronDown />
-                        </span>
-                      </button>
-                    )}
 
-                    {!goalFormCollapsed && (
-                      <div className="p-6" style={{ animation: 'fadeIn 0.3s ease-in' }}>
+              {
+                playerStatsMoment === 'Goal' && (
+                  <div className="max-w-4xl mx-auto goal-form">
 
-                        <div className="mb-4">
-                          <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Who scored?
-                          </label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              onClick={() => setRecordingGoal('home')}
-                              className={recordingGoal === 'home'
-                                ? (darkMode ? 'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold' : 'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
-                                : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
-                              }
-                            >
-                              {homeName}
-                            </button>
-                            <button
-                              onClick={() => setRecordingGoal('away')}
-                              className={recordingGoal === 'away'
-                                ? (darkMode ? 'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold' : 'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
-                                : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
-                              }
-                            >
-                              {awayName}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="mb-6">
-                          <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Situation
-                          </label>
-                          <div className="grid grid-cols-3 gap-2">
-                            {['EQ', 'PP', 'PP2', 'SH', 'SH2', 'EN'].map(sit => (
+                    <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
+
+                      {!matchEnded && (
+                        <button
+                          onClick={() => setGoalFormCollapsed(!goalFormCollapsed)}
+                          className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-3 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                        >
+                          <span>{editingGoalIndex !== null ? `Edit Goal #${editingGoalIndex + 1}` : 'Add Goal'}</span>
+                          <span className={`transition-transform duration-300 ${goalFormCollapsed ? '' : 'rotate-180'}`}>
+                            <IconChevronDown />
+                          </span>
+                        </button>
+                      )}
+
+                      {!goalFormCollapsed && (
+                        <div className="p-6" style={{ animation: 'fadeIn 0.3s ease-in' }}>
+
+                          <div className="mb-4">
+                            <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
+                              Who scored?
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
                               <button
-                                key={sit}
-                                onClick={() => setGoalSituation(sit)}
-                                className={goalSituation === sit
+                                onClick={() => setRecordingGoal('home')}
+                                className={recordingGoal === 'home'
                                   ? (darkMode ? 'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold' : 'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
                                   : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
                                 }
                               >
-                                {sit}
+                                {homeName}
                               </button>
-                            ))}
+                              <button
+                                onClick={() => setRecordingGoal('away')}
+                                className={recordingGoal === 'away'
+                                  ? (darkMode ? 'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold' : 'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+                                  : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
+                                }
+                              >
+                                {awayName}
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                          <div className="mb-6">
+                            <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
+                              Situation
+                            </label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {['EQ', 'PP', 'PP2', 'SH', 'SH2', 'EN'].map(sit => (
+                                <button
+                                  key={sit}
+                                  onClick={() => setGoalSituation(sit)}
+                                  className={goalSituation === sit
+                                    ? (darkMode ? 'bg-yellow-500 text-gray-900 py-2 rounded-lg font-bold' : 'bg-yellow-400 text-gray-900 py-2 rounded-lg font-bold')
+                                    : (darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-semibold' : 'bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold')
+                                  }
+                                >
+                                  {sit}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
 
-                        <div className="mb-6">
-                          <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
-                            Game Time (optional)
-                          </label>
-                          <input
-                            type="text"
-                            value={goalTime}
-                            onChange={(e) => setGoalTime(e.target.value)}
-                            placeholder="e.g. 12:34"
-                            className={darkMode ? 'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white' : 'w-full px-4 py-2 border border-gray-300 rounded-lg'}
-                          />
-                        </div>
+                          <div className="mb-6">
+                            <label className={darkMode ? 'block text-sm font-semibold mb-2 text-gray-300' : 'block text-sm font-semibold mb-2 text-gray-700'}>
+                              Game Time (optional)
+                            </label>
+                            <input
+                              type="text"
+                              value={goalTime}
+                              onChange={(e) => setGoalTime(e.target.value)}
+                              placeholder="e.g. 12:34"
+                              className={darkMode ? 'w-full px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white' : 'w-full px-4 py-2 border border-gray-300 rounded-lg'}
+                            />
+                          </div>
 
-                        {/* Player tables - visas när lag är valt */}
-                        {recordingGoal && (
-                          <div className="mb-6" style={{ animation: 'fadeIn 0.3s ease-in' }}>
-                            <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 1fr' }}>
-                              {/* Scoring team table */}
-                              <div className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg overflow-hidden`}>
-                                <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
-                                  <table className={`w-full ${darkMode ? 'text-gray-200' : ''}`}>
-                                    <thead className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100'} sticky top-0 z-10`}>
-                                      <tr>
-                                        <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} z-10`}>#</th>
-                                        {['G', 'A', '+', 'SOG'].map(col => (
-                                          <th key={col} className="px-2 py-2 text-center text-xs font-semibold">{col}</th>
-                                        ))}
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {(() => {
-                                        const team = recordingGoal;
-                                        const players = playerStats?.[team]?.players ?? {};
-                                        const playerNums = Object.keys(players)
-                                          .filter(pNum => players[pNum].position !== 'GK')
-                                          .sort((a, b) => parseInt(a) - parseInt(b));
+                          {/* Player tables - visas när lag är valt */}
+                          {recordingGoal && (
+                            <div className="mb-6" style={{ animation: 'fadeIn 0.3s ease-in' }}>
+                              <div className="grid gap-3" style={{ gridTemplateColumns: '2fr 1fr' }}>
+                                {/* Scoring team table */}
+                                <div className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg overflow-hidden`}>
+                                  <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
+                                    <table className={`w-full ${darkMode ? 'text-gray-200' : ''}`}>
+                                      <thead className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100'} sticky top-0 z-10`}>
+                                        <tr>
+                                          <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} z-10`}>#</th>
+                                          {['G', 'A', '+', 'SOG'].map(col => (
+                                            <th key={col} className="px-2 py-2 text-center text-xs font-semibold">{col}</th>
+                                          ))}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {(() => {
+                                          const team = recordingGoal;
+                                          const players = playerStats?.[team]?.players ?? {};
+                                          const playerNums = Object.keys(players)
+                                            .filter(pNum => players[pNum].position !== 'GK')
+                                            .sort((a, b) => parseInt(a) - parseInt(b));
 
-                                        if (playerNums.length === 0) {
-                                          return (
-                                            <tr>
-                                              <td colSpan="5" className="text-center py-8 text-sm opacity-60">
-                                                No players added yet
-                                              </td>
-                                            </tr>
-                                          );
-                                        }
+                                          if (playerNums.length === 0) {
+                                            return (
+                                              <tr>
+                                                <td colSpan="5" className="text-center py-8 text-sm opacity-60">
+                                                  No players added yet
+                                                </td>
+                                              </tr>
+                                            );
+                                          }
 
-                                        return playerNums.map(pNum => {
-                                          const playerId = `${team}-${pNum}`;
-                                          const isGoal = goalScorers.includes(playerId);
-                                          const isAssist = goalAssists.includes(playerId);
-                                          const isPlus = goalPlusPlayers.includes(playerId);
-                                          const isSOG = goalSOGPlayers.includes(playerId);
+                                          return playerNums.map(pNum => {
+                                            const playerId = `${team}-${pNum}`;
+                                            const isGoal = goalScorers.includes(playerId);
+                                            const isAssist = goalAssists.includes(playerId);
+                                            const isPlus = goalPlusPlayers.includes(playerId);
+                                            const isSOG = goalSOGPlayers.includes(playerId);
 
-                                          return (
-                                            <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} hover:bg-opacity-50 transition-colors`}>
-                                              <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} z-10`}>{pNum}</td>
+                                            return (
+                                              <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} hover:bg-opacity-50 transition-colors`}>
+                                                <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} z-10`}>{pNum}</td>
 
-                                              {/* G */}
-                                              <td className="px-2 py-2 text-center">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isGoal}
-                                                  onChange={() => {
-                                                    const isAdding = !isGoal;
-                                                    setGoalScorers(prev =>
-                                                      isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
-                                                    );
-                                                    if (isAdding && !isSOG) {
-                                                      setGoalSOGPlayers(prev => [...prev, playerId]);
-                                                    }
-                                                    if (!isAdding && isSOG) {
-                                                      setGoalSOGPlayers(prev => prev.filter(id => id !== playerId));
-                                                    }
-                                                    if (isAdding && !isPlus) {
-                                                      setGoalPlusPlayers(prev => [...prev, playerId]);
-                                                    }
-                                                  }}
-                                                  className="w-5 h-5 cursor-pointer"
-                                                />
-                                              </td>
+                                                {/* G */}
+                                                <td className="px-2 py-2 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isGoal}
+                                                    onChange={() => {
+                                                      const isAdding = !isGoal;
+                                                      setGoalScorers(prev =>
+                                                        isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+                                                      );
+                                                      if (isAdding && !isSOG) {
+                                                        setGoalSOGPlayers(prev => [...prev, playerId]);
+                                                      }
+                                                      if (!isAdding && isSOG) {
+                                                        setGoalSOGPlayers(prev => prev.filter(id => id !== playerId));
+                                                      }
+                                                      if (isAdding && !isPlus) {
+                                                        setGoalPlusPlayers(prev => [...prev, playerId]);
+                                                      }
+                                                    }}
+                                                    className="w-5 h-5 cursor-pointer"
+                                                  />
+                                                </td>
 
-                                              {/* A */}
-                                              <td className="px-2 py-2 text-center">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isAssist}
-                                                  onChange={() => {
-                                                    const isAdding = !isAssist;
-                                                    setGoalAssists(prev =>
-                                                      isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
-                                                    );
-                                                    if (isAdding && !isPlus) {
-                                                      setGoalPlusPlayers(prev => [...prev, playerId]);
-                                                    }
-                                                  }}
-                                                  className="w-5 h-5 cursor-pointer"
-                                                />
-                                              </td>
+                                                {/* A */}
+                                                <td className="px-2 py-2 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isAssist}
+                                                    onChange={() => {
+                                                      const isAdding = !isAssist;
+                                                      setGoalAssists(prev =>
+                                                        isAdding ? [...prev, playerId] : prev.filter(id => id !== playerId)
+                                                      );
+                                                      if (isAdding && !isPlus) {
+                                                        setGoalPlusPlayers(prev => [...prev, playerId]);
+                                                      }
+                                                    }}
+                                                    className="w-5 h-5 cursor-pointer"
+                                                  />
+                                                </td>
 
-                                              {/* + */}
-                                              <td className="px-2 py-2 text-center">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isPlus}
-                                                  onChange={() => {
-                                                    setGoalPlusPlayers(prev =>
-                                                      prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
-                                                    );
-                                                  }}
-                                                  className="w-5 h-5 cursor-pointer"
-                                                />
-                                              </td>
+                                                {/* + */}
+                                                <td className="px-2 py-2 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isPlus}
+                                                    onChange={() => {
+                                                      setGoalPlusPlayers(prev =>
+                                                        prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                                                      );
+                                                    }}
+                                                    className="w-5 h-5 cursor-pointer"
+                                                  />
+                                                </td>
 
-                                              {/* SOG */}
-                                              <td className="px-2 py-2 text-center">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isSOG}
-                                                  disabled={true}
-                                                  className="w-5 h-5 cursor-not-allowed opacity-50"
-                                                />
-                                              </td>
-                                            </tr>
-                                          );
-                                        });
-                                      })()}
-                                    </tbody>
-                                  </table>
+                                                {/* SOG */}
+                                                <td className="px-2 py-2 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isSOG}
+                                                    disabled={true}
+                                                    className="w-5 h-5 cursor-not-allowed opacity-50"
+                                                  />
+                                                </td>
+                                              </tr>
+                                            );
+                                          });
+                                        })()}
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
-                              </div>
 
-                              {/* Opponent team table */}
-                              <div className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg overflow-hidden`}>
-                                <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
-                                  <table className={`w-full ${darkMode ? 'text-gray-200' : ''}`}>
-                                    <thead className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100'} sticky top-0 z-10`}>
-                                      <tr>
-                                        <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} z-10`}>#</th>
-                                        <th className="px-2 py-2 text-center text-xs font-semibold">-</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {(() => {
-                                        const oppTeam = recordingGoal === 'home' ? 'away' : 'home';
-                                        const players = playerStats?.[oppTeam]?.players ?? {};
-                                        const playerNums = Object.keys(players)
-                                          .filter(pNum => players[pNum].position !== 'GK')
-                                          .sort((a, b) => parseInt(a) - parseInt(b));
+                                {/* Opponent team table */}
+                                <div className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg overflow-hidden`}>
+                                  <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
+                                    <table className={`w-full ${darkMode ? 'text-gray-200' : ''}`}>
+                                      <thead className={`${darkMode ? 'bg-gray-800 text-gray-200' : 'bg-gray-100'} sticky top-0 z-10`}>
+                                        <tr>
+                                          <th className={`px-2 py-2 text-left text-xs font-semibold sticky left-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} z-10`}>#</th>
+                                          <th className="px-2 py-2 text-center text-xs font-semibold">-</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {(() => {
+                                          const oppTeam = recordingGoal === 'home' ? 'away' : 'home';
+                                          const players = playerStats?.[oppTeam]?.players ?? {};
+                                          const playerNums = Object.keys(players)
+                                            .filter(pNum => players[pNum].position !== 'GK')
+                                            .sort((a, b) => parseInt(a) - parseInt(b));
 
-                                        if (playerNums.length === 0) {
-                                          return (
-                                            <tr>
-                                              <td colSpan="2" className="text-center py-8 text-sm opacity-60">
-                                                No players added yet
-                                              </td>
-                                            </tr>
-                                          );
-                                        }
+                                          if (playerNums.length === 0) {
+                                            return (
+                                              <tr>
+                                                <td colSpan="2" className="text-center py-8 text-sm opacity-60">
+                                                  No players added yet
+                                                </td>
+                                              </tr>
+                                            );
+                                          }
 
-                                        return playerNums.map(pNum => {
-                                          const playerId = `${oppTeam}-${pNum}`;
-                                          const isMinus = goalMinusPlayers.includes(playerId);
+                                          return playerNums.map(pNum => {
+                                            const playerId = `${oppTeam}-${pNum}`;
+                                            const isMinus = goalMinusPlayers.includes(playerId);
 
-                                          return (
-                                            <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} hover:bg-opacity-50 transition-colors`}>
-                                              <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} z-10`}>{pNum}</td>
-                                              <td className="px-2 py-2 text-center">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isMinus}
-                                                  onChange={() => {
-                                                    setGoalMinusPlayers(prev =>
-                                                      prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
-                                                    );
-                                                  }}
-                                                  className="w-5 h-5 cursor-pointer"
-                                                />
-                                              </td>
-                                            </tr>
-                                          );
-                                        });
-                                      })()}
-                                    </tbody>
-                                  </table>
+                                            return (
+                                              <tr key={pNum} className={`border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} hover:bg-opacity-50 transition-colors`}>
+                                                <td className={`px-2 py-2 font-bold sticky left-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} z-10`}>{pNum}</td>
+                                                <td className="px-2 py-2 text-center">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isMinus}
+                                                    onChange={() => {
+                                                      setGoalMinusPlayers(prev =>
+                                                        prev.includes(playerId) ? prev.filter(id => id !== playerId) : [...prev, playerId]
+                                                      );
+                                                    }}
+                                                    className="w-5 h-5 cursor-pointer"
+                                                  />
+                                                </td>
+                                              </tr>
+                                            );
+                                          });
+                                        })()}
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setRecordingGoal(null);
+                                setGoalSituation('EQ');
+                                setGoalTime('');
+                                setEditingGoalIndex(null);
+                                setEditingGoalOriginalPeriod(null);
+                                setGoalScorers([]);
+                                setGoalAssists([]);
+                                setGoalPlusPlayers([]);
+                                setGoalMinusPlayers([]);
+                                setGoalSOGPlayers([]);
+                              }}
+                              className={darkMode ? 'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white' : 'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={saveGoalHandler}
+                              disabled={!recordingGoal}
+                              className={recordingGoal
+                                ? (darkMode ? 'flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
+                                : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed border border-gray-700' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
+                              }
+                            >
+                              {editingGoalIndex !== null ? 'Update Goal' : 'Save Goal'}
+                            </button>
                           </div>
-                        )}
-
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => {
-                              setRecordingGoal(null);
-                              setGoalSituation('EQ');
-                              setGoalTime('');
-                              setEditingGoalIndex(null);
-                              setEditingGoalOriginalPeriod(null);
-                              setGoalScorers([]);
-                              setGoalAssists([]);
-                              setGoalPlusPlayers([]);
-                              setGoalMinusPlayers([]);
-                              setGoalSOGPlayers([]);
-                            }}
-                            className={darkMode ? 'flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded font-semibold text-white' : 'flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded font-semibold'}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={saveGoalHandler}
-                            disabled={!recordingGoal}
-                            className={recordingGoal
-                              ? (darkMode ? 'flex-1 bg-gray-600 hover:bg-gray-500 py-2 rounded font-bold text-white' : 'flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold text-white')
-                              : (darkMode ? 'flex-1 bg-gray-600 py-2 rounded font-bold text-gray-500 cursor-not-allowed border border-gray-700' : 'flex-1 bg-gray-300 py-2 rounded font-bold text-gray-400 cursor-not-allowed')
-                            }
-                          >
-                            {editingGoalIndex !== null ? 'Update Goal' : 'Save Goal'}
-                          </button>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }
 
 
-              {playerStatsMoment === 'Goal' && goalWizardStep !== 2 && goalEvents.length > 0 && (
+              {
+                playerStatsMoment === 'Goal' && goalWizardStep !== 2 && goalEvents.length > 0 && (
 
-                <div className="max-w-4xl mx-auto mt-2 goal-timeline">
-                  <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
-                    <button
-                      onClick={() => setGoalTimelineCollapsed(!goalTimelineCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                    >
-                      <span> Goals - Timeline </span>
-                      <span className={`transition-transform duration-300 ${goalTimelineCollapsed ? '' : 'rotate-180'}`}>
-                        <IconChevronDown />
-                      </span>
-                    </button>
+                  <div className="max-w-4xl mx-auto mt-2 goal-timeline">
+                    <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
+                      <button
+                        onClick={() => setGoalTimelineCollapsed(!goalTimelineCollapsed)}
+                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      >
+                        <span> Goals - Timeline </span>
+                        <span className={`transition-transform duration-300 ${goalTimelineCollapsed ? '' : 'rotate-180'}`}>
+                          <IconChevronDown />
+                        </span>
+                      </button>
 
-                    {!goalTimelineCollapsed && (
-                      <div className="p-3">
-                        <div className="space-y-2">
-                          {[...goalEvents].reverse().map((event, reverseIdx) => {
-                            const idx = goalEvents.length - 1 - reverseIdx;
-                            return (
-                              <div
-                                key={idx}
-                                className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${highlightEventId === `goal-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
-                                  }`}
-                                style={highlightEventId === `goal-${idx}` ? { animation: 'pulse 1s ease-in-out' } : {}}
-                              >
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1">
-                                    <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                      {(() => {
-                                        const homeGoals = goalEvents.slice(0, idx + 1).filter(e => e.team === 'home').length;
-                                        const awayGoals = goalEvents.slice(0, idx + 1).filter(e => e.team === 'away').length;
-                                        const teamName = event.team === 'home' ? homeName : awayName;
+                      {!goalTimelineCollapsed && (
+                        <div className="p-3">
+                          <div className="space-y-2">
+                            {[...goalEvents].reverse().map((event, reverseIdx) => {
+                              const idx = goalEvents.length - 1 - reverseIdx;
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${highlightEventId === `goal-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
+                                    }`}
+                                  style={highlightEventId === `goal-${idx}` ? { animation: 'pulse 1s ease-in-out' } : {}}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1">
+                                      <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                        {(() => {
+                                          const homeGoals = goalEvents.slice(0, idx + 1).filter(e => e.team === 'home').length;
+                                          const awayGoals = goalEvents.slice(0, idx + 1).filter(e => e.team === 'away').length;
+                                          const teamName = event.team === 'home' ? homeName : awayName;
 
-                                        return (
-                                          <>
-                                            {event.team === 'home' ? (
-                                              <><span className="font-extrabold text-blue-500">{homeGoals}</span>-{awayGoals}</>
-                                            ) : (
-                                              <>{homeGoals}-<span className="font-extrabold text-blue-500">{awayGoals}</span></>
-                                            )}
-                                            {' '}{teamName}
-                                          </>
-                                        );
-                                      })()}
-                                    </div>
-                                    <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
-                                      <div>
-                                        {event.time && `${event.time} • `}Period {event.period}{!event.isSimple && ` • ${event.situation}`}
+                                          return (
+                                            <>
+                                              {event.team === 'home' ? (
+                                                <><span className="font-extrabold text-blue-500">{homeGoals}</span>-{awayGoals}</>
+                                              ) : (
+                                                <>{homeGoals}-<span className="font-extrabold text-blue-500">{awayGoals}</span></>
+                                              )}
+                                              {' '}{teamName}
+                                            </>
+                                          );
+                                        })()}
                                       </div>
-                                      <div>
-                                        {event.scorers && event.scorers.length > 0 && `G: #${event.scorers.map(id => id.split('-')[1]).join(', #')} `}
-                                        {event.assists && event.assists.length > 0 && `A: #${event.assists.map(id => id.split('-')[1]).join(', #')}`}
+                                      <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
+                                        <div>
+                                          {event.time && `${event.time} • `}Period {event.period}{!event.isSimple && ` • ${event.situation}`}
+                                        </div>
+                                        <div>
+                                          {event.scorers && event.scorers.length > 0 && `G: #${event.scorers.map(id => id.split('-')[1]).join(', #')} `}
+                                          {event.assists && event.assists.length > 0 && `A: #${event.assists.map(id => id.split('-')[1]).join(', #')}`}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex gap-1">
-                                    {!event.isSimple && (
+                                    <div className="flex gap-1">
+                                      {!event.isSimple && (
+                                        <button
+                                          onClick={() => {
+                                            if (matchEnded) return;
+                                            const event = goalEvents[idx];
+                                            setEditingGoalIndex(idx);
+                                            setEditingGoalOriginalPeriod(event.period);
+                                            setRecordingGoal(event.team);
+                                            setGoalSituation(event.situation);
+                                            setGoalTime(event.time || '');
+                                            setGoalScorers(event.scorers || []);
+                                            setGoalAssists(event.assists || []);
+                                            setGoalPlusPlayers(event.plus || []);
+                                            setGoalMinusPlayers(event.minus || []);
+                                            setGoalSOGPlayers(event.sog || []);
+                                            setGoalWizardStep(1);
+                                            setGoalFormCollapsed(false);
+                                            setGoalTimelineCollapsed(true);
+                                            setTimeout(() => {
+                                              const formEl = document.querySelector('.goal-form');
+                                              if (formEl) {
+                                                formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                              }
+                                            }, 100);
+                                          }}
+                                          disabled={matchEnded}
+                                          className={matchEnded
+                                            ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                            : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                          }
+                                        >
+                                          Edit
+                                        </button>
+                                      )}
                                       <button
                                         onClick={() => {
-                                          if (matchEnded) return;
-                                          const event = goalEvents[idx];
-                                          setEditingGoalIndex(idx);
-                                          setEditingGoalOriginalPeriod(event.period);
-                                          setRecordingGoal(event.team);
-                                          setGoalSituation(event.situation);
-                                          setGoalTime(event.time || '');
-                                          setGoalScorers(event.scorers || []);
-                                          setGoalAssists(event.assists || []);
-                                          setGoalPlusPlayers(event.plus || []);
-                                          setGoalMinusPlayers(event.minus || []);
-                                          setGoalSOGPlayers(event.sog || []);
-                                          setGoalWizardStep(1);
-                                          setGoalFormCollapsed(false);
-                                          setGoalTimelineCollapsed(true);
-                                          setTimeout(() => {
-                                            const formEl = document.querySelector('.goal-form');
-                                            if (formEl) {
-                                              formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                          if (!window.confirm('Delete this goal?')) return;
+                                          if (isViewer || matchEnded) return;
+                                          if (isMultiplayer && !currentUser) {
+                                            alert('You must be logged in to edit multiplayer games');
+                                            return;
+                                          }
+
+                                          const eventToDelete = goalEvents[idx];
+
+                                          // Update score/GA when deleting
+                                          if (trackingMode === 'advanced' || trackingMode === 'simple') {
+                                            setPeriodStats(prev => {
+                                              const next = structuredClone(prev);
+                                              const p = eventToDelete.period;
+                                              const wasHome = eventToDelete.team === 'home';
+                                              const goalieTeam = wasHome ? 'away' : 'home';
+
+                                              // Decrement score
+                                              next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
+
+                                              // Decrement GA for the goalie
+                                              const activeGoalieAtTime = activeGoalies[goalieTeam];
+                                              if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                                                next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+                                              }
+
+                                              return next;
+                                            });
+
+                                            // Sync to Firebase if needed
+                                            if (isMultiplayer && matchRef.current && !matchEnded) {
+                                              // Note: matchRef.current.update({ periodStats: next }) will be called by useEffect or manually if we want
+                                              // But wait, the standard logic here doesn't call matchRef update directly for individual periodStat changes in timeline
+                                              // Actually it SHOULD if we want it to sync immediately.
+                                              // Let's check how it was done for advanced.
                                             }
-                                          }, 100);
-                                        }}
-                                        disabled={matchEnded}
-                                        className={matchEnded
-                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                          : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                        }
-                                      >
-                                        Edit
-                                      </button>
-                                    )}
-                                    <button
-                                      onClick={() => {
-                                        if (!window.confirm('Delete this goal?')) return;
-                                        if (isViewer || matchEnded) return;
-                                        if (isMultiplayer && !currentUser) {
-                                          alert('You must be logged in to edit multiplayer games');
-                                          return;
-                                        }
+                                          }
 
-                                        const eventToDelete = goalEvents[idx];
+                                          const updatedEvents = goalEvents.filter((_, i) => i !== idx);
 
-                                        // Update score/GA when deleting
-                                        if (trackingMode === 'advanced' || trackingMode === 'simple') {
-                                          setPeriodStats(prev => {
-                                            const next = structuredClone(prev);
+                                          setGoalEvents(updatedEvents);
+                                          if (isMultiplayer && matchRef.current) {
+                                            matchRef.current.child('goalEvents').set(updatedEvents);
+                                            // ALSO update periodStats in Firebase
+                                            if (trackingMode === 'advanced' || trackingMode === 'simple') {
+                                              setPeriodStats(prev => {
+                                                const next = structuredClone(prev);
+                                                const p = eventToDelete.period;
+                                                const wasHome = eventToDelete.team === 'home';
+                                                const goalieTeam = wasHome ? 'away' : 'home';
+                                                next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
+                                                const activeGoalieAtTime = activeGoalies[goalieTeam];
+                                                if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                                                  next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+                                                }
+                                                matchRef.current.update({ periodStats: next });
+                                                return next;
+                                              });
+                                            }
+                                          } else if (!isMultiplayer && screen === 'game') {
+                                            const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                            gs.goalEvents = updatedEvents;
+                                            if (trackingMode === 'advanced' || trackingMode === 'simple') {
+                                              // periodStats are updated via setPeriodStats above
+                                              // gs should probably store them too
+                                              // ... existing local storage logic typically handles this via useEffect
+                                            }
+                                            localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                          }
+
+                                          if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
+                                            const next = structuredClone(periodStats);
                                             const p = eventToDelete.period;
                                             const wasHome = eventToDelete.team === 'home';
                                             const goalieTeam = wasHome ? 'away' : 'home';
@@ -4512,385 +4591,333 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                               next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
                                             }
 
-                                            return next;
+                                            matchRef.current.update({ periodStats: next });
+                                          }
+
+
+                                          if (isMultiplayer && matchRef.current) {
+                                            matchRef.current.update({ goalEvents: updatedEvents });
+                                          } else if (!isMultiplayer && screen === 'game') {
+                                            const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                            gs.goalEvents = updatedEvents;
+                                            localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                          }
+
+                                          // Remove player stats from the deleted goal
+                                          const newStats = structuredClone(playerStats);
+                                          const deletePeriod = eventToDelete.period;
+
+                                          const allPlayerIds = new Set([
+                                            ...(eventToDelete.scorers || []),
+                                            ...(eventToDelete.assists || []),
+                                            ...(eventToDelete.plus || []),
+                                            ...(eventToDelete.minus || []),
+                                            ...(eventToDelete.sog || [])
+                                          ]);
+
+                                          allPlayerIds.forEach(playerId => {
+                                            const [team, pNum] = playerId.split('-');
+
+                                            if (!newStats[team]?.players?.[pNum]?.periods?.[deletePeriod]) return;
+
+                                            // Subtract stats
+                                            if (eventToDelete.scorers?.includes(playerId)) {
+                                              newStats[team].players[pNum].periods[deletePeriod]['G'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['G'] || 0) - 1);
+                                            }
+                                            if (eventToDelete.assists?.includes(playerId)) {
+                                              newStats[team].players[pNum].periods[deletePeriod]['A'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['A'] || 0) - 1);
+                                            }
+                                            if (eventToDelete.plus?.includes(playerId)) {
+                                              newStats[team].players[pNum].periods[deletePeriod]['OnIce+'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['OnIce+'] || 0) - 1);
+                                            }
+                                            if (eventToDelete.minus?.includes(playerId)) {
+                                              newStats[team].players[pNum].periods[deletePeriod]['OnIce-'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['OnIce-'] || 0) - 1);
+                                            }
+                                            if (eventToDelete.sog?.includes(playerId)) {
+                                              newStats[team].players[pNum].periods[deletePeriod]['SOG'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['SOG'] || 0) - 1);
+                                            }
                                           });
 
-                                          // Sync to Firebase if needed
-                                          if (isMultiplayer && matchRef.current && !matchEnded) {
-                                            // Note: matchRef.current.update({ periodStats: next }) will be called by useEffect or manually if we want
-                                            // But wait, the standard logic here doesn't call matchRef update directly for individual periodStat changes in timeline
-                                            // Actually it SHOULD if we want it to sync immediately.
-                                            // Let's check how it was done for advanced.
-                                          }
-                                        }
-
-                                        const updatedEvents = goalEvents.filter((_, i) => i !== idx);
-
-                                        setGoalEvents(updatedEvents);
-                                        if (isMultiplayer && matchRef.current) {
-                                          matchRef.current.child('goalEvents').set(updatedEvents);
-                                          // ALSO update periodStats in Firebase
-                                          if (trackingMode === 'advanced' || trackingMode === 'simple') {
-                                            setPeriodStats(prev => {
-                                              const next = structuredClone(prev);
-                                              const p = eventToDelete.period;
-                                              const wasHome = eventToDelete.team === 'home';
-                                              const goalieTeam = wasHome ? 'away' : 'home';
-                                              next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
-                                              const activeGoalieAtTime = activeGoalies[goalieTeam];
-                                              if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
-                                                next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
-                                              }
-                                              matchRef.current.update({ periodStats: next });
-                                              return next;
-                                            });
-                                          }
-                                        } else if (!isMultiplayer && screen === 'game') {
-                                          const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-                                          gs.goalEvents = updatedEvents;
-                                          if (trackingMode === 'advanced' || trackingMode === 'simple') {
-                                            // periodStats are updated via setPeriodStats above
-                                            // gs should probably store them too
-                                            // ... existing local storage logic typically handles this via useEffect
-                                          }
-                                          localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
-                                        }
-
-                                        if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
-                                          const next = structuredClone(periodStats);
-                                          const p = eventToDelete.period;
-                                          const wasHome = eventToDelete.team === 'home';
-                                          const goalieTeam = wasHome ? 'away' : 'home';
-
-                                          // Decrement score
-                                          next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
-
-                                          // Decrement GA for the goalie
-                                          const activeGoalieAtTime = activeGoalies[goalieTeam];
-                                          if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
-                                            next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
-                                          }
-
-                                          matchRef.current.update({ periodStats: next });
-                                        }
-
-
-                                        if (isMultiplayer && matchRef.current) {
-                                          matchRef.current.update({ goalEvents: updatedEvents });
-                                        } else if (!isMultiplayer && screen === 'game') {
-                                          const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-                                          gs.goalEvents = updatedEvents;
-                                          localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
-                                        }
-
-                                        // Remove player stats from the deleted goal
-                                        const newStats = structuredClone(playerStats);
-                                        const deletePeriod = eventToDelete.period;
-
-                                        const allPlayerIds = new Set([
-                                          ...(eventToDelete.scorers || []),
-                                          ...(eventToDelete.assists || []),
-                                          ...(eventToDelete.plus || []),
-                                          ...(eventToDelete.minus || []),
-                                          ...(eventToDelete.sog || [])
-                                        ]);
-
-                                        allPlayerIds.forEach(playerId => {
-                                          const [team, pNum] = playerId.split('-');
-
-                                          if (!newStats[team]?.players?.[pNum]?.periods?.[deletePeriod]) return;
-
-                                          // Subtract stats
-                                          if (eventToDelete.scorers?.includes(playerId)) {
-                                            newStats[team].players[pNum].periods[deletePeriod]['G'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['G'] || 0) - 1);
-                                          }
-                                          if (eventToDelete.assists?.includes(playerId)) {
-                                            newStats[team].players[pNum].periods[deletePeriod]['A'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['A'] || 0) - 1);
-                                          }
-                                          if (eventToDelete.plus?.includes(playerId)) {
-                                            newStats[team].players[pNum].periods[deletePeriod]['OnIce+'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['OnIce+'] || 0) - 1);
-                                          }
-                                          if (eventToDelete.minus?.includes(playerId)) {
-                                            newStats[team].players[pNum].periods[deletePeriod]['OnIce-'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['OnIce-'] || 0) - 1);
-                                          }
-                                          if (eventToDelete.sog?.includes(playerId)) {
-                                            newStats[team].players[pNum].periods[deletePeriod]['SOG'] = Math.max(0, (newStats[team].players[pNum].periods[deletePeriod]['SOG'] || 0) - 1);
-                                          }
-                                        });
-
-                                        // Recalculate totals
-                                        Object.keys(newStats).forEach(team => {
-                                          Object.keys(newStats[team].players).forEach(pNum => {
-                                            const player = newStats[team].players[pNum];
-                                            ['G', 'A', 'OnIce+', 'OnIce-', 'SOG'].forEach(stat => {
-                                              player.total[stat] = 0;
-                                              Object.keys(player.periods).forEach(p => {
-                                                player.total[stat] += player.periods[p][stat] || 0;
+                                          // Recalculate totals
+                                          Object.keys(newStats).forEach(team => {
+                                            Object.keys(newStats[team].players).forEach(pNum => {
+                                              const player = newStats[team].players[pNum];
+                                              ['G', 'A', 'OnIce+', 'OnIce-', 'SOG'].forEach(stat => {
+                                                player.total[stat] = 0;
+                                                Object.keys(player.periods).forEach(p => {
+                                                  player.total[stat] += player.periods[p][stat] || 0;
+                                                });
                                               });
                                             });
                                           });
-                                        });
 
-                                        setPlayerStats(newStats);
-                                        if (isMultiplayer && matchRef.current) {
-                                          matchRef.current.update({ playerStats: newStats });
+                                          setPlayerStats(newStats);
+                                          if (isMultiplayer && matchRef.current) {
+                                            matchRef.current.update({ playerStats: newStats });
+                                          }
+                                        }}
+                                        disabled={matchEnded}
+                                        className={matchEnded
+                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                          : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
                                         }
-                                      }}
-                                      disabled={matchEnded}
-                                      className={matchEnded
-                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                      }
-                                    >
-                                      Del
-                                    </button>
+                                      >
+                                        Del
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )
-                          })}
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }
 
 
-              {playerStatsMoment === 'Penalty' && penaltyEvents.length > 0 && (
-                <div className="max-w-4xl mx-auto mt-2 penalty-timeline">
-                  <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
-                    <button
-                      onClick={() => setPenaltyTimelineCollapsed(!penaltyTimelineCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                    >
-                      <span>Penalty - Timeline</span>
-                      <span className={`transition-transform duration-300 ${penaltyTimelineCollapsed ? '' : 'rotate-180'}`}>
-                        <IconChevronDown />
-                      </span>
-                    </button>
+              {
+                playerStatsMoment === 'Penalty' && penaltyEvents.length > 0 && (
+                  <div className="max-w-4xl mx-auto mt-2 penalty-timeline">
+                    <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
+                      <button
+                        onClick={() => setPenaltyTimelineCollapsed(!penaltyTimelineCollapsed)}
+                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      >
+                        <span>Penalty - Timeline</span>
+                        <span className={`transition-transform duration-300 ${penaltyTimelineCollapsed ? '' : 'rotate-180'}`}>
+                          <IconChevronDown />
+                        </span>
+                      </button>
 
-                    {!penaltyTimelineCollapsed && (
-                      <div className="p-3">
-                        <div className="space-y-2">
-                          {[...penaltyEvents].reverse().map((event, reverseIdx) => {
-                            const idx = penaltyEvents.length - 1 - reverseIdx;
-                            const teamName = event.team === 'home' ? homeName : awayName;
-                            return (
-                              <div
-                                key={idx}
-                                className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${highlightEventId === `penalty-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
-                                  }`}
-                                style={highlightEventId === `penalty-${idx}` ? { animation: 'pulse 1s ease-in-out' } : {}}
-                              >
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1">
-                                    <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                      {event.penaltyType.replace("'", " min")} Penalty - {teamName}
-                                    </div>
-                                    <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
-                                      <div>
-                                        {event.time && `${event.time} • `}Period {event.period}{event.infraction && ` • ${event.infraction}`} #{event.player === 'BENCH' ? 'Bench' : event.player}
+                      {!penaltyTimelineCollapsed && (
+                        <div className="p-3">
+                          <div className="space-y-2">
+                            {[...penaltyEvents].reverse().map((event, reverseIdx) => {
+                              const idx = penaltyEvents.length - 1 - reverseIdx;
+                              const teamName = event.team === 'home' ? homeName : awayName;
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${highlightEventId === `penalty-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
+                                    }`}
+                                  style={highlightEventId === `penalty-${idx}` ? { animation: 'pulse 1s ease-in-out' } : {}}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1">
+                                      <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                        {event.penaltyType.replace("'", " min")} Penalty - {teamName}
+                                      </div>
+                                      <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
+                                        <div>
+                                          {event.time && `${event.time} • `}Period {event.period}{event.infraction && ` • ${event.infraction}`} #{event.player === 'BENCH' ? 'Bench' : event.player}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex gap-1">
-                                    <button
-                                      onClick={() => {
-                                        if (matchEnded) return;
-                                        const event = penaltyEvents[idx];
-                                        setEditingPenaltyOriginalPeriod(event.period);
-                                        setEditingPenaltyIndex(idx);
-                                        setPenaltyTeam(event.team);
-                                        setPenaltyType(event.penaltyType);
-                                        setPenaltyInfraction(event.infraction || '');
-                                        setPenaltyTime(event.time || '');
-                                        setPenaltyPlayer(event.player);
-                                        setPenaltyWizardOpen(true);
-                                        setPenaltyFormCollapsed(false);
-                                        setPenaltyTimelineCollapsed(true);
-                                        setTimeout(() => {
-                                          const formEl = document.querySelector('.penalty-form');
-                                          if (formEl) {
-                                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    <div className="flex gap-1">
+                                      <button
+                                        onClick={() => {
+                                          if (matchEnded) return;
+                                          const event = penaltyEvents[idx];
+                                          setEditingPenaltyOriginalPeriod(event.period);
+                                          setEditingPenaltyIndex(idx);
+                                          setPenaltyTeam(event.team);
+                                          setPenaltyType(event.penaltyType);
+                                          setPenaltyInfraction(event.infraction || '');
+                                          setPenaltyTime(event.time || '');
+                                          setPenaltyPlayer(event.player);
+                                          setPenaltyWizardOpen(true);
+                                          setPenaltyFormCollapsed(false);
+                                          setPenaltyTimelineCollapsed(true);
+                                          setTimeout(() => {
+                                            const formEl = document.querySelector('.penalty-form');
+                                            if (formEl) {
+                                              formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                          }, 100);
+                                        }}
+                                        disabled={matchEnded}
+                                        className={matchEnded
+                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                          : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                        }
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (!window.confirm('Delete this penalty?')) return;
+                                          if (isViewer || matchEnded) return;
+                                          if (isMultiplayer && !currentUser) {
+                                            alert('You must be logged in to edit multiplayer games');
+                                            return;
                                           }
-                                        }, 100);
-                                      }}
-                                      disabled={matchEnded}
-                                      className={matchEnded
-                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                      }
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (!window.confirm('Delete this penalty?')) return;
-                                        if (isViewer || matchEnded) return;
-                                        if (isMultiplayer && !currentUser) {
-                                          alert('You must be logged in to edit multiplayer games');
-                                          return;
+
+                                          const eventToDelete = penaltyEvents[idx];
+                                          const updatedEvents = penaltyEvents.filter((_, i) => i !== idx);
+
+                                          setPenaltyEvents(updatedEvents);
+
+                                          if (isMultiplayer && matchRef.current) {
+                                            matchRef.current.update({ penaltyEvents: updatedEvents });
+                                          } else if (!isMultiplayer && screen === 'game') {
+                                            const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                            gs.penaltyEvents = updatedEvents;
+                                            localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                          }
+
+
+                                        }}
+                                        disabled={matchEnded}
+                                        className={matchEnded
+                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                          : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
                                         }
-
-                                        const eventToDelete = penaltyEvents[idx];
-                                        const updatedEvents = penaltyEvents.filter((_, i) => i !== idx);
-
-                                        setPenaltyEvents(updatedEvents);
-
-                                        if (isMultiplayer && matchRef.current) {
-                                          matchRef.current.update({ penaltyEvents: updatedEvents });
-                                        } else if (!isMultiplayer && screen === 'game') {
-                                          const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-                                          gs.penaltyEvents = updatedEvents;
-                                          localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
-                                        }
-
-
-                                      }}
-                                      disabled={matchEnded}
-                                      className={matchEnded
-                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                      }
-                                    >
-                                      Del
-                                    </button>
+                                      >
+                                        Del
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }
 
-              {playerStatsMoment === 'Other' && otherEvents.length > 0 && (
-                <div className="max-w-4xl mx-auto mt-2 other-timeline">
-                  <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
-                    <button
-                      onClick={() => setOtherTimelineCollapsed(!otherTimelineCollapsed)}
-                      className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
-                    >
-                      <span>Events - Timeline</span>
-                      <span className={`transition-transform duration-300 ${otherTimelineCollapsed ? '' : 'rotate-180'}`}>
-                        <IconChevronDown />
-                      </span>
-                    </button>
+              {
+                playerStatsMoment === 'Other' && otherEvents.length > 0 && (
+                  <div className="max-w-4xl mx-auto mt-2 other-timeline">
+                    <div className={darkMode ? 'bg-gray-800 border border-gray-700 rounded-lg overflow-hidden' : 'bg-white rounded-lg shadow-lg overflow-hidden'}>
+                      <button
+                        onClick={() => setOtherTimelineCollapsed(!otherTimelineCollapsed)}
+                        className={`w-full ${darkMode ? 'bg-gray-700' : 'bg-gradient-to-r from-blue-600 to-blue-800'} text-white px-4 py-2 font-bold flex items-center justify-between transition-colors hover:opacity-90`}
+                      >
+                        <span>Events - Timeline</span>
+                        <span className={`transition-transform duration-300 ${otherTimelineCollapsed ? '' : 'rotate-180'}`}>
+                          <IconChevronDown />
+                        </span>
+                      </button>
 
-                    {!otherTimelineCollapsed && (
-                      <div className="p-3">
-                        <div className="space-y-2">
-                          {[...otherEvents].reverse().map((event, reverseIdx) => {
-                            const idx = otherEvents.length - 1 - reverseIdx;
-                            const teamName = event.team === 'home' ? homeName : awayName;
-                            const eventLabel = event.eventType === 'timeout' ? 'Time-Out' :
-                              event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
-                                event.eventType === 'gkOut' ? 'GK Out' :
-                                  event.eventType === 'gkIn' ? 'GK In' : event.eventType;
-                            return (
-                              <div
-                                key={idx}
-                                className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${highlightEventId === `other-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
-                                  }`}
-                                style={highlightEventId === `other-${idx}` ? { animation: 'pulse 1s ease-in-out' } : {}}
-                              >
-                                <div className="flex items-start justify-between gap-2">
-                                  <div className="flex-1">
-                                    <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                      {eventLabel} - {teamName}
-                                    </div>
-                                    <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
-                                      <div>
-                                        {event.time && `${event.time} • `}Period {event.period}
+                      {!otherTimelineCollapsed && (
+                        <div className="p-3">
+                          <div className="space-y-2">
+                            {[...otherEvents].reverse().map((event, reverseIdx) => {
+                              const idx = otherEvents.length - 1 - reverseIdx;
+                              const teamName = event.team === 'home' ? homeName : awayName;
+                              const eventLabel = event.eventType === 'timeout' ? 'Time-Out' :
+                                event.eventType === 'goalieSwitch' ? 'Goalie Switch' :
+                                  event.eventType === 'gkOut' ? 'GK Out' :
+                                    event.eventType === 'gkIn' ? 'GK In' : event.eventType;
+                              return (
+                                <div
+                                  key={idx}
+                                  className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded p-3 transition-all duration-500 ${highlightEventId === `other-${idx}` ? 'ring-2 ring-yellow-400 shadow-lg' : ''
+                                    }`}
+                                  style={highlightEventId === `other-${idx}` ? { animation: 'pulse 1s ease-in-out' } : {}}
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1">
+                                      <div className={`font-bold mb-1 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                        {eventLabel} - {teamName}
+                                      </div>
+                                      <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
+                                        <div>
+                                          {event.time && `${event.time} • `}Period {event.period}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="flex gap-1">
-                                    <button
-                                      onClick={() => {
-                                        if (matchEnded) return;
-                                        const event = otherEvents[idx];
-                                        setEditingOtherIndex(idx);
-                                        setOtherTeam(event.team);
-                                        setOtherEventType(event.eventType);
-                                        setOtherTime(event.time || '');
-                                        setOtherWizardOpen(true);
-                                        setOtherFormCollapsed(false);
-                                        setOtherTimelineCollapsed(true);
-                                        setTimeout(() => {
-                                          const formEl = document.querySelector('.other-form');
-                                          if (formEl) {
-                                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    <div className="flex gap-1">
+                                      <button
+                                        onClick={() => {
+                                          if (matchEnded) return;
+                                          const event = otherEvents[idx];
+                                          setEditingOtherIndex(idx);
+                                          setOtherTeam(event.team);
+                                          setOtherEventType(event.eventType);
+                                          setOtherTime(event.time || '');
+                                          setOtherWizardOpen(true);
+                                          setOtherFormCollapsed(false);
+                                          setOtherTimelineCollapsed(true);
+                                          setTimeout(() => {
+                                            const formEl = document.querySelector('.other-form');
+                                            if (formEl) {
+                                              formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                          }, 100);
+                                        }}
+                                        disabled={matchEnded}
+                                        className={matchEnded
+                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                          : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                        }
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          if (!window.confirm('Delete this event?')) return;
+                                          if (isViewer || matchEnded) return;
+                                          if (isMultiplayer && !currentUser) {
+                                            alert('You must be logged in to edit multiplayer games');
+                                            return;
                                           }
-                                        }, 100);
-                                      }}
-                                      disabled={matchEnded}
-                                      className={matchEnded
-                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                      }
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        if (!window.confirm('Delete this event?')) return;
-                                        if (isViewer || matchEnded) return;
-                                        if (isMultiplayer && !currentUser) {
-                                          alert('You must be logged in to edit multiplayer games');
-                                          return;
+
+                                          const updatedEvents = otherEvents.filter((_, i) => i !== idx);
+
+                                          setOtherEvents(updatedEvents);
+
+                                          if (isMultiplayer && matchRef.current) {
+                                            matchRef.current.update({ otherEvents: updatedEvents });
+                                          } else if (!isMultiplayer && screen === 'game') {
+                                            const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                            gs.otherEvents = updatedEvents;
+                                            localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                          }
+                                        }}
+                                        disabled={matchEnded}
+                                        className={matchEnded
+                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                          : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
                                         }
-
-                                        const updatedEvents = otherEvents.filter((_, i) => i !== idx);
-
-                                        setOtherEvents(updatedEvents);
-
-                                        if (isMultiplayer && matchRef.current) {
-                                          matchRef.current.update({ otherEvents: updatedEvents });
-                                        } else if (!isMultiplayer && screen === 'game') {
-                                          const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-                                          gs.otherEvents = updatedEvents;
-                                          localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
-                                        }
-                                      }}
-                                      disabled={matchEnded}
-                                      className={matchEnded
-                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                      }
-                                    >
-                                      Del
-                                    </button>
+                                      >
+                                        Del
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            );
-                          })}
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }
 
-              {playerStatsMoment === 'FO/SOG' && (
-                <div className={`grid gap-2`}
-                  style={{
-                    gridTemplateColumns:
-                      playerStatsEditMode.home || playerStatsEditMode.away
-                        ? playerStatsEditMode.home && !playerStatsEditMode.away ? '1fr' : !playerStatsEditMode.home && playerStatsEditMode.away ? '1fr' : '1fr'
-                        : '1fr 1fr'
-                  }}
-                >
-                  {(!playerStatsEditMode.home && !playerStatsEditMode.away) || playerStatsEditMode.home ? renderPlayerTable('home') : null}
-                  {(!playerStatsEditMode.home && !playerStatsEditMode.away) || playerStatsEditMode.away ? renderPlayerTable('away') : null}
-                </div>
-              )}
-            </div>
+              {
+                playerStatsMoment === 'FO/SOG' && (
+                  <div className={`grid gap-2`}
+                    style={{
+                      gridTemplateColumns:
+                        playerStatsEditMode.home || playerStatsEditMode.away
+                          ? playerStatsEditMode.home && !playerStatsEditMode.away ? '1fr' : !playerStatsEditMode.home && playerStatsEditMode.away ? '1fr' : '1fr'
+                          : '1fr 1fr'
+                    }}
+                  >
+                    {(!playerStatsEditMode.home && !playerStatsEditMode.away) || playerStatsEditMode.home ? renderPlayerTable('home') : null}
+                    {(!playerStatsEditMode.home && !playerStatsEditMode.away) || playerStatsEditMode.away ? renderPlayerTable('away') : null}
+                  </div>
+                )
+              }
+            </div >
             {showAddPlayerModal && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div className={`${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} rounded-lg shadow-xl p-4 max-w-sm w-full`}>
@@ -5002,7 +5029,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                   </div>
                 </div>
               </div>
-            )}          </div>
+            )}          </div >
         );
       }
 
@@ -6185,7 +6212,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 {trackingMode === 'advanced' ? (
                   <button
                     onClick={() => setShowPlayerStats(true)}
-                    className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
+                    className={`col-span-1 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
                       }`}
                   >
                     ⛶ PLAYER EVENTS
@@ -6194,7 +6221,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                   <button
                     onClick={swapSides}
                     disabled={isViewer || matchEnded}
-                    className={`col-span-2 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${(isViewer || matchEnded)
+                    className={`col-span-1 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${(isViewer || matchEnded)
                       ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
                       : (darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
                       }`}
@@ -6202,6 +6229,22 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     ⇄ SWAP SIDES
                   </button>
                 )}
+                <button
+                  onClick={() => {
+                    setAnnouncementWizardOpen(true);
+                    setAnnouncementTitle('');
+                    setAnnouncementMessage('');
+                    setAnnouncementTime('');
+                  }}
+                  disabled={isViewer || matchEnded}
+                  className={`col-span-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-colors ${(isViewer || matchEnded)
+                    ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
+                    : (darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
+                    }`}
+                >
+                  <IconMegaphone />
+                  <span>ANNOUNCE</span>
+                </button>
               </div>
             </div>
           </div>
@@ -6344,6 +6387,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               const getEventIcon = (type, eventType) => {
                 if (type === 'goal') return <GoalIcon />;
                 if (type === 'penalty') return <PenaltyIcon />;
+                if (type === 'announcement') return <IconMegaphone />;
                 if (type === 'other') {
                   if (eventType === 'timeout') return <TimeoutIcon />;
                   if (eventType === 'goalieSwitch' || eventType === 'gkOut' || eventType === 'gkIn') return <GoalieSwitchIcon />;
@@ -6354,6 +6398,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               const getEventLabel = (event) => {
                 if (event.type === 'goal') return 'GOAL';
                 if (event.type === 'penalty') return `${event.penaltyType.replace("'", " min")} Penalty`;
+                if (event.type === 'announcement') return event.title;
                 if (event.type === 'other') {
                   if (event.eventType === 'timeout') return 'Time-Out';
                   if (event.eventType === 'goalieSwitch') return 'Goalie Switch';
@@ -6369,6 +6414,9 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 }
                 if (event.type === 'penalty') {
                   return (event.player || event.infraction);
+                }
+                if (event.type === 'announcement') {
+                  return !!event.message;
                 }
                 if (event.type === 'other' && event.eventType === 'goalieSwitch') {
                   return true;
@@ -6438,6 +6486,34 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                               // Always display standard Home-Away notation (e.g. 2-0)
                               // regardless of which side (Left/Right) the teams are on.
                               scoreText = `${homeGoals}-${awayGoals}`;
+                            }
+
+                            if (event.type === 'announcement') {
+                              return (
+                                <div key={eventId} className="relative w-full flex justify-center mb-6">
+                                  {/* Center Node */}
+                                  <div
+                                    className={`relative z-20 flex flex-col items-center max-w-[280px] sm:max-w-xs ${canExpand ? 'cursor-pointer' : ''}`}
+                                    onClick={() => canExpand && toggleEventExpanded(eventId)}
+                                  >
+                                    <div className={`
+                                        flex items-center gap-2 px-4 py-2 rounded-full border shadow-md transition-all hover:scale-105
+                                        ${darkMode ? 'bg-purple-900 border-purple-700 text-white' : 'bg-purple-100 border-purple-300 text-purple-900'}
+                                     `}>
+                                      <IconMegaphone />
+                                      <span className="font-bold text-sm">{event.title}</span>
+                                      {event.time && <span className="text-xs opacity-75 font-mono ml-1">{event.time}</span>}
+                                    </div>
+
+                                    {/* Expanded Message */}
+                                    {isExpanded && event.message && (
+                                      <div className={`mt-2 p-3 rounded-lg text-sm text-center w-full ${darkMode ? 'bg-gray-800 border border-gray-700 text-gray-300' : 'bg-white border border-gray-200 text-gray-700'} shadow-sm animate-fadeIn`}>
+                                        {event.message}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
                             }
 
                             return (
@@ -7420,7 +7496,125 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               </div>
             </div>}
           </div>
-        </div >
+
+          {announcementWizardOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" style={{ animation: 'fadeIn 0.2s ease-out' }}>
+              <div className={`${darkMode ? 'bg-gray-800 text-white border border-gray-700' : 'bg-white text-gray-900'} rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all scale-100`}>
+
+                {/* Header */}
+                <div className={`${darkMode ? 'bg-gray-700' : 'bg-purple-600'} px-6 py-4 flex items-center justify-between`}>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <IconMegaphone />
+                    {editingAnnouncementIndex !== null ? 'Edit Announcement' : 'Make Announcement'}
+                  </h3>
+                  <button onClick={() => setAnnouncementWizardOpen(false)} className="text-white hover:text-gray-200">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 space-y-4">
+                  {/* Title */}
+                  <div>
+                    <label className={`block text-sm font-bold mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Headline</label>
+                    <input
+                      type="text"
+                      value={announcementTitle}
+                      onChange={e => setAnnouncementTitle(e.target.value)}
+                      placeholder="e.g. Game Delayed"
+                      className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500 outline-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label className={`block text-sm font-bold mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Message (Optional)</label>
+                    <textarea
+                      value={announcementMessage}
+                      onChange={e => setAnnouncementMessage(e.target.value)}
+                      placeholder="Additional details..."
+                      rows={3}
+                      className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500 outline-none resize-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
+                    />
+                  </div>
+
+                  {/* Time (Advanced Mode) */}
+                  {trackingMode === 'advanced' && (
+                    <div>
+                      <label className={`block text-sm font-bold mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Time (Optional)</label>
+                      <input
+                        type="text"
+                        value={announcementTime}
+                        onChange={e => setAnnouncementTime(e.target.value)}
+                        placeholder="e.g. 14:20"
+                        className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500 outline-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-300'}`}
+                      />
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => setAnnouncementWizardOpen(false)}
+                      className={`flex-1 py-2 rounded-lg font-bold ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!announcementTitle.trim()) return;
+
+                        const newEvent = {
+                          type: 'announcement',
+                          title: announcementTitle,
+                          message: announcementMessage,
+                          time: announcementTime,
+                          period: currentPeriod,
+                          timestamp: Date.now(),
+                          team: 'neutral' // Special case
+                        };
+
+                        const isEditing = editingAnnouncementIndex !== null;
+                        let updatedEvents;
+
+                        if (isEditing) {
+                          updatedEvents = [...otherEvents];
+                          updatedEvents[editingAnnouncementIndex] = { ...updatedEvents[editingAnnouncementIndex], ...newEvent, timestamp: updatedEvents[editingAnnouncementIndex].timestamp };
+                        } else {
+                          updatedEvents = [...otherEvents, newEvent];
+                        }
+
+                        setOtherEvents(updatedEvents);
+
+                        // Sync logik
+                        if (isMultiplayer && matchRef.current) {
+                          matchRef.current.child('otherEvents').set(updatedEvents);
+                        } else if (!isMultiplayer && screen === 'game') {
+                          const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                          gs.otherEvents = updatedEvents;
+                          localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                        }
+
+                        setAnnouncementWizardOpen(false);
+                        setAnnouncementTitle('');
+                        setAnnouncementMessage('');
+                        setAnnouncementTime('');
+                        setEditingAnnouncementIndex(null);
+                        triggerHaptic('success');
+                      }}
+                      disabled={!announcementTitle.trim()}
+                      className={`flex-1 py-2 rounded-lg font-bold text-white shadow-lg transition-transform active:scale-95 ${!announcementTitle.trim() ? 'opacity-50 cursor-not-allowed bg-gray-400' : (darkMode ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700')}`}
+                    >
+                      {editingAnnouncementIndex !== null ? 'Update' : 'Post'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
       );
     };
 
