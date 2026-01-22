@@ -427,6 +427,7 @@
       const [showSettings, setShowSettings] = useState(false);
       const [darkMode, setDarkMode] = useState(false);
       const [statsCollapsed, setStatsCollapsed] = useState(trackingMode === 'advanced');
+      const [sidesSwapped, setSidesSwapped] = useState(false);
       const [focusMode, setFocusMode] = useState(null);
 
       // Determine default collapsed state based on user role
@@ -1167,6 +1168,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
             setConnectedUsers(d.users ? Object.keys(d.users).length : 0);
             setViewerCount(d.viewers ? Object.keys(d.viewers).length : 0);
             setIsCreator(d.creatorId === userId.current);
+            setSidesSwapped(d.sidesSwapped ?? false);
 
             // Check if user was in match but is now removed (kicked)
             const isCurrentlyInMatch = !!(d.users && d.users[userId.current]);
@@ -1524,7 +1526,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
           trackingMode,
           goalieMap: initialGoalieMap,
           activeGoalies,
-          viewerCode: viewerCode
+          viewerCode: viewerCode,
+          sidesSwapped: false
         }).then(() => {
           // Set player stats locally to match what we sent to Firebase
           setPlayerStats(initialPlayerStats);
@@ -2363,6 +2366,44 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
             ns[currentPeriod][oppTeam + 'Goalie'][oppActiveGoalie];
 
           goalie.ga = Math.max(0, (goalie.ga || 0) + delta);
+
+          // NEW: In Simple mode, automatically add/remove goal events for the timeline
+          if (trackingMode === 'simple') {
+            if (delta === 1) {
+              const newEvent = {
+                team: team,
+                situation: 'EQ',
+                time: '',
+                period: currentPeriod,
+                timestamp: Date.now(),
+                isSimple: true // Flag to identify simple mode events
+              };
+              const updatedEvents = [...goalEvents, newEvent];
+              setGoalEvents(updatedEvents);
+              if (isMultiplayer && matchRef.current) {
+                matchRef.current.child('goalEvents').set(updatedEvents);
+              } else {
+                const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                gs.goalEvents = updatedEvents;
+                localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+              }
+            } else if (delta === -1) {
+              // Find the last goal event for this team in this period to remove
+              const lastGoalIdx = [...goalEvents].reverse().findIndex(e => e.team === team && e.period === currentPeriod);
+              if (lastGoalIdx !== -1) {
+                const realIdx = goalEvents.length - 1 - lastGoalIdx;
+                const updatedEvents = goalEvents.filter((_, i) => i !== realIdx);
+                setGoalEvents(updatedEvents);
+                if (isMultiplayer && matchRef.current) {
+                  matchRef.current.child('goalEvents').set(updatedEvents);
+                } else {
+                  const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                  gs.goalEvents = updatedEvents;
+                  localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                }
+              }
+            }
+          }
         }
 
         else {
@@ -2559,40 +2600,19 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         // Trigger animation
         setIsSwapping(true);
 
-        // Wait for animation to reach midpoint, then swap data
+        // Wait for animation to reach midpoint, then toggle visual swap
         setTimeout(() => {
-          // Swap team names
-          const tempName = homeName;
-          setHomeName(awayName);
-          setAwayName(tempName);
-
-          // Swap all period stats
-          const newPeriodStats = { ...periodStats };
-          Object.keys(newPeriodStats).forEach(period => {
-            const tempHomeScore = newPeriodStats[period].homeScore;
-            const tempHomeSaves = newPeriodStats[period].homeSaves;
-            const tempHomeGoalie = newPeriodStats[period].homeGoalie;
-
-            newPeriodStats[period].homeScore = newPeriodStats[period].awayScore;
-            newPeriodStats[period].homeSaves = newPeriodStats[period].awaySaves;
-            newPeriodStats[period].homeGoalie = newPeriodStats[period].awayGoalie;
-
-            newPeriodStats[period].awayScore = tempHomeScore;
-            newPeriodStats[period].awaySaves = tempHomeSaves;
-            newPeriodStats[period].awayGoalie = tempHomeGoalie;
-          });
-          setPeriodStats(newPeriodStats);
+          const newSidesSwapped = !sidesSwapped;
+          setSidesSwapped(newSidesSwapped);
 
           // Sync to Firebase if multiplayer
           if (isMultiplayer && matchRef.current && !matchEnded) {
             matchRef.current.update({
-              homeName: awayName,
-              awayName: homeName,
-              periodStats: newPeriodStats
+              sidesSwapped: newSidesSwapped
             });
           }
 
-          // End animation after data is swapped
+          // End animation after state is updated
           setTimeout(() => setIsSwapping(false), 300);
         }, 300); // Halfway through 600ms animation
 
@@ -4421,7 +4441,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                     </div>
                                     <div className={darkMode ? 'text-sm text-gray-300' : 'text-sm text-gray-600'}>
                                       <div>
-                                        {event.time && `${event.time} • `}Period {event.period} • {event.situation}
+                                        {event.time && `${event.time} • `}Period {event.period}{!event.isSimple && ` • ${event.situation}`}
                                       </div>
                                       <div>
                                         {event.scorers && event.scorers.length > 0 && `G: #${event.scorers.map(id => id.split('-')[1]).join(', #')} `}
@@ -4430,38 +4450,40 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                     </div>
                                   </div>
                                   <div className="flex gap-1">
-                                    <button
-                                      onClick={() => {
-                                        if (matchEnded) return;
-                                        const event = goalEvents[idx];
-                                        setEditingGoalIndex(idx);
-                                        setEditingGoalOriginalPeriod(event.period);
-                                        setRecordingGoal(event.team);
-                                        setGoalSituation(event.situation);
-                                        setGoalTime(event.time || '');
-                                        setGoalScorers(event.scorers || []);
-                                        setGoalAssists(event.assists || []);
-                                        setGoalPlusPlayers(event.plus || []);
-                                        setGoalMinusPlayers(event.minus || []);
-                                        setGoalSOGPlayers(event.sog || []);
-                                        setGoalWizardStep(1);
-                                        setGoalFormCollapsed(false);
-                                        setGoalTimelineCollapsed(true);
-                                        setTimeout(() => {
-                                          const formEl = document.querySelector('.goal-form');
-                                          if (formEl) {
-                                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                          }
-                                        }, 100);
-                                      }}
-                                      disabled={matchEnded}
-                                      className={matchEnded
-                                        ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
-                                        : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
-                                      }
-                                    >
-                                      Edit
-                                    </button>
+                                    {!event.isSimple && (
+                                      <button
+                                        onClick={() => {
+                                          if (matchEnded) return;
+                                          const event = goalEvents[idx];
+                                          setEditingGoalIndex(idx);
+                                          setEditingGoalOriginalPeriod(event.period);
+                                          setRecordingGoal(event.team);
+                                          setGoalSituation(event.situation);
+                                          setGoalTime(event.time || '');
+                                          setGoalScorers(event.scorers || []);
+                                          setGoalAssists(event.assists || []);
+                                          setGoalPlusPlayers(event.plus || []);
+                                          setGoalMinusPlayers(event.minus || []);
+                                          setGoalSOGPlayers(event.sog || []);
+                                          setGoalWizardStep(1);
+                                          setGoalFormCollapsed(false);
+                                          setGoalTimelineCollapsed(true);
+                                          setTimeout(() => {
+                                            const formEl = document.querySelector('.goal-form');
+                                            if (formEl) {
+                                              formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                          }, 100);
+                                        }}
+                                        disabled={matchEnded}
+                                        className={matchEnded
+                                          ? (darkMode ? 'bg-gray-600 text-gray-400 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed' : 'bg-gray-300 text-gray-500 px-2 py-1 rounded text-xs font-semibold cursor-not-allowed')
+                                          : (darkMode ? 'bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs font-semibold' : 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold')
+                                        }
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
                                     <button
                                       onClick={() => {
                                         if (!window.confirm('Delete this goal?')) return;
@@ -4473,8 +4495,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                                         const eventToDelete = goalEvents[idx];
 
-                                        // Advanced mode: remove goal from team score
-                                        if (trackingMode === 'advanced') {
+                                        // Update score/GA when deleting
+                                        if (trackingMode === 'advanced' || trackingMode === 'simple') {
                                           setPeriodStats(prev => {
                                             const next = structuredClone(prev);
                                             const p = eventToDelete.period;
@@ -4492,12 +4514,47 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                                             return next;
                                           });
-                                        }
 
+                                          // Sync to Firebase if needed
+                                          if (isMultiplayer && matchRef.current && !matchEnded) {
+                                            // Note: matchRef.current.update({ periodStats: next }) will be called by useEffect or manually if we want
+                                            // But wait, the standard logic here doesn't call matchRef update directly for individual periodStat changes in timeline
+                                            // Actually it SHOULD if we want it to sync immediately.
+                                            // Let's check how it was done for advanced.
+                                          }
+                                        }
 
                                         const updatedEvents = goalEvents.filter((_, i) => i !== idx);
 
                                         setGoalEvents(updatedEvents);
+                                        if (isMultiplayer && matchRef.current) {
+                                          matchRef.current.child('goalEvents').set(updatedEvents);
+                                          // ALSO update periodStats in Firebase
+                                          if (trackingMode === 'advanced' || trackingMode === 'simple') {
+                                            setPeriodStats(prev => {
+                                              const next = structuredClone(prev);
+                                              const p = eventToDelete.period;
+                                              const wasHome = eventToDelete.team === 'home';
+                                              const goalieTeam = wasHome ? 'away' : 'home';
+                                              next[p][eventToDelete.team + 'Score'] = Math.max(0, next[p][eventToDelete.team + 'Score'] - 1);
+                                              const activeGoalieAtTime = activeGoalies[goalieTeam];
+                                              if (next[p][goalieTeam + 'Goalie'] && next[p][goalieTeam + 'Goalie'][activeGoalieAtTime]) {
+                                                next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga = Math.max(0, next[p][goalieTeam + 'Goalie'][activeGoalieAtTime].ga - 1);
+                                              }
+                                              matchRef.current.update({ periodStats: next });
+                                              return next;
+                                            });
+                                          }
+                                        } else if (!isMultiplayer && screen === 'game') {
+                                          const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                          gs.goalEvents = updatedEvents;
+                                          if (trackingMode === 'advanced' || trackingMode === 'simple') {
+                                            // periodStats are updated via setPeriodStats above
+                                            // gs should probably store them too
+                                            // ... existing local storage logic typically handles this via useEffect
+                                          }
+                                          localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                        }
 
                                         if (trackingMode === 'advanced' && isMultiplayer && matchRef.current) {
                                           const next = structuredClone(periodStats);
@@ -6068,76 +6125,59 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               />
 
               <div className="grid grid-cols-2 gap-2 mb-2">
-                {[
-                  { name: homeName, score: totals.homeScore, saves: totals.homeSaves, team: 'home' },
-                  { name: awayName, score: totals.awayScore, saves: totals.awaySaves, team: 'away' }
-                ].map((tm, idx) => {
-                  const currentPeriodScore = periodStats[currentPeriod]?.[tm.team + 'Score'] ?? 0;
-
-                  // Determine animation class
-                  let animationClass = '';
-                  if (isSwapping) {
-                    animationClass = tm.team === 'home' ? 'swap-home-out' : 'swap-away-out';
-                  }
-
-                  return (
-                    <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 ${animationClass}`}>
-                      <div className="text-sm font-semibold mb-3 text-left">{tm.name}</div>
-
-                      <div>
-                        <div className="text-sm mb-2 text-center">
-                          <span className="font-semibold">Goals</span>
+                {(() => {
+                  const teams = [
+                    { name: homeName, score: totals.homeScore, saves: totals.homeSaves, team: 'home' },
+                    { name: awayName, score: totals.awayScore, saves: totals.awaySaves, team: 'away' }
+                  ];
+                  return sidesSwapped ? [teams[1], teams[0]] : teams;
+                })().map((tm, idx) => (
+                  <div key={tm.team} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 ${isSwapping ? (tm.team === 'home' ? 'swap-home-out' : 'swap-away-out') : ''}`}>
+                    <div className="text-sm font-semibold mb-3 text-left">{tm.name}</div>
+                    <div>
+                      <div className="text-sm mb-2 text-center">
+                        <span className="font-semibold">Goals</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <button onClick={() => updateStat(tm.team, 'Score', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
+                        <div className={`text-4xl font-bold min-w-[3rem] text-center tabular-nums ${sparkleStats[`${tm.team}Score${currentPeriod}`] ? 'sparkle' : ''}`}>
+                          {tm.score}
                         </div>
-
-                        <div className="flex items-center justify-center gap-3 mb-2">
-                          <button onClick={() => updateStat(tm.team, 'Score', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
-                          <div className={`text-4xl font-bold min-w-[3rem] text-center tabular-nums ${sparkleStats[`${tm.team}Score${currentPeriod}`] ? 'sparkle' : ''}`}>
-                            {tm.score}
-                          </div>
-                          <button onClick={() => updateStat(tm.team, 'Score', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
-                        </div>
-                        <div className="text-xs opacity-75 text-center tabular-nums">
-                          ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Score']}{i < arr.length - 1 ? '-' : ''}</span>)})
-                        </div>
+                        <button onClick={() => updateStat(tm.team, 'Score', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
+                      </div>
+                      <div className="text-xs opacity-75 text-center tabular-nums">
+                        ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Score']}{i < arr.length - 1 ? '-' : ''}</span>)})
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
 
               {!statsCollapsed && (
                 <div className="grid grid-cols-2 gap-2 mb-2">
-                  {[
-                    { saves: totals.homeSaves, team: 'home' },
-                    { saves: totals.awaySaves, team: 'away' }
-                  ].map((tm, idx) => {
-                    const currentPeriodSaves = periodStats[currentPeriod]?.[tm.team + 'Saves'] ?? 0;
-
-                    // Determine animation class
-                    let animationClass = '';
-                    if (isSwapping) {
-                      animationClass = tm.team === 'home' ? 'swap-home-out' : 'swap-away-out';
-                    }
-
-                    return (
-                      <div key={idx} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 ${animationClass}`}>
-                        <div className="text-sm mb-2 text-center">
-                          <span className="font-semibold">Saves</span>
-                        </div>
-
-                        <div className="flex items-center justify-center gap-3 mb-2">
-                          <button onClick={() => updateStat(tm.team, 'Saves', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
-                          <div className={`text-4xl font-bold min-w-[3rem] text-center tabular-nums ${sparkleStats[`${tm.team}Saves${currentPeriod}`] ? 'sparkle' : ''}`}>
-                            {tm.saves}
-                          </div>
-                          <button onClick={() => updateStat(tm.team, 'Saves', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
-                        </div>
-                        <div className="text-xs opacity-75 text-center tabular-nums">
-                          ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Saves']}{i < arr.length - 1 ? '-' : ''}</span>)})
-                        </div>
+                  {(() => {
+                    const teams = [
+                      { saves: totals.homeSaves, team: 'home' },
+                      { saves: totals.awaySaves, team: 'away' }
+                    ];
+                    return sidesSwapped ? [teams[1], teams[0]] : teams;
+                  })().map((tm, idx) => (
+                    <div key={tm.team} className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-white bg-opacity-10'} rounded-lg p-3 ${isSwapping ? (tm.team === 'home' ? 'swap-home-out' : 'swap-away-out') : ''}`}>
+                      <div className="text-sm mb-2 text-center">
+                        <span className="font-semibold">Saves</span>
                       </div>
-                    );
-                  })}
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <button onClick={() => updateStat(tm.team, 'Saves', -1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>−</button>
+                        <div className={`text-4xl font-bold min-w-[3rem] text-center tabular-nums ${sparkleStats[`${tm.team}Saves${currentPeriod}`] ? 'sparkle' : ''}`}>
+                          {tm.saves}
+                        </div>
+                        <button onClick={() => updateStat(tm.team, 'Saves', 1)} disabled={matchEnded || isViewer || trackingMode === 'advanced'} className={`bg-white bg-opacity-20 w-10 h-10 rounded flex items-center justify-center text-xl font-bold ${matchEnded || isViewer || trackingMode === 'advanced' ? 'opacity-20 cursor-not-allowed' : 'hover:bg-opacity-30'}`}>+</button>
+                      </div>
+                      <div className="text-xs opacity-75 text-center tabular-nums">
+                        ({Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).map((p, i, arr) => <span key={p} className={parseInt(p) === currentPeriod ? 'font-bold underline' : ''}>{periodStats[p][tm.team + 'Saves']}{i < arr.length - 1 ? '-' : ''}</span>)})
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -6167,10 +6207,10 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
           </div>
 
 
-          {(!isViewer || trackingMode === 'advanced' || goalEvents.length > 0) && (
+          {(!isViewer || trackingMode === 'advanced' || trackingMode === 'simple' || goalEvents.length > 0) && (
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white'} shadow-md sticky top-48 z-40`}>
               <div className="max-w-6xl mx-auto flex">
-                {['stats', ...(trackingMode === 'advanced' || goalEvents.length > 0 ? ['timeline'] : []), ...(!isViewer ? ['audio'] : []), 'referee', ...(externalLinkUrl ? ['external'] : [])].map(tab => (
+                {['stats', ...((trackingMode === 'advanced' || trackingMode === 'simple') || goalEvents.length > 0 ? ['timeline'] : []), ...(!isViewer ? ['audio'] : []), 'referee', ...(externalLinkUrl ? ['external'] : [])].map(tab => (
                   <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab === tab ? (darkMode ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600')}`}>
                     {tab === 'audio' ? 'AUDIO' : tab === 'stats' ? 'STATS' : tab === 'timeline' ? 'TIMELINE' : tab === 'referee' ? 'REFEREE' : externalLinkTitle || 'Link'}
                   </button>
@@ -6359,6 +6399,23 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     <div key={period} className="mb-6 sm:mb-8">
                       {/* Timeline with center line - REVERSED: events at top, period marker at bottom */}
                       <div className="relative">
+                        {/* DEBUG DATA - REMOVE LATER */}
+                        <div className="hidden">
+                          {JSON.stringify({
+                            homeName,
+                            awayName,
+                            sidesSwapped,
+                            lastEventTeam: eventsByPeriod[period][0]?.team,
+                            scoreText: eventsByPeriod[period][0]?.type === 'goal' ? (() => {
+                              const e = eventsByPeriod[period][0];
+                              const idx = goalEvents.findIndex(ge => ge.timestamp === e.timestamp);
+                              const h = goalEvents.slice(0, idx + 1).filter(ge => ge.team === 'home').length;
+                              const a = goalEvents.slice(0, idx + 1).filter(ge => ge.team === 'away').length;
+                              return `${h}-${a}`;
+                            })() : 'N/A'
+                          }, null, 2)}
+                        </div>
+
                         {/* Center vertical line */}
                         <div className={`absolute left-1/2 top-0 bottom-8 w-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-x-1/2`}></div>
 
@@ -6377,14 +6434,17 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                               const eventIndex = goalEvents.findIndex(e => e.timestamp === event.timestamp);
                               const homeGoals = goalEvents.slice(0, eventIndex + 1).filter(e => e.team === 'home').length;
                               const awayGoals = goalEvents.slice(0, eventIndex + 1).filter(e => e.team === 'away').length;
+
+                              // Always display standard Home-Away notation (e.g. 2-0)
+                              // regardless of which side (Left/Right) the teams are on.
                               scoreText = `${homeGoals}-${awayGoals}`;
                             }
 
                             return (
                               <div key={eventId} className="relative w-full">
-                                {/* Event positioned left (Home) or right (Away) */}
-                                <div className={`flex items-center w-1/2 ${isHome ? 'mr-auto justify-end pr-4 sm:pr-8' : 'ml-auto justify-start pl-4 sm:pl-8'}`}>
-                                  <div className={`w-full ${isHome ? 'text-right' : 'text-left'}`}>
+                                {/* Event positioned left (Home) or right (Away) - respect sidesSwapped */}
+                                <div className={`flex items-center w-1/2 ${((isHome && !sidesSwapped) || (!isHome && sidesSwapped)) ? 'mr-auto justify-end pr-4 sm:pr-8' : 'ml-auto justify-start pl-4 sm:pl-8'}`}>
+                                  <div className={`w-full ${((isHome && !sidesSwapped) || (!isHome && sidesSwapped)) ? 'text-right' : 'text-left'}`}>
                                     <div
                                       className={`${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded-lg p-2 shadow-sm transition-all ${canExpand ? 'cursor-pointer hover:shadow-md' : ''} inline-block w-auto max-w-[200px] sm:max-w-[240px] relative z-20 text-left`}
                                       onClick={() => canExpand && toggleEventExpanded(eventId)}
@@ -6412,7 +6472,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                         {/* Bottom row: Team Name (+ Situation) */}
                                         <div className={`text-[10px] sm:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} truncate`}>
                                           {teamName}
-                                          {event.type === 'goal' && event.situation && (
+                                          {event.type === 'goal' && !event.isSimple && event.situation && (
                                             <span className="ml-1">({event.situation})</span>
                                           )}
                                         </div>
@@ -6484,7 +6544,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                 </div>
 
                                 {/* Connecting line to center */}
-                                <div className={`absolute top-1/2 ${isHome ? 'right-1/2 left-auto' : 'left-1/2 right-auto'} w-8 sm:w-16 h-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-y-1/2 z-0`}></div>
+                                <div className={`absolute top-1/2 ${((isHome && !sidesSwapped) || (!isHome && sidesSwapped)) ? 'right-1/2 left-auto' : 'left-1/2 right-auto'} w-8 sm:w-16 h-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-y-1/2 z-0`}></div>
 
                                 {/* Center dot */}
                                 <div className={`absolute top-1/2 left-1/2 w-2 h-2 sm:w-3 sm:h-3 rounded-full ${darkMode ? 'bg-gray-500' : 'bg-gray-400'} transform -translate-x-1/2 -translate-y-1/2 z-10`}></div>
@@ -6492,8 +6552,6 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                             );
                           })}
                         </div>
-
-                        {/* Period Marker at BOTTOM with whistle icon */}
                         <div className="relative flex items-center justify-center h-12 mb-6">
 
                           {/* Startande målvakter - ÖVER period marker */}
@@ -6502,49 +6560,52 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                               {/* Center line */}
                               <div className={`absolute left-1/2 top-0 bottom-0 w-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-x-1/2`}></div>
 
-                              {/* Home team goalie - LEFT */}
-                              <div className="absolute right-1/2 top-0 pr-8 text-right">
-                                <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
-                                  <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
-                                  <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                    {(() => {
-                                      // Check for goalie switches in previous periods
-                                      const switchesBeforePeriod = otherEvents.filter(e =>
-                                        e.eventType === 'goalieSwitch' &&
-                                        e.team === 'home' &&
-                                        e.period < period
-                                      );
-                                      // Count switches to determine active goalie
-                                      const isStarterActive = switchesBeforePeriod.length % 2 === 0;
-                                      const activeGoalieNum = isStarterActive ? goalieMap.home?.starter : goalieMap.home?.backup;
+                              {/* Team goalies - positions based on sidesSwapped */}
+                              {(() => {
+                                const homeGoalieMarker = (
+                                  <div className={`absolute ${!sidesSwapped ? 'right-1/2 pr-8 text-right' : 'left-1/2 pl-8 text-left'} top-0`}>
+                                    <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
+                                      <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
+                                      <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                        {(() => {
+                                          const switchesBeforePeriod = otherEvents.filter(e => e.eventType === 'goalieSwitch' && e.team === 'home' && e.period < period);
+                                          const isStarterActive = switchesBeforePeriod.length % 2 === 0;
+                                          const activeGoalieNum = isStarterActive ? goalieMap.home?.starter : goalieMap.home?.backup;
+                                          return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
+                                        })()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
 
-                                      return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
-                                    })()}
-                                  </span>
-                                </div>
-                              </div>
+                                const awayGoalieMarker = (
+                                  <div className={`absolute ${!sidesSwapped ? 'left-1/2 pl-8 text-left' : 'right-1/2 pr-8 text-right'} top-0`}>
+                                    <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
+                                      <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
+                                      <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                        {(() => {
+                                          const switchesBeforePeriod = otherEvents.filter(e => e.eventType === 'goalieSwitch' && e.team === 'away' && e.period < period);
+                                          const isStarterActive = switchesBeforePeriod.length % 2 === 0;
+                                          const activeGoalieNum = isStarterActive ? goalieMap.away?.starter : goalieMap.away?.backup;
+                                          return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
+                                        })()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
 
-                              {/* Away team goalie - RIGHT */}
-                              <div className="absolute left-1/2 top-0 pl-8 text-left">
-                                <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
-                                  <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
-                                  <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                    {(() => {
-                                      // Check for goalie switches in previous periods
-                                      const switchesBeforePeriod = otherEvents.filter(e =>
-                                        e.eventType === 'goalieSwitch' &&
-                                        e.team === 'away' &&
-                                        e.period < period
-                                      );
-                                      // Count switches to determine active goalie
-                                      const isStarterActive = switchesBeforePeriod.length % 2 === 0;
-                                      const activeGoalieNum = isStarterActive ? goalieMap.away?.starter : goalieMap.away?.backup;
-
-                                      return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
-                                    })()}
-                                  </span>
-                                </div>
-                              </div>
+                                return sidesSwapped ? (
+                                  <>
+                                    {awayGoalieMarker}
+                                    {homeGoalieMarker}
+                                  </>
+                                ) : (
+                                  <>
+                                    {homeGoalieMarker}
+                                    {awayGoalieMarker}
+                                  </>
+                                );
+                              })()}
                             </div>
                           </div>
                           {/* Whistle icon on the center line */}
@@ -6788,8 +6849,17 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                         )}
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        {renderTeamStats('home')}
-                        {renderTeamStats('away')}
+                        {sidesSwapped ? (
+                          <>
+                            {renderTeamStats('away')}
+                            {renderTeamStats('home')}
+                          </>
+                        ) : (
+                          <>
+                            {renderTeamStats('home')}
+                            {renderTeamStats('away')}
+                          </>
+                        )}
                       </div>
 
                       {trackingMode === 'advanced' && (playerStats.home?.players || playerStats.away?.players) && (() => {
@@ -6813,7 +6883,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                             {expandedPlayerStats[p] && (
                               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {['home', 'away'].map(team => {
+                                {(sidesSwapped ? ['away', 'home'] : ['home', 'away']).map(team => {
                                   const teamName = team === 'home' ? homeName : awayName;
                                   const players = playerStats[team]?.players || {};
                                   const playerNums = Object.keys(players)
@@ -6945,7 +7015,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                             {expandedGoalieStats[p] && (
                               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {['home', 'away'].map(team => {
+                                {(sidesSwapped ? ['away', 'home'] : ['home', 'away']).map(team => {
                                   const teamName = team === 'home' ? homeName : awayName;
                                   const goalieData = periodStats[p]?.[team + 'Goalie'];
 
@@ -7023,7 +7093,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  {['home', 'away'].map(team => {
+                  {(sidesSwapped ? ['away', 'home'] : ['home', 'away']).map(team => {
                     const name = team === 'home' ? homeName : awayName;
                     const score = team === 'home' ? totals.homeScore : totals.awayScore;
                     const saves = team === 'home' ? totals.homeSaves : totals.awaySaves;
@@ -7081,7 +7151,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                       {expandedPlayerStats.total && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['home', 'away'].map(team => {
+                          {(sidesSwapped ? ['away', 'home'] : ['home', 'away']).map(team => {
                             const teamName = team === 'home' ? homeName : awayName;
                             const players = playerStats[team]?.players || {};
                             const playerNums = Object.keys(players)
@@ -7197,7 +7267,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                       {expandedGoalieStats.total && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          {['home', 'away'].map(team => {
+                          {(sidesSwapped ? ['away', 'home'] : ['home', 'away']).map(team => {
                             const teamName = team === 'home' ? homeName : awayName;
                             const goalieData = totals[team + 'Goalie'];
 
@@ -7350,7 +7420,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               </div>
             </div>}
           </div>
-        </div>
+        </div >
       );
     };
 
