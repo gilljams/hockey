@@ -404,6 +404,7 @@
       const [statsCollapsed, setStatsCollapsed] = useState(trackingMode === 'advanced');
       const [sidesSwapped, setSidesSwapped] = useState(false);
       const [focusMode, setFocusMode] = useState(null);
+      const [statsSection, setStatsSection] = useState(0); // 0: Period 1, 1: Period 2, 2: Period 3, 3: Game Summary
 
       // Determine default collapsed state based on user role
       const getDefaultCollapsedState = (isViewerMode, isMultiplayerMode) => {
@@ -6387,7 +6388,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 {trackingMode === 'advanced' ? (
                   <button
                     onClick={() => setShowPlayerStats(true)}
-                    className={`col-span-1 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
+                    className={`col-span-1 py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wide shadow-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white'
                       }`}
                   >
                     ⛶ PLAYER EVENTS
@@ -6396,7 +6397,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                   <button
                     onClick={swapSides}
                     disabled={isViewer || matchEnded}
-                    className={`col-span-1 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-colors ${(isViewer || matchEnded)
+                    className={`col-span-1 py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wide shadow-lg transition-colors ${(isViewer || matchEnded)
                       ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
                       : (darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
                       }`}
@@ -6413,7 +6414,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     setEditingAnnouncementIndex(null);
                   }}
                   disabled={isViewer || matchEnded}
-                  className={`col-span-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-colors ${(isViewer || matchEnded)
+                  className={`col-span-1 py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wide flex items-center justify-center gap-2 shadow-lg transition-colors ${(isViewer || matchEnded)
                     ? (darkMode ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-gray-300 text-gray-400 cursor-not-allowed')
                     : (darkMode ? 'bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-white' : 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white')
                     }`}
@@ -6430,7 +6431,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
             <div className={`${darkMode ? 'bg-gray-800 border-b border-gray-700' : 'bg-white'} shadow-md sticky top-48 z-40`}>
               <div className="max-w-6xl mx-auto flex">
                 {['stats', ...((trackingMode === 'advanced' || trackingMode === 'simple') || goalEvents.length > 0 ? ['timeline'] : []), ...(!isViewer ? ['audio'] : []), 'referee', ...(externalLinkUrl ? ['external'] : [])].map(tab => (
-                  <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm ${activeTab === tab ? (darkMode ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600')}`}>
+                  <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-1 py-3 font-semibold text-sm uppercase tracking-wide transition-colors ${activeTab === tab ? (darkMode ? 'bg-gray-600 text-white' : 'bg-blue-600 text-white') : (darkMode ? 'bg-gray-700 text-gray-400 hover:text-gray-300' : 'bg-gray-100 text-gray-600 hover:text-gray-700')}`}>
                     {tab === 'audio' ? 'AUDIO' : tab === 'stats' ? 'STATS' : tab === 'timeline' ? 'TIMELINE' : tab === 'referee' ? 'REFEREE' : externalLinkTitle || 'Link'}
                   </button>
                 ))}
