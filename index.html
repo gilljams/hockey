@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Hockey Scorekeeper</title>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-39HWBJQ5Z1"></script>
   <script>window.dataLayer = window.dataLayer || []; function gtag() { dataLayer.push(arguments); } gtag('js', new Date()); gtag('config', 'G-39HWBJQ5Z1');</script>
@@ -15,6 +15,16 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Prevent iOS zoom on input fields */
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+    
     @keyframes fadeIn {
       from {
         opacity: 0
@@ -5254,18 +5264,19 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                         value={homeName}
                         onChange={e => setHomeName(e.target.value)}
                         placeholder="Enter home team name"
-                        className={`w-full px-4 py-3 pr-10 border rounded-lg
+                        className={`w-full px-4 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
     ${darkMode
                             ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
                             : 'border-gray-300 placeholder-gray-400'
                           }`}
+                        style={{ fontSize: '16px' }}
                       />
                       {homeName && (
                         <button
                           type="button"
                           onClick={() => setHomeName('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2
-               text-gray-400 hover:text-gray-600 text-xl font-light"
+                          className="absolute right-3 top-3 w-6 h-6 flex items-center justify-center
+               text-gray-400 hover:text-gray-600 text-lg leading-none"
                           aria-label="Clear home team"
                         >
                           ×
@@ -5282,22 +5293,24 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                         value={awayName}
                         onChange={e => setAwayName(e.target.value)}
                         placeholder="Enter away team name"
-                        className={`w-full px-4 py-3 pr-10 border rounded-lg
+                        className={`w-full px-4 py-3 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent
     ${darkMode
                             ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
                             : 'border-gray-300 placeholder-gray-400'
                           }`}
+                        style={{ fontSize: '16px' }}
                       />
                       {awayName && (
                         <button
                           type="button"
                           onClick={() => setAwayName('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2
-               text-gray-400 hover:text-gray-600 text-xl font-light"
+                          className="absolute right-3 top-3 w-6 h-6 flex items-center justify-center
+               text-gray-400 hover:text-gray-600 text-lg leading-none"
                           aria-label="Clear away team"
                         >
                           ×
                         </button>
+                      )}
                       )}
                     </div>
                   </div>
@@ -5910,7 +5923,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                   value={homeName}
                                   onChange={e => { setHomeName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ homeName: e.target.value }) }}
                                   disabled={matchEnded || isViewer}
-                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                  style={{ fontSize: '16px' }}
                                 />
                                 <button
                                   onClick={() => setHomeName('')}
@@ -5931,7 +5945,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                   value={awayName}
                                   onChange={e => { setAwayName(e.target.value); if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ awayName: e.target.value }) }}
                                   disabled={matchEnded || isViewer}
-                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                  className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
+                                  style={{ fontSize: '16px' }}
                                 />
                                 <button
                                   onClick={() => setAwayName('')}
