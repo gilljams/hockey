@@ -2801,20 +2801,31 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         csv += `${awayName},${t.awayScore},${awaySOG},${t.awaySaves},${calcSP(t.awaySaves, t.homeScore)}%\n\n`;
 
         // Section 3: Team Statistics (Period Breakdown)
-        csv += `TEAM STATISTICS (PERIOD BREAKDOWN)\n`;
-        csv += `Period,Team,Goals,SOG,Saves\n`;
+        csv += `TEAM STATISTICS (PERIOD BREAKDOWN)\n\n`;
+        
+        // Home team breakdown
+        csv += `${homeName}\n`;
+        csv += `Period,Goals,SOG,Saves,SVS%\n`;
         Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).forEach(p => {
           const ps = periodStats[p];
           if (!ps) return;
           const pLabel = parseInt(p) <= 3 ? `Period ${p}` : `OT`;
-
-          // Home period
           const pHomeSOG = (ps.awaySaves || 0) + (ps.homeScore || 0);
-          csv += `${pLabel},${homeName},${ps.homeScore || 0},${pHomeSOG},${ps.homeSaves || 0}\n`;
+          const pHomeSVS = calcSP(ps.homeSaves || 0, ps.awayScore || 0);
+          csv += `${pLabel},${ps.homeScore || 0},${pHomeSOG},${ps.homeSaves || 0},${pHomeSVS}%\n`;
+        });
+        csv += `\n`;
 
-          // Away period
+        // Away team breakdown
+        csv += `${awayName}\n`;
+        csv += `Period,Goals,SOG,Saves,SVS%\n`;
+        Object.keys(periodStats).sort((a, b) => parseInt(a) - parseInt(b)).forEach(p => {
+          const ps = periodStats[p];
+          if (!ps) return;
+          const pLabel = parseInt(p) <= 3 ? `Period ${p}` : `OT`;
           const pAwaySOG = (ps.homeSaves || 0) + (ps.awayScore || 0);
-          csv += `${pLabel},${awayName},${ps.awayScore || 0},${pAwaySOG},${ps.awaySaves || 0}\n`;
+          const pAwaySVS = calcSP(ps.awaySaves || 0, ps.homeScore || 0);
+          csv += `${pLabel},${ps.awayScore || 0},${pAwaySOG},${ps.awaySaves || 0},${pAwaySVS}%\n`;
         });
         csv += `\n`;
 
