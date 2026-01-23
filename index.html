@@ -7080,10 +7080,10 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     const oppScore = ps[oppTeam + 'Score'];
                     const shotsFor = ps[oppTeam + 'Saves'] + score;
                     const shotsAgainst = saves + oppScore;
-                    const bgColor = darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg border border-gray-100';
+                    const bgColor = darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow border border-gray-100';
 
                     return (
-                      <div className={`${bgColor} rounded-xl p-4 transition-all hover:shadow-xl`}>
+                      <div className={`${bgColor} rounded-xl p-4 transition-all hover:shadow-md`}>
                         <div className={`font-bold mb-3 uppercase tracking-wider text-sm ${darkMode ? 'text-gray-100' : 'text-gray-900'} text-center border-b pb-2 ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>{name}</div>
                         <div className={`text-xs space-y-2 tabular-nums ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                           <div className="flex justify-between items-baseline">
@@ -7113,15 +7113,17 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
                   return (
                     <div key={p} className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-lg'} rounded-2xl p-4 sm:p-6 mb-6 transition-all`}>
-                      <div className="flex justify-between items-center mb-4 sm:mb-6">
-                        <h3 className={`text-base sm:text-lg font-bold uppercase tracking-wide ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                          {p <= 3 ? `Period ${p}` : `Overtime`}
-                        </h3>
-                        {currentPeriod === p && (
-                          <span className={`${darkMode ? 'text-yellow-500 border border-yellow-500/30' : 'bg-yellow-400 text-gray-900'} px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest font-bold`}>
-                            LIVE
-                          </span>
-                        )}
+                      <div className={`${darkMode ? 'bg-gradient-to-r from-blue-600 to-blue-700' : 'bg-gradient-to-r from-blue-500 to-blue-600'} -m-4 sm:-m-6 mb-4 sm:mb-6 px-4 sm:px-6 py-2 sm:py-3 rounded-t-2xl`}>
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-sm sm:text-base font-bold uppercase tracking-wide text-white">
+                            {p <= 3 ? `Period ${p}` : `Overtime`}
+                          </h3>
+                          {currentPeriod === p && (
+                            <span className="bg-yellow-400 text-gray-900 px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest font-bold">
+                              LIVE
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         {sidesSwapped ? (
@@ -7360,11 +7362,13 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                 })}
 
               <div className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white shadow-xl'} rounded-2xl p-4 sm:p-8 mb-8 relative`}>
-                <div className="flex justify-between items-center mb-6 relative z-10">
-                  <h3 className={`text-lg sm:text-xl font-bold uppercase tracking-wide ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>GAME SUMMARY</h3>
-                  {matchEnded && (
-                    <div className={`${darkMode ? 'border border-gray-600 text-gray-400' : 'bg-gray-100 text-gray-800'} px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase`}>FINAL</div>
-                  )}
+                <div className={`${darkMode ? 'bg-gradient-to-r from-blue-600 to-blue-700' : 'bg-gradient-to-r from-blue-500 to-blue-600'} -m-4 sm:-m-8 mb-4 sm:mb-6 px-4 sm:px-8 py-2 sm:py-3 rounded-t-2xl`}>
+                  <div className="flex justify-between items-center relative z-10">
+                    <h3 className="text-base sm:text-lg font-bold uppercase tracking-wide text-white">GAME SUMMARY</h3>
+                    {matchEnded && (
+                      <div className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">FINAL</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
