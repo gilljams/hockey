@@ -1796,7 +1796,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                         className={`${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'} rounded-lg shadow-lg p-4 hover:shadow-xl transition-shadow`}
                       >
                         <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             {match.ended ? (
                               <span className="bg-gray-500 px-2 py-1 rounded text-xs font-bold text-white">ENDED</span>
                             ) : (
@@ -1805,6 +1805,12 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                 LIVE
                               </span>
                             )}
+                            <span className={`px-2 py-1 rounded text-xs font-bold ${(match.trackingMode || 'simple') === 'simple' 
+                              ? (darkMode ? 'bg-green-700 text-green-200' : 'bg-green-100 text-green-800') 
+                              : (darkMode ? 'bg-blue-700 text-blue-200' : 'bg-blue-100 text-blue-800')
+                            }`}>
+                              {(match.trackingMode || 'simple').toUpperCase()}
+                            </span>
                             <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                               {formatDate(match.createdAt)}
                             </span>
@@ -5303,8 +5309,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       <button
                         onClick={() => setTrackingMode('simple')}
                         className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'simple'
-                          ? (darkMode ? 'bg-gray-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-blue-600 text-white shadow-md')
+                          : (darkMode ? 'bg-gray-700 text-gray-400 hover:text-gray-300' : 'bg-gray-100 text-gray-600 hover:text-gray-700')
                           }`}
                       >
                         SIMPLE
@@ -5312,8 +5318,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       <button
                         onClick={() => setTrackingMode('advanced')}
                         className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${trackingMode === 'advanced'
-                          ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-white text-blue-600 shadow-md')
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? (darkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-blue-600 text-white shadow-md')
+                          : (darkMode ? 'bg-gray-700 text-gray-400 hover:text-gray-300' : 'bg-gray-100 text-gray-600 hover:text-gray-700')
                           }`}
                       >
                         ADVANCED
@@ -5657,17 +5663,19 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
 
               {showSettings && <div className={`fixed inset-0 z-39 ${darkMode ? 'bg-gray-900 bg-opacity-50' : 'bg-black bg-opacity-30'}`} onClick={() => setShowSettings(false)} />}
 
-              {showSettings && <div className={`fixed top-20 right-0 h-[calc(100vh-5rem)] w-full max-w-md z-40 overflow-y-auto ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg`}>
-                <div className={`p-4 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-lg">Settings</h3>
-                    <button
-                      onClick={() => setShowSettings(false)}
-                      className={`${darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-100 hover:bg-gray-200'} p-2 rounded-lg transition-colors`}
-                      aria-label="Close settings"
-                    >
-                      <IconClose />
-                    </button>
+              {showSettings && <div className={`fixed z-40 overflow-y-auto ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-2xl border-l ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
+                style={{
+                  top: '5rem',
+                  right: 'max(1rem, calc((100vw - 72rem) / 2 + 1rem))', // Align with burger button: either 1rem from edge or account for centered max-w-6xl layout
+                  height: 'calc(100vh - 5rem)',
+                  width: '100%',
+                  maxWidth: '24rem',
+                  borderTopLeftRadius: '1rem'
+                }}>
+                <div className={`p-6 ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                  <div className={`mb-6 pb-4 border-b ${darkMode ? 'border-gray-600 bg-gradient-to-r from-gray-800 to-gray-700' : 'border-gray-200 bg-gradient-to-r from-gray-50 to-white'} -m-6 mb-4 p-6`}
+                    style={{ borderTopLeftRadius: '1rem' }}>
+                    <h3 className="font-bold text-xl">Settings</h3>
                   </div>
 
                   {/* Back to Start Button */}
@@ -5761,20 +5769,21 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                             {!isViewer && (
                               <div>
                                 <label className="block text-xs mb-2 opacity-75 font-semibold tracking-wide uppercase">Match Code</label>
-                                <div className="flex gap-2">
-                                  <input
-                                    type="text"
-                                    value={matchCode}
-                                    readOnly
-                                    className={`flex-1 px-3 py-2 border rounded-lg font-mono text-center font-bold ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
-                                  />
-                                  <button
-                                    onClick={copyCode}
-                                    className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
-                                  >
-                                    COPY
-                                  </button>
-                                </div>
+                                <button
+                                  onClick={copyCode}
+                                  className={`w-full px-4 py-2 border rounded-lg font-mono text-center font-bold transition-all cursor-pointer group ${
+                                    darkMode 
+                                      ? 'bg-gray-900/50 border-gray-600 text-white hover:bg-gray-800/70 hover:border-blue-500' 
+                                      : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300'
+                                  } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+                                >
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span>{matchCode}</span>
+                                    <svg className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                  </div>
+                                </button>
                               </div>
                             )}
 
@@ -5782,27 +5791,28 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                             {!isViewer && (
                               <div>
                                 <label className="block text-xs mb-2 opacity-75 font-semibold tracking-wide uppercase">Viewer Link</label>
-                                <div className="flex gap-2">
-                                  <input
-                                    type="text"
-                                    value={`${window.location.origin}${window.location.pathname}?join=${matchCode}-V`}
-                                    readOnly
-                                    className={`flex-1 px-3 py-2 border rounded-lg font-mono text-[10px] ${darkMode ? 'bg-gray-900/50 border-gray-600 text-white' : 'bg-white border-gray-200'}`}
-                                  />
-                                  <button
-                                    onClick={() => {
-                                      const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
-                                      navigator.clipboard.writeText(viewerLink).then(() => {
-                                        alert('Viewer link copied!');
-                                      }).catch(() => {
-                                        alert('Failed to copy');
-                                      });
-                                    }}
-                                    className={`px-4 py-2 rounded-lg font-bold text-xs tracking-widest transition-all ${darkMode ? 'bg-blue-700 hover:bg-blue-600' : 'bg-blue-600 hover:bg-blue-700'} text-white shadow-sm`}
-                                  >
-                                    COPY
-                                  </button>
-                                </div>
+                                <button
+                                  onClick={() => {
+                                    const viewerLink = `${window.location.origin}${window.location.pathname}?join=${matchCode}-V`;
+                                    navigator.clipboard.writeText(viewerLink).then(() => {
+                                      alert('Viewer link copied!');
+                                    }).catch(() => {
+                                      alert('Failed to copy');
+                                    });
+                                  }}
+                                  className={`w-full px-4 py-2 border rounded-lg font-mono text-center font-semibold transition-all cursor-pointer group ${
+                                    darkMode 
+                                      ? 'bg-gray-900/50 border-gray-600 text-white hover:bg-gray-800/70 hover:border-blue-500' 
+                                      : 'bg-white border-gray-200 hover:bg-blue-50 hover:border-blue-300'
+                                  } focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50`}
+                                >
+                                  <div className="flex items-center justify-center gap-2">
+                                    <span className="text-sm">...?join={matchCode}-V</span>
+                                    <svg className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                  </div>
+                                </button>
                               </div>
                             )}
 
@@ -5864,8 +5874,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                     if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'simple' })
                                   }}
                                   className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${trackingMode === 'simple'
-                                    ? (darkMode ? 'bg-gray-600 text-white shadow-md' : 'bg-white text-blue-600 shadow-sm')
-                                    : 'text-gray-500 hover:text-gray-700'
+                                    ? (darkMode ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-600 text-white shadow-sm')
+                                    : (darkMode ? 'bg-gray-700 text-gray-400 hover:text-gray-300' : 'bg-gray-100 text-gray-600 hover:text-gray-700')
                                     }`}
                                 >
                                   SIMPLE
@@ -5877,8 +5887,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                     if (isMultiplayer && matchRef.current && !matchEnded) matchRef.current.update({ trackingMode: 'advanced' })
                                   }}
                                   className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${trackingMode === 'advanced'
-                                    ? (darkMode ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-blue-600 shadow-sm')
-                                    : 'text-gray-500 hover:text-gray-700'
+                                    ? (darkMode ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-600 text-white shadow-sm')
+                                    : (darkMode ? 'bg-gray-700 text-gray-400 hover:text-gray-300' : 'bg-gray-100 text-gray-600 hover:text-gray-700')
                                     }`}
                                 >
                                   ADVANCED
@@ -6632,60 +6642,62 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                         </div>
                         <div className="relative flex items-center justify-center h-12 mb-6">
 
-                          {/* Startande målvakter - ÖVER period marker */}
-                          <div className="absolute bottom-full mb-4 w-full">
-                            <div className="relative">
-                              {/* Center line */}
-                              <div className={`absolute left-1/2 top-0 bottom-0 w-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-x-1/2`}></div>
+                          {/* Startande målvakter - ÖVER period marker - only in advanced mode */}
+                          {trackingMode === 'advanced' && (
+                            <div className="absolute bottom-full mb-4 w-full">
+                              <div className="relative">
+                                {/* Center line */}
+                                <div className={`absolute left-1/2 top-0 bottom-0 w-0.5 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} transform -translate-x-1/2`}></div>
 
-                              {/* Team goalies - positions based on sidesSwapped */}
-                              {(() => {
-                                const homeGoalieMarker = (
-                                  <div className={`absolute ${!sidesSwapped ? 'right-1/2 pr-8 text-right' : 'left-1/2 pl-8 text-left'} top-0`}>
-                                    <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
-                                      <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
-                                      <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        {(() => {
-                                          const switchesBeforePeriod = otherEvents.filter(e => e.eventType === 'goalieSwitch' && e.team === 'home' && e.period < period);
-                                          const isStarterActive = switchesBeforePeriod.length % 2 === 0;
-                                          const activeGoalieNum = isStarterActive ? goalieMap.home?.starter : goalieMap.home?.backup;
-                                          return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
-                                        })()}
-                                      </span>
+                                {/* Team goalies - positions based on sidesSwapped */}
+                                {(() => {
+                                  const homeGoalieMarker = (
+                                    <div className={`absolute ${!sidesSwapped ? 'right-1/2 pr-8 text-right' : 'left-1/2 pl-8 text-left'} top-0`}>
+                                      <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
+                                        <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
+                                        <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                          {(() => {
+                                            const switchesBeforePeriod = otherEvents.filter(e => e.eventType === 'goalieSwitch' && e.team === 'home' && e.period < period);
+                                            const isStarterActive = switchesBeforePeriod.length % 2 === 0;
+                                            const activeGoalieNum = isStarterActive ? goalieMap.home?.starter : goalieMap.home?.backup;
+                                            return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
+                                          })()}
+                                        </span>
+                                      </div>
                                     </div>
-                                  </div>
-                                );
+                                  );
 
-                                const awayGoalieMarker = (
-                                  <div className={`absolute ${!sidesSwapped ? 'left-1/2 pl-8 text-left' : 'right-1/2 pr-8 text-right'} top-0`}>
-                                    <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
-                                      <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
-                                      <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        {(() => {
-                                          const switchesBeforePeriod = otherEvents.filter(e => e.eventType === 'goalieSwitch' && e.team === 'away' && e.period < period);
-                                          const isStarterActive = switchesBeforePeriod.length % 2 === 0;
-                                          const activeGoalieNum = isStarterActive ? goalieMap.away?.starter : goalieMap.away?.backup;
-                                          return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
-                                        })()}
-                                      </span>
+                                  const awayGoalieMarker = (
+                                    <div className={`absolute ${!sidesSwapped ? 'left-1/2 pl-8 text-left' : 'right-1/2 pr-8 text-right'} top-0`}>
+                                      <div className={`inline-block ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-50 border border-gray-200'} rounded px-2 py-1 text-xs`}>
+                                        <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>🥅</span>
+                                        <span className={`ml-1 font-semibold ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                          {(() => {
+                                            const switchesBeforePeriod = otherEvents.filter(e => e.eventType === 'goalieSwitch' && e.team === 'away' && e.period < period);
+                                            const isStarterActive = switchesBeforePeriod.length % 2 === 0;
+                                            const activeGoalieNum = isStarterActive ? goalieMap.away?.starter : goalieMap.away?.backup;
+                                            return activeGoalieNum ? `#${activeGoalieNum}` : (isStarterActive ? 'Starter' : 'Backup');
+                                          })()}
+                                        </span>
+                                      </div>
                                     </div>
-                                  </div>
-                                );
+                                  );
 
-                                return sidesSwapped ? (
-                                  <>
-                                    {awayGoalieMarker}
-                                    {homeGoalieMarker}
-                                  </>
-                                ) : (
-                                  <>
-                                    {homeGoalieMarker}
-                                    {awayGoalieMarker}
-                                  </>
-                                );
-                              })()}
+                                  return sidesSwapped ? (
+                                    <>
+                                      {awayGoalieMarker}
+                                      {homeGoalieMarker}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {homeGoalieMarker}
+                                      {awayGoalieMarker}
+                                    </>
+                                  );
+                                })()}
+                              </div>
                             </div>
-                          </div>
+                          )}
                           {/* Whistle icon on the center line */}
                           <div className={`relative z-10 p-1.5 rounded-full border-2 ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-300' : 'bg-white border-gray-300 text-gray-600'}`}>
                             <WhistleIcon />
