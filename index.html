@@ -6329,7 +6329,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                   return (event.player || event.infraction);
                 }
                 if (event.type === 'announcement') {
-                  return !!event.message;
+                  return !!(event.message || event.msg);
                 }
                 if (event.type === 'other' && event.eventType === 'goalieSwitch') {
                   return true;
@@ -6401,6 +6401,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                               scoreText = `${homeGoals}-${awayGoals}`;
                             }
 
+                            // Special handling for announcements - always centered and neutral
                             if (event.type === 'announcement') {
                               // Use 'title' if present, fallback to 'headline' for backward compatibility
                               const headline = event.title || event.headline || '';
@@ -6460,13 +6461,15 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                           </div>
                                         </div>
 
-                                        {/* Bottom row: Team Name (+ Situation) */}
-                                        <div className={`text-[10px] sm:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} truncate`}>
-                                          {teamName}
-                                          {event.type === 'goal' && !event.isSimple && event.situation && (
-                                            <span className="ml-1">({event.situation})</span>
-                                          )}
-                                        </div>
+                                        {/* Bottom row: Team Name (+ Situation) - Skip for announcements */}
+                                        {event.type !== 'announcement' && (
+                                          <div className={`text-[10px] sm:text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} truncate`}>
+                                            {teamName}
+                                            {event.type === 'goal' && !event.isSimple && event.situation && (
+                                              <span className="ml-1">({event.situation})</span>
+                                            )}
+                                          </div>
+                                        )}
                                       </div>
 
                                       {/* Expanded details */}
