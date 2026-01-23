@@ -41,49 +41,57 @@
 
     @keyframes slideOutLeft {
       from {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
         opacity: 1;
+        z-index: 1;
       }
 
       to {
-        transform: translateX(-100%);
+        transform: translateX(-120%) scale(0.9);
         opacity: 0;
+        z-index: 1;
       }
     }
 
     @keyframes slideOutRight {
       from {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
         opacity: 1;
+        z-index: 1;
       }
 
       to {
-        transform: translateX(100%);
+        transform: translateX(120%) scale(0.9);
         opacity: 0;
+        z-index: 1;
       }
     }
 
     @keyframes slideInFromLeft {
       from {
-        transform: translateX(-100%);
+        transform: translateX(-120%) scale(0.9);
         opacity: 0;
+        z-index: 2;
       }
 
       to {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
         opacity: 1;
+        z-index: 2;
       }
     }
 
     @keyframes slideInFromRight {
       from {
-        transform: translateX(100%);
+        transform: translateX(120%) scale(0.9);
         opacity: 0;
+        z-index: 2;
       }
 
       to {
-        transform: translateX(0);
+        transform: translateX(0) scale(1);
         opacity: 1;
+        z-index: 2;
       }
     }
 
@@ -7522,65 +7530,8 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                     </div>
                   )}
 
-                  {/* Existing Announcements List */}
-                  {announcementEvents.length > 0 && (
-                    <div className="pt-4 border-t border-gray-300">
-                      <div className={`font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Existing Announcements</div>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {announcementEvents.map((ev, idx) => (
-                          <div key={ev.timestamp} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-100 border border-gray-200'}`}>
-                            <div className="flex-1 pr-2">
-                              <div className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{ev.title || ev.headline}</div>
-                              {ev.message && <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{ev.message}</div>}
-                              {ev.time && <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{ev.time}</div>}
-                            </div>
-                            <div className="flex gap-1">
-                              <button 
-                                onClick={() => {
-                                  setAnnouncementTitle(ev.title || ev.headline || '');
-                                  setAnnouncementMessage(ev.message || '');
-                                  setAnnouncementTime(ev.time || '');
-                                  setEditingAnnouncementIndex(idx);
-                                }}
-                                className="px-2 py-1 text-xs rounded bg-blue-500 hover:bg-blue-600 text-white"
-                              >
-                                Edit
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  if (!window.confirm('Are you sure you want to delete this announcement?')) return;
-                                  const globalIdx = otherEvents.findIndex(e => e.type === 'announcement' && e.timestamp === ev.timestamp);
-                                  if (globalIdx !== -1) {
-                                    const updatedEvents = otherEvents.filter((_, i) => i !== globalIdx);
-                                    setOtherEvents(updatedEvents);
-                                    if (isMultiplayer && matchRef.current) {
-                                      matchRef.current.child('otherEvents').set(updatedEvents);
-                                    } else {
-                                      const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
-                                      gs.otherEvents = updatedEvents;
-                                      localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
-                                    }
-                                  }
-                                  if (editingAnnouncementIndex === idx) {
-                                    setAnnouncementTitle('');
-                                    setAnnouncementMessage('');
-                                    setAnnouncementTime('');
-                                    setEditingAnnouncementIndex(null);
-                                  }
-                                }}
-                                className="px-2 py-1 text-xs rounded bg-red-500 hover:bg-red-600 text-white"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Actions - moved below existing announcements */}
-                  <div className={`flex gap-3 pt-4 ${announcementEvents.length > 0 ? 'border-t border-gray-300 mt-4' : ''}`}>
+                  {/* Actions - positioned after form fields */}
+                  <div className="flex gap-3 pt-4">
                     <button
                       onClick={() => {
                         setAnnouncementWizardOpen(false);
@@ -7648,6 +7599,63 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                       {editingAnnouncementIndex !== null ? 'Update' : 'Post'}
                     </button>
                   </div>
+
+                  {/* Existing Announcements List */}
+                  {announcementEvents.length > 0 && (
+                    <div className="pt-4 border-t border-gray-300">
+                      <div className={`font-semibold mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>Existing Announcements</div>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {announcementEvents.map((ev, idx) => (
+                          <div key={ev.timestamp} className={`flex items-center justify-between p-2 rounded ${darkMode ? 'bg-gray-700 border border-gray-600' : 'bg-gray-100 border border-gray-200'}`}>
+                            <div className="flex-1 pr-2">
+                              <div className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{ev.title || ev.headline}</div>
+                              {ev.message && <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{ev.message}</div>}
+                              {ev.time && <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{ev.time}</div>}
+                            </div>
+                            <div className="flex gap-1">
+                              <button 
+                                onClick={() => {
+                                  setAnnouncementTitle(ev.title || ev.headline || '');
+                                  setAnnouncementMessage(ev.message || '');
+                                  setAnnouncementTime(ev.time || '');
+                                  setEditingAnnouncementIndex(idx);
+                                }}
+                                className="px-2 py-1 text-xs rounded bg-blue-500 hover:bg-blue-600 text-white"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  if (!window.confirm('Are you sure you want to delete this announcement?')) return;
+                                  const globalIdx = otherEvents.findIndex(e => e.type === 'announcement' && e.timestamp === ev.timestamp);
+                                  if (globalIdx !== -1) {
+                                    const updatedEvents = otherEvents.filter((_, i) => i !== globalIdx);
+                                    setOtherEvents(updatedEvents);
+                                    if (isMultiplayer && matchRef.current) {
+                                      matchRef.current.child('otherEvents').set(updatedEvents);
+                                    } else {
+                                      const gs = JSON.parse(localStorage.getItem('juniorLeagueGame') || '{}');
+                                      gs.otherEvents = updatedEvents;
+                                      localStorage.setItem('juniorLeagueGame', JSON.stringify(gs));
+                                    }
+                                  }
+                                  if (editingAnnouncementIndex === idx) {
+                                    setAnnouncementTitle('');
+                                    setAnnouncementMessage('');
+                                    setAnnouncementTime('');
+                                    setEditingAnnouncementIndex(null);
+                                  }
+                                }}
+                                className="px-2 py-1 text-xs rounded bg-red-500 hover:bg-red-600 text-white"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
