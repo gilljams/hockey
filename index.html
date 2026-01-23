@@ -2818,28 +2818,30 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
         });
         csv += `\n`;
 
-        // Section 4: Individual Goalie Statistics (Totals)
-        csv += `INDIVIDUAL GOALIE STATISTICS (TOTALS)\n`;
-        csv += `Team,#,Role,GA,Saves,SA,SVS%\n`;
+        // Section 4: Individual Goalie Statistics (Totals) - only in advanced mode
+        if (trackingMode === 'advanced') {
+          csv += `INDIVIDUAL GOALIE STATISTICS (TOTALS)\n`;
+          csv += `Team,#,Role,GA,Saves,SA,SVS%\n`;
 
-        ['home', 'away'].forEach(team => {
-          const teamName = team === 'home' ? homeName : awayName;
-          const gStats = team === 'home' ? t.homeGoalie : t.awayGoalie;
+          ['home', 'away'].forEach(team => {
+            const teamName = team === 'home' ? homeName : awayName;
+            const gStats = team === 'home' ? t.homeGoalie : t.awayGoalie;
 
-          ['starter', 'backup'].forEach(role => {
-            const data = gStats[role];
-            const hasData = (data.saves || 0) > 0 || (data.ga || 0) > 0;
-            if (hasData) {
-              const gNum = goalieMap?.[team]?.[role] || (role === 'starter' ? 'Start' : 'Back');
-              const sa = (data.saves || 0) + (data.ga || 0);
-              csv += `${teamName},${gNum},${role.toUpperCase()},${data.ga || 0},${data.saves || 0},${sa},${calcSP(data.saves || 0, data.ga || 0)}%\n`;
-            }
+            ['starter', 'backup'].forEach(role => {
+              const data = gStats[role];
+              const hasData = (data.saves || 0) > 0 || (data.ga || 0) > 0;
+              if (hasData) {
+                const gNum = goalieMap?.[team]?.[role] || (role === 'starter' ? 'Start' : 'Back');
+                const sa = (data.saves || 0) + (data.ga || 0);
+                csv += `${teamName},${gNum},${role.toUpperCase()},${data.ga || 0},${data.saves || 0},${sa},${calcSP(data.saves || 0, data.ga || 0)}%\n`;
+              }
+            });
           });
-        });
-        csv += `\n`;
+          csv += `\n`;
+        }
 
-        // Section 5: Individual Player Statistics (Totals)
-        if (playerStats.home?.players || playerStats.away?.players) {
+        // Section 5: Individual Player Statistics (Totals) - only in advanced mode
+        if (trackingMode === 'advanced' && (playerStats.home?.players || playerStats.away?.players)) {
           csv += `INDIVIDUAL PLAYER STATISTICS (TOTALS)\n`;
           csv += `Team,#,G,A,TP,+/-,SOG,FO%,FO+,FO-\n`;
 
