@@ -6488,11 +6488,23 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
                                       {/* Header row */}
                                       <div className="flex items-center gap-2">
                                         <IconMegaphone className="w-3 h-3 flex-shrink-0" />
-                                        <span className="font-semibold text-xs">{headline}</span>
-                                        {event.time && <span className="text-xs opacity-60 font-mono ml-auto">{event.time}</span>}
+                                        <span 
+                                          className={`font-semibold text-xs leading-tight ${ 
+                                            isExpanded ? '' : 'line-clamp-2 overflow-hidden'
+                                          }`}
+                                          style={isExpanded ? {} : {
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden'
+                                          }}
+                                        >
+                                          {headline}
+                                        </span>
+                                        {event.time && <span className="text-xs opacity-60 font-mono ml-auto flex-shrink-0">{event.time}</span>}
                                       </div>
                                       
-                                      {/* Expanded Message - inside same box */}
+                                      {/* Expanded Message and full title - inside same box */}
                                       {isExpanded && (event.message || event.msg) && (
                                         <div className={`text-xs pt-1 border-t ${darkMode ? 'border-purple-600 text-purple-200' : 'border-purple-300 text-purple-800'} leading-relaxed`}>
                                           {event.message || event.msg}
