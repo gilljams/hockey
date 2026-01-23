@@ -6252,7 +6252,7 @@ V334.372z M421.925,274.284h-40.212v-45.25h22.904c9.563,0,17.308,7.758,17.308,17.
               const allEvents = [
                 ...goalEvents.map(e => ({ ...e, type: 'goal' })),
                 ...penaltyEvents.map(e => ({ ...e, type: 'penalty' })),
-                ...otherEvents.map(e => ({ ...e, type: 'other' }))
+                ...otherEvents.map(e => ({ ...e, type: e.type || 'other' })) // Preserve original type
               ];
 
               // Sort by period (ascending) then by time (DESCENDING for reverse chronological order - latest first)
